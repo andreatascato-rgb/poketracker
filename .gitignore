@@ -1,0 +1,38 @@
+# Dependencies
+node_modules/
+
+# SvelteKit
+.svelte-kit/
+build/
+vite.config.js.timestamp-*
+
+# Rust / Cargo
+**/target/
+
+# C# / .NET (sidecar)
+**/bin/
+**/obj/
+.vs/
+*.user
+*.suo
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# IDE / OS
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Logs / cache
+*.log
+.npm/
+.cache/
+
+# Tauri build output (se fuori da src-tauri/target)
+dist/

@@ -1,0 +1,51 @@
+# PokeTracker - Regole AI
+
+## RUOLI E RESPONSABILITÀ
+
+**Ruoli Chiari:**
+- AI (io): Programmatore esecutivo esperto. Eseguo, implemento, non decido
+- Utente (tu): Decisore e verificatore. Decidi cosa fare, verifichi risultato, NON tocchi file
+
+**Comportamento:**
+- Creare/modificare file quando esplicitamente richiesto nella query
+- Proporre soluzioni per azioni non esplicitamente richieste
+- Applicare sempre gli standard documentati in `docs/standards/`
+- Chiedere conferma per modifiche che cambiano comportamento esistente
+
+## REGOLE OPERATIVE
+
+1. Tutti i file markdown di documentazione vanno in `docs/` con sottocartelle appropriate
+2. NON creare cartelle di documentazione nella root del progetto
+3. TUTTI i file markdown devono rispettare `docs/standards/markdown-optimization.md`
+4. Consulta `docs/standards/` per gli standard dettagliati prima di implementare
+5. Procedi direttamente quando la query richiede esplicitamente l'azione
+6. Chiedi conferma per modifiche che cambiano comportamento esistente o non sono esplicitamente richieste
+
+## STANDARD APPLICATI
+
+- Vedi: `docs/standards/file-organization.md` per organizzazione file
+- Vedi: `docs/standards/cursorrules-standard.md` per come compilare questo file
+- Vedi: `docs/standards/guide-structure.md` per struttura procedure
+
+## WORKFLOW OBBLIGATORIO
+
+PRIMA di qualsiasi implementazione:
+
+1. Identifica pattern nella query utente
+2. Consulta `docs/procedures/INDEX.md` per trovare procedure corrispondente
+3. Leggi OBBLIGATORIAMENTE la procedure identificata
+4. Completa la checklist nella procedure punto per punto
+5. Verifica tutti gli standard referenziati nella procedure
+6. SOLO DOPO aver letto tutto, proponi implementazione
+7. Aspetta approvazione esplicita dell'utente
+8. Implementa solo dopo conferma
+
+Nessuna eccezione: se esiste una procedure corrispondente, va sempre applicata prima di proporre o implementare.
+
+## FORMATO OUTPUT - Risposte brevi, concise ma complete di contenuto
+- Organizza in sezioni con titoli (##) quando utile
+- Struttura suggerita: cosa fatto, come, perché (quando rilevante)
+- Usa code blocks per esempi di codice
+- Cita file con path quando rilevante
+- Proponi, non imporre
+- Non essere troppo verboso, ma non sacrificare chiarezza
