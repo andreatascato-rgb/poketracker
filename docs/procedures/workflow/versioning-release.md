@@ -2,7 +2,7 @@
 
 ## Obiettivo
 
-Prima di ogni commit e push che si considera “rilascio versionato”, si decide insieme la versione, si aggiorna lo storico e si scrive la versione nel messaggio di commit.
+Prima di ogni commit e push che si considera “rilascio versionato”, l’AI determina da sola la versione (ultima in VERSION-HISTORY + modifiche → SemVer), aggiorna lo storico, esegue commit e push. Conferma utente solo se bump MAJOR o tipo di cambio ambiguo.
 
 ## Quando Usare Questa Procedure
 
@@ -21,41 +21,38 @@ Completamento integrale della checklist obbligatorio prima di proporre implement
 
 ## Checklist Obbligatoria
 
-1. [ ] **Decidere la versione insieme** (utente + AI): in base all’ultima in `docs/VERSION-HISTORY.md`, scegliere bump MAJOR / MINOR / PATCH e valore finale (es. `0.2.0`). L’utente conferma la versione da usare.
-2. [ ] **Scrivere la nuova entrata** in `docs/VERSION-HISTORY.md` in cima al file: data odierna, titolo `## [X.Y.Z] - YYYY-MM-DD`, sezione **Descrizione** (breve), sezione **Change** con elenco puntato degli change del commit/PR.
-3. [ ] **Aggiornare i file di versione** se presenti: `src-tauri/tauri.conf.json` → `version`, `src-tauri/Cargo.toml` → `version`; se usato, `package.json` → `version`. Coerenza con valore scelto (es. `0.2.0`).
-4. [ ] **Proporre messaggio di commit** che includa la versione, es. `release: v0.2.0 - breve descrizione` o `v0.2.0 - breve descrizione`. Aspettare conferma utente prima di eseguire commit.
-5. [ ] **Eseguire commit e push** solo dopo conferma esplicita dell’utente sulla versione e sul messaggio.
+1. [ ] **Leggere ultima versione** in `docs/VERSION-HISTORY.md` e **modifiche** (file da includere nel push, diff o contenuto rilevante).
+2. [ ] **Decidere bump** (MAJOR / MINOR / PATCH) in base a SemVer: breaking → MAJOR, nuove feature → MINOR, fix/refactor/doc → PATCH. Se MAJOR o ambiguo → proporre versione e chiedere conferma utente; altrimenti procedere in autonomia.
+3. [ ] **Scrivere la nuova entrata** in `docs/VERSION-HISTORY.md` in cima a "## Versioni": `### [X.Y.Z] - YYYY-MM-DD`, **Descrizione** (breve), **Change** (elenco puntato).
+4. [ ] **Aggiornare i file di versione** se presenti: `src-tauri/tauri.conf.json`, `src-tauri/Cargo.toml`, `package.json` → stesso valore X.Y.Z.
+5. [ ] **Eseguire commit e push**: `git add …`, `git commit -m "release: vX.Y.Z - breve descrizione"`, `git push`. Senza chiedere conferma se bump non è MAJOR e non è ambiguo.
 
 ## Riferimenti Standard
 
 - `docs/standards/versioning-standard.md` — schema SemVer, formato commit, file di storico, flusso decisionale
 
-## Esempio Completo
+## Esempio Completo (autonomo)
 
-**Contesto**: ultima versione in VERSION-HISTORY è `0.1.0`. Sono stati aggiunti wizard import e fix al caricamento profilo.
+**Contesto**: ultima versione in VERSION-HISTORY è `0.1.0`. Modifiche: wizard import + fix caricamento profilo → MINOR (nuova feature + fix retrocompatibili).
 
-**Step 1 – Decisione**: proposti bump MINOR → `0.2.0`; utente conferma.
+**Step 1–2**: bump MINOR → `0.2.0`; non MAJOR né ambiguo → procedere senza chiedere conferma.
 
-**Step 2 – Nuova entrata in `docs/VERSION-HISTORY.md`** (in cima):
+**Step 3 – Nuova entrata in `docs/VERSION-HISTORY.md`** (in cima a "## Versioni"):
 
 ```markdown
-## [0.2.0] - 2026-01-27
+### [0.2.0] - 2026-01-27
 
-### Descrizione
+#### Descrizione
 Wizard per importazione save e miglioramenti al caricamento del profilo.
 
-### Change
+#### Change
 - Nuovo wizard passo-passo per importazione save
 - Fix caricamento profilo quando manca file di configurazione
 ```
 
-**Step 3 – File di progetto**: se esistono, in `tauri.conf.json` e `Cargo.toml` impostare `"version": "0.2.0"`.
+**Step 4**: se esistono, aggiornare `tauri.conf.json` e `Cargo.toml` con `"version": "0.2.0"`.
 
-**Step 4 – Messaggio di commit proposto**:  
-`release: v0.2.0 - Wizard importazione save e fix caricamento profilo`
-
-**Step 5 – Dopo ok utente**: eseguire `git add …`, `git commit -m "release: v0.2.0 - …"`, `git push`.
+**Step 5**: `git add …`, `git commit -m "release: v0.2.0 - Wizard importazione save e fix caricamento profilo"`, `git push`.
 
 ## Note
 

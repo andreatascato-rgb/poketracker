@@ -26,6 +26,15 @@ Breve testo che riassume la release.
 
 ## Versioni
 
+### [0.0.2] - 2026-01-27
+
+#### Descrizione
+Versionamento autonomo: l’AI decide bump e esegue commit + push senza conferma; conferma solo per MAJOR o casi ambigui.
+
+#### Change
+- Standard versionamento: flusso decisionale autonomo, eccezioni (MAJOR/ambiguo)
+- Procedura versioning-release: checklist autonoma, nessuna conferma per MINOR/PATCH
+
 ### [0.0.1] - 2026-01-27
 
 #### Descrizione

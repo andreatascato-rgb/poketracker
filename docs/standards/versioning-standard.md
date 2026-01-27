@@ -64,11 +64,19 @@ Esempi:
 
 Per commit intermedi (WIP, fix minori non ancora “rilasciati”), non è obbligatorio mettere la versione nel messaggio; la versione si assegna al commit di push concordato.
 
-## Flusso Decisionale
+## Flusso Decisionale (autonomo)
 
-1. **Decisore (utente)**: decide la versione da dare al prossimo push (MAJOR/MINOR/PATCH rispetto all’ultima).
-2. **Esecuzione (AI/developer)**: aggiorna `docs/VERSION-HISTORY.md`, eventualmente `tauri.conf.json` / `Cargo.toml` / `package.json`, e propone messaggio di commit con versione.
-3. **Commit e push**: si fa con la versione concordata e scritta nel messaggio.
+L’**AI decide il bump** e esegue commit + push in autonomia, senza chiedere conferma ogni volta:
+
+1. **Legge** l’ultima versione in `docs/VERSION-HISTORY.md` e le modifiche (file staged / diff rispetto all’ultimo push).
+2. **Determina** MAJOR / MINOR / PATCH in base a SemVer (breaking → MAJOR, nuove feature → MINOR, fix/refactor/doc → PATCH).
+3. **Aggiorna** `docs/VERSION-HISTORY.md` con la nuova entrata (data, descrizione, change).
+4. **Aggiorna** i file di versione se presenti (`tauri.conf.json`, `Cargo.toml`, `package.json`).
+5. **Esegue** commit con messaggio `release: vX.Y.Z - breve descrizione` e push.
+
+**Eccezione — chiedere conferma** quando:
+- il bump sarebbe **MAJOR** (breaking change), oppure
+- il tipo di cambio è **ambiguo** (es. mix di feature e breaking); in quel caso proporre versione e aspettare ok utente.
 
 Non effettuare push “versionati” senza aver aggiornato `docs/VERSION-HISTORY.md` e senza aver indicato la versione nel commit.
 
