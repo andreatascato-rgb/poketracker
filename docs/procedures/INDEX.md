@@ -11,6 +11,11 @@ Mappa query dell'utente alle procedure corrispondenti. Consulta questa mappa per
 - Query: "bootstrap", "avvia progetto", "setup iniziale", "prima implementazione", "init progetto", "crea progetto da zero", "first implementation", "da zero", "inizializza progetto", "scaffold", "crea app tauri", "inizializza", "avvia da zero"
 - Procedure: `docs/procedures/workflow/project-bootstrap.md`
 
+### Stile / Design Tokens / Tema
+
+- Query: "applica stile", "design tokens", "aggiungi tema", "tema dark", "design system", "token", "stile componente", "CSS variables"
+- Procedure: `docs/procedures/workflow/ui-apply-style.md`
+
 ### Componenti Svelte
 
 - Query: "crea componente", "aggiungi componente", "nuovo componente", "component svelte", "svelte component", "aggiungi .svelte", "nuovo componente svelte", "crea .svelte", "creare componente", "aggiungere componente"
@@ -26,6 +31,11 @@ Mappa query dell'utente alle procedure corrispondenti. Consulta questa mappa per
 - Query: "crea pagina", "nuova pagina", "aggiungi pagina", "crea route", "nuova route", "aggiungi route", "nuova view", "+page.svelte", "sveltekit route", "creare pagina", "aggiungere route"
 - Procedure: `docs/procedures/svelte/page-creation.md`
 
+### Form e Validazione
+
+- Query: "aggiungi form", "validazione form", "form schema", "validazione input form", "crea form", "form validation"
+- Procedure: `docs/procedures/svelte/form-creation.md`
+
 ### Comandi Rust/Tauri
 
 - Query: "crea comando", "aggiungi comando", "nuovo comando", "tauri command", "rust command", "aggiungi invoke", "nuovo comando tauri", "tauri invoke", "creare comando", "aggiungere comando"
@@ -40,6 +50,26 @@ Mappa query dell'utente alle procedure corrispondenti. Consulta questa mappa per
 
 - Query: "fix bug", "correggi bug", "risolvi bug", "bug fix", "fix", "correggi", "risolvi", "non funziona", "errore", "fix error", "correggi errore", "risolvi errore"
 - Procedure: `docs/procedures/workflow/bug-fix.md`
+
+### Gestione Errori (User-Facing / Toast / Logging)
+
+- Query: "gestisci errore", "user-facing error", "toast errore", "error boundary", "messaggio di fallimento", "aggiungi toast", "notifica errore"
+- Procedure: `docs/procedures/workflow/error-handling.md`
+
+### Accessibilità (a11y)
+
+- Query: "accessibilità", "a11y", "aggiungi a11y", "fix a11y", "aria", "keyboard", "screen reader", "aggiungi label", "contrasto"
+- Procedure: `docs/procedures/workflow/accessibility-setup.md`
+
+### Validazione Input / Sicurezza
+
+- Query: "validazione input", "sanitizza", "sicurezza input", "input validation", "never trust frontend", "valida argomenti"
+- Procedure: `docs/procedures/workflow/input-validation.md`
+
+### Logging
+
+- Query: "aggiungi logging", "logging", "log level", "configura log", "debug log", "log livello"
+- Procedure: `docs/procedures/workflow/logging-setup.md`
 
 ### Sidecar (es. C# Parser)
 
