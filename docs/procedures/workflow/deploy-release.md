@@ -20,10 +20,12 @@ Completamento integrale della checklist obbligatorio prima di proporre implement
    - Comandi build, --no-bundle, formati installer: righe 7-25
    - Pipeline, code signing, updater: righe 26-55
 
-2. **Deployment PokeTracker**: `docs/project/deployment.md:1-100`
+2. **CI/CD**: `docs/standards/ci-cd-standard.md:1-55` — Trigger, quality gates, release flow (se si configura pipeline)
+
+3. **Deployment PokeTracker**: `docs/project/deployment.md:1-100`
    - Target, installer, code signing, canali
 
-3. **Sidecar**: `docs/standards/tauri2-sidecar-standard.md` — Sidecar C# incluso nel bundle
+4. **Sidecar**: `docs/standards/tauri2-sidecar-standard.md` — Sidecar C# incluso nel bundle
 
 ## Checklist Obbligatoria
 
@@ -37,6 +39,7 @@ Completamento integrale della checklist obbligatorio prima di proporre implement
 ## Riferimenti Standard
 
 - `docs/standards/tauri2-build-deploy-standard.md:1-80` — Build, bundle, release, signing
+- `docs/standards/ci-cd-standard.md:1-55` — Pipeline, trigger, quality gates
 - `docs/project/deployment.md:1-100` — Strategia PokeTracker
 - `docs/standards/tauri2-sidecar-standard.md` — Binari sidecar nel bundle
 

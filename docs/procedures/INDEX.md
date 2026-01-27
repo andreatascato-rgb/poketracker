@@ -16,6 +16,16 @@ Mappa query dell'utente alle procedure corrispondenti. Consulta questa mappa per
 - Query: "applica stile", "design tokens", "aggiungi tema", "tema dark", "design system", "token", "stile componente", "CSS variables"
 - Procedure: `docs/procedures/workflow/ui-apply-style.md`
 
+### Modifica Navigazione / Sidebar / Layout
+
+- Query: "aggiungi voce sidebar", "aggiungi voce menu", "modifica navigazione", "aggiungi sezione Profilo", "cambia ordine voci", "modifica layout", "aggiungi sottovoce Wiki", "rimuovi voce menu", "aggiungi voce Impostazioni"
+- Procedure: `docs/procedures/workflow/layout-navigation-change.md`
+
+### Primitivi UI / Elemento classico
+
+- Query: "crea pulsante", "crea input", "crea card", "crea badge", "aggiungi primitivo UI", "elemento classico UI", "crea Button", "crea Input", "crea componente pulsante", "crea icona pulsante", "crea link stile"
+- Procedure: `docs/procedures/svelte/ui-primitive-creation.md`
+
 ### Componenti Svelte
 
 - Query: "crea componente", "aggiungi componente", "nuovo componente", "component svelte", "svelte component", "aggiungi .svelte", "nuovo componente svelte", "crea .svelte", "creare componente", "aggiungere componente"
@@ -51,6 +61,11 @@ Mappa query dell'utente alle procedure corrispondenti. Consulta questa mappa per
 - Query: "fix bug", "correggi bug", "risolvi bug", "bug fix", "fix", "correggi", "risolvi", "non funziona", "errore", "fix error", "correggi errore", "risolvi errore"
 - Procedure: `docs/procedures/workflow/bug-fix.md`
 
+### Modifica Comportamento (Behavior Change)
+
+- Query: "cambia comportamento", "modifica come funziona", "cambia logica di", "modifica comportamento di", "cambia il funzionamento di", "vuoi che faccia", "invece di X faccia Y", "cambia la logica", "modifica il flusso"
+- Procedure: `docs/procedures/workflow/behavior-change.md`
+
 ### Gestione Errori (User-Facing / Toast / Logging)
 
 - Query: "gestisci errore", "user-facing error", "toast errore", "error boundary", "messaggio di fallimento", "aggiungi toast", "notifica errore"
@@ -66,6 +81,11 @@ Mappa query dell'utente alle procedure corrispondenti. Consulta questa mappa per
 - Query: "validazione input", "sanitizza", "sicurezza input", "input validation", "never trust frontend", "valida argomenti"
 - Procedure: `docs/procedures/workflow/input-validation.md`
 
+### Verifica Sicurezza / Security Audit
+
+- Query: "verifica sicurezza", "security audit", "sicurezza generale", "controlla sicurezza", "audit sicurezza", "check sicurezza"
+- Procedure: `docs/procedures/workflow/security-audit.md`
+
 ### Logging
 
 - Query: "aggiungi logging", "logging", "log level", "configura log", "debug log", "log livello"
@@ -76,9 +96,14 @@ Mappa query dell'utente alle procedure corrispondenti. Consulta questa mappa per
 - Query: "configura sidecar", "aggiungi sidecar", "sidecar C#", "sidecar parser", "configura parser C#", "aggiungi eseguibile esterno", "externalBin", "tauri sidecar"
 - Procedure: `docs/procedures/workflow/sidecar-setup.md`
 
-### Build / Deploy / Release
+### Versionamento / Commit-Push con versione
 
-- Query: "build", "deploy", "release", "distribuisci", "pacchetto", "installer", "tauri build", "crea installer", "release build", "bundle"
+- Query: "commit e push", "push con versione", "rilascia versione", "versionamento", "decidere versione", "fare release", "scrivere nel commit la versione", "aggiorna changelog", "aggiungi a VERSION-HISTORY", "preparare push con versione", "quale versione dare"
+- Procedure: `docs/procedures/workflow/versioning-release.md`
+
+### Build / Deploy / Release / CI
+
+- Query: "build", "deploy", "release", "distribuisci", "pacchetto", "installer", "tauri build", "crea installer", "release build", "bundle", "configura CI", "pipeline", "GitHub Actions", "pipeline release"
 - Procedure: `docs/procedures/workflow/deploy-release.md`
 
 ### Migrazioni Database
@@ -126,6 +151,21 @@ Mappa query dell'utente alle procedure corrispondenti. Consulta questa mappa per
 - Query: "modifica cursorrules", "aggiorna cursorrules", "cambia regole", "aggiorna .cursorrules", "aggiungi regola", "modifica regole", "aggiorna regole"
 - Procedure: `docs/procedures/cursorrules-update.md`
 
+### i18n / Traduzioni
+
+- Query: "traduci", "aggiungi lingua", "i18n", "localizzazione", "stringhe tradotte", "nuova lingua", "internazionalizzazione"
+- Procedure: `docs/procedures/workflow/i18n-setup.md`
+
+### Performance
+
+- Query: "ottimizza", "performance", "lazy load", "virtualizza lista", "indice DB", "ottimizza performance", "lista lenta", "rendering lento"
+- Procedure: `docs/procedures/workflow/performance-optimization.md`
+
+### Contratto API (Frontend–Backend)
+
+- Query: "cambia contratto", "aggiungi campo", "breaking change API", "aggiungi parametro comando", "modifica tipo ritorno"
+- Procedure: `docs/procedures/workflow/api-contract-change.md`
+
 ## Come Usare
 
 1. Identifica pattern nella query utente (anche in forma libera o parziale)
@@ -140,8 +180,11 @@ Se nessun pattern corrisponde alla query:
 - Non assumere che sia permesso procedere senza procedure
 - Proporre all'utente: (a) riformulare la query per matchare un pattern esistente, (b) creare una nuova procedure per quel tipo di azione, oppure (c) confermare esplicitamente di voler procedere senza procedure (con consapevolezza del rischio)
 
+**Se l'utente conferma di procedere senza procedure:** prima di implementare consultare obbligatoriamente `docs/standards/README.md` e gli standard lì elencati rilevanti per il dominio (es. UI → `ui-implementation-standard.md`, `ui-primitives-standard.md`, performance → `performance-standard.md`, sicurezza → `security-standard.md`, build/CI → `ci-cd-standard.md`). Per termini di dominio: `docs/project/glossary.md`. Per vista architettura: `docs/project/architecture-overview.md`.
+
 ## Note
 
 - Questa mappa deve essere aggiornata quando vengono aggiunte nuove procedure
 - Le cartelle `svelte/`, `rust/`, `workflow/` contengono le procedure rispettive
+- Per "crea pulsante/input/card/badge" usare **Primitivi UI** (`ui-primitive-creation.md`); per "crea componente" generico usare **Componenti Svelte** (`component-creation.md`), che richiama catalog e primitivi quando si tratta di UI
 - In caso di overlap (es. "aggiungi feature X" può richiedere componenti + comandi), usare la procedure **più specifica** per l’azione principale; per feature ampie usare `new-feature.md` che richiama le altre

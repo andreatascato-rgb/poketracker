@@ -6,13 +6,14 @@ Questa cartella contiene le informazioni sul progetto e sull'applicazione PokeTr
 
 ## Entry point
 
-Per una panoramica generale dell'app, inizia da **[overview.md](./overview.md)**.
+Per una panoramica generale dell'app, inizia da **[overview.md](./overview.md)**. Per termini di dominio e tecnici: **[glossary.md](./glossary.md)**.
 
 ## Documenti
 
 ### Panoramica e core
 
 - **[overview.md](./overview.md)** - Panoramica generale dell'app
+- **[glossary.md](./glossary.md)** - Glossario termini di dominio e tecnici
 - **[core-functionality.md](./core-functionality.md)** - Funzionalità core
 - **[features.md](./features.md)** - Elenco e documentazione delle features
 
@@ -27,9 +28,11 @@ Per una panoramica generale dell'app, inizia da **[overview.md](./overview.md)**
 ### Design e UI/UX
 
 - **[ui-ux-design.md](./ui-ux-design.md)** - Design UI/UX e stile
+- **[ui-component-catalog.md](./ui-component-catalog.md)** - Catalog primitivi e compositi UI (reuse-first)
 
 ### Architettura e dati
 
+- **[architecture-overview.md](./architecture-overview.md)** - Vista architettura (stack, flusso dati, dove vivono i dati)
 - **[project-structure.md](./project-structure.md)** - Struttura progetto
 - **[parser-architecture.md](./parser-architecture.md)** - Architettura parser
 - **[knowledge-database.md](./knowledge-database.md)** - Database conoscenza

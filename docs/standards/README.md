@@ -10,6 +10,8 @@ Questa cartella contiene tutti gli standard e le convenzioni stabilite per il pr
 2. Gli standard vengono anche aggiunti a `.cursorrules` per applicazione automatica
 3. Quando viene presa una decisione, diventa uno standard da seguire sempre
 
+**Allineamento:** gli standard sono orientati alle best practice 2026; è raccomandata una revisione periodica (annuale o a scadenza definita).
+
 ## Standard Attivi
 
 Tutti i file `.md` in questa cartella (escluso questo README) sono standard del progetto.
@@ -28,11 +30,19 @@ Tutti i file `.md` in questa cartella (escluso questo README) sono standard del 
 | [csharp-sidecar-standard.md](./csharp-sidecar-standard.md) | Standard sidecar C# |
 | [tooling-standard.md](./tooling-standard.md) | Standard tooling |
 | [tauri2-build-deploy-standard.md](./tauri2-build-deploy-standard.md) | Build, deploy e release Tauri 2 |
+| [ci-cd-standard.md](./ci-cd-standard.md) | CI/CD, pipeline, quality gates, release flow |
 | [tauri2-permissions-standard.md](./tauri2-permissions-standard.md) | Permissions e capabilities Tauri 2 |
 | [database-migrations-standard.md](./database-migrations-standard.md) | Migrazioni DB SQLite (Rust) |
 | [ui-implementation-standard.md](./ui-implementation-standard.md) | Implementazione UI, design tokens, tema, layout |
+| [ui-primitives-standard.md](./ui-primitives-standard.md) | Primitivi UI, catalog, reuse-first, mappa elemento/standard |
 | [error-handling-standard.md](./error-handling-standard.md) | Gestione errori user-facing, toast, logging |
 | [forms-validation-standard.md](./forms-validation-standard.md) | Form e validazione (frontend + backend) |
 | [input-validation-standard.md](./input-validation-standard.md) | Validazione input e sicurezza (never trust frontend) |
+| [security-standard.md](./security-standard.md) | Sicurezza (file system, DB, sidecar, Tauri, dati sensibili) |
 | [accessibility-standard.md](./accessibility-standard.md) | Accessibilità (a11y), WCAG, ARIA |
 | [logging-standard.md](./logging-standard.md) | Logging backend e frontend, livelli, formato |
+| [i18n-standard.md](./i18n-standard.md) | Internazionalizzazione, traduzioni, locale |
+| [performance-standard.md](./performance-standard.md) | Performance, lazy load, virtualizzazione, DB, IPC |
+| [api-contract-standard.md](./api-contract-standard.md) | Evoluzione contratto API, semver, breaking vs non-breaking |
+| [versioning-standard.md](./versioning-standard.md) | Versionamento SemVer, commit con versione, VERSION-HISTORY |
+| [testing-standard.md](./testing-standard.md) | Testing, dove/naming, mock Tauri (mockIPC, clearMocks) |

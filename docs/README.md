@@ -38,6 +38,8 @@ Le procedure verranno create quando necessario durante lo sviluppo.
 Le informazioni sul progetto e sull'applicazione sono in `docs/project/`. Vedi **[project/README.md](./project/README.md)** per obiettivo, entry point ed elenco raggruppato.
 
 - **[overview.md](./project/overview.md)** - Panoramica generale dell'app
+- **[glossary.md](./project/glossary.md)** - Glossario termini di dominio e tecnici
+- **[architecture-overview.md](./project/architecture-overview.md)** - Vista architettura (stack, flusso dati)
 - **[core-functionality.md](./project/core-functionality.md)** - Funzionalità core dell'app
 - **[features.md](./project/features.md)** - Elenco e documentazione delle features
 - **[pokedex-personal.md](./project/pokedex-personal.md)** - Feature: Pokedex Personale
@@ -46,6 +48,7 @@ Le informazioni sul progetto e sull'applicazione sono in `docs/project/`. Vedi *
 - **[multi-profile.md](./project/multi-profile.md)** - Feature: Gestione Multi-Profilo
 - **[self-management.md](./project/self-management.md)** - Feature: Gestione Interna App
 - **[ui-ux-design.md](./project/ui-ux-design.md)** - Design UI/UX e Stile
+- **[ui-component-catalog.md](./project/ui-component-catalog.md)** - Catalog primitivi e compositi UI (reuse-first)
 - **[database-storage.md](./project/database-storage.md)** - Database e Storage
 - **[parser-architecture.md](./project/parser-architecture.md)** - Architettura Parser
 - **[knowledge-database.md](./project/knowledge-database.md)** - Database Conoscenza

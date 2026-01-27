@@ -16,16 +16,20 @@ Completamento integrale della checklist obbligatorio prima di proporre implement
 
 ## File da Leggere PRIMA
 
-1. **Svelte 5 / SvelteKit**: `docs/standards/svelte-sveltekit-standard.md:1-80`
+1. **Se è un elemento UI classico** (pulsante, input, card, badge, icona, link, …): usare la procedure [ui-primitive-creation.md](./ui-primitive-creation.md); non questa. Verificare prima [ui-component-catalog](../../project/ui-component-catalog.md) e [ui-primitives-standard](../../standards/ui-primitives-standard.md).
+
+2. **Svelte 5 / SvelteKit**: `docs/standards/svelte-sveltekit-standard.md:1-80`
    - Runes `$state`, `$derived`, `$effect`: righe 13-31
    - Props `$props()`, `$bindable()`: righe 33-41
    - Preferenza `$effect` vs onMount: righe 43-47
 
-2. **Struttura progetto**: `docs/project/project-structure.md:111-135`
-   - Cartella `lib/components/` e sottocartelle (layout, profile, pokedex, wiki, editor, management)
+3. **Struttura progetto**: `docs/project/project-structure.md:111-135`
+   - Cartella `lib/components/` e sottocartelle (layout, profile, pokedex, wiki, editor, management, **ui** per primitivi)
 
-3. **TypeScript/Frontend**: `docs/standards/typescript-frontend-standard.md:21-34`
+4. **TypeScript/Frontend**: `docs/standards/typescript-frontend-standard.md:21-34`
    - Path alias `$lib`, `$components` se configurati
+
+5. **Componenti UI:** prima di introdurre stili ad hoc, verificare [ui-component-catalog](../../project/ui-component-catalog.md) e [ui-primitives-standard](../../standards/ui-primitives-standard.md); preferire composizione da primitivi esistenti. Se si introduce un nuovo primitivo, seguire [ui-primitive-creation.md](./ui-primitive-creation.md) e aggiornare il catalog.
 
 ## Checklist Obbligatoria
 
@@ -42,9 +46,12 @@ Completamento integrale della checklist obbligatorio prima di proporre implement
 - `docs/standards/svelte-sveltekit-standard.md:1-80` — Runes, props, $effect, adapter
 - `docs/project/project-structure.md:111-135` — Dove creare componenti
 - `docs/standards/typescript-frontend-standard.md:1-70` — Alias, invoke, errori
+- `docs/standards/ui-primitives-standard.md` — Primitivi, catalog, reuse-first (per componenti UI)
+- `docs/project/ui-component-catalog.md` — Catalog primitivi e compositi
 
 ## Note
 
 - Naming file: PascalCase (es. `PokemonCard.svelte`).
-- Sottocartelle per dominio: layout, profile, pokedex, wiki, editor, management.
+- Sottocartelle per dominio: layout, profile, pokedex, wiki, editor, management; **ui** per primitivi (Button, Input, Card, …).
+- Per elementi UI classici (pulsante, input, card, badge, …) usare la procedure [ui-primitive-creation.md](./ui-primitive-creation.md).
 - Per aggiungere una nuova pagina/route SvelteKit, usare la procedure `page-creation.md` se disponibile, altrimenti rispettare `src/routes/` e `+page.svelte`/`+layout.svelte`.

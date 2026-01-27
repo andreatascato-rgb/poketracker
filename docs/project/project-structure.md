@@ -115,6 +115,7 @@ src-tauri/src/
 src/
 ├── lib/
 │   ├── components/            # Componenti Svelte
+│   │   ├── ui/                # Primitivi UI (Button, Input, Card, Badge, …) — vedi ui-primitives-standard, ui-component-catalog
 │   │   ├── layout/
 │   │   │   ├── TopBar.svelte
 │   │   │   ├── Sidebar.svelte

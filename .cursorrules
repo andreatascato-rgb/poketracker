@@ -24,8 +24,12 @@
 ## STANDARD APPLICATI
 
 - Vedi: `docs/standards/file-organization.md` per organizzazione file
+- Vedi: `docs/standards/versioning-standard.md` per versionamento e commit con versione
 - Vedi: `docs/standards/cursorrules-standard.md` per come compilare questo file
 - Vedi: `docs/standards/guide-structure.md` per struttura procedure
+- Vedi: `docs/standards/README.md` per lista completa standard
+- Per termini di dominio: `docs/project/glossary.md`
+- Per vista architettura (stack, flusso dati): `docs/project/architecture-overview.md`
 
 ## WORKFLOW OBBLIGATORIO
 
@@ -40,7 +44,7 @@ PRIMA di qualsiasi implementazione:
 7. Aspetta approvazione esplicita dell'utente
 8. Implementa solo dopo conferma
 
-Nessuna eccezione: se esiste una procedure corrispondente, va sempre applicata prima di proporre o implementare.
+Nessuna eccezione: se esiste una procedure corrispondente, va sempre applicata prima di proporre o implementare. Se l'utente conferma di procedere senza procedure, consultare comunque `docs/standards/README.md` e gli standard di dominio rilevanti prima di implementare (dettaglio in `docs/procedures/INDEX.md` → Quando nessuna procedure corrisponde).
 
 ## FORMATO OUTPUT - Risposte brevi, concise ma complete di contenuto
 - Organizza in sezioni con titoli (##) quando utile
