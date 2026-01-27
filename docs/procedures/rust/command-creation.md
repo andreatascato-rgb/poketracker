@@ -36,9 +36,11 @@ Completamento integrale della checklist obbligatorio prima di proporre implement
 4. [ ] Se serve tipo custom per errore: enum con `#[derive(Serialize)]` o usa `Result<T, String>` (`rust-tauri-standard.md:23-26`)
 5. [ ] Frontend: import `invoke` da `@tauri-apps/api/core`; chiamata `await invoke<ReturnType>('command_name', { arg })`; gestione errori con `try/catch` (`typescript-frontend-standard.md:48-62`)
 6. [ ] Tipi TypeScript: usare generico `invoke<T>()` o tipi condivisi come da `typescript-frontend-standard.md:64-70`
+7. [ ] **Verifica compilazione:** Dopo aver aggiunto/modificato il comando, esegui `cargo check` (o `cargo build`) e verifica che la build passi. Vedi [coding-best-practices](../../standards/coding-best-practices.md) § Workflow.
 
 ## Riferimenti Standard
 
+- `docs/standards/versioni-stack-standard.md` — Versioni Rust/Tauri, import `invoke` da `@tauri-apps/api/core`, edition 2021, anti-pattern
 - `docs/standards/rust-tauri-standard.md:1-88` — Command, Result, error handling
 - `docs/standards/typescript-frontend-standard.md:36-70` — invoke, errori, tipi
 - `docs/project/project-structure.md:48-68` — Dove definire e registrare i command

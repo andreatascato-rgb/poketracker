@@ -29,9 +29,9 @@ Completamento integrale della checklist obbligatorio prima di proporre implement
 
 ## Checklist Obbligatoria
 
-1. [ ] Leggi `docs/standards/svelte-sveltekit-standard.md:13-31` — Preferire runes: per stato condiviso usare `$state()` (o oggetto/class con `$state` interno) esportato da un modulo
+1. [ ] **Store in `.ts`:** usare **`writable`/`readable`** da `svelte/store`. **Non** usare `$state` in file `.ts`: le runes sono trasformate solo in `.svelte` e `.svelte.ts`; in `.ts` a runtime `$state` non è definito → `ReferenceError` e schermata bianca. Vedi [versioni-stack-standard](../../standards/versioni-stack-standard.md) § Store in file .ts.
 2. [ ] Verifica `docs/project/project-structure.md` — Crea il file in `src/lib/stores/<nome>.ts` (o `.js` se senza tipi); naming kebab-case o camelCase coerente con gli altri store
-3. [ ] Esporre stato tramite variabile reattiva (`$state`) o getter; evitare store Svelte 4 (`writable`/`readable`) nel nuovo codice se il progetto è migrato a Svelte 5
+3. [ ] Esporre stato tramite `writable`/`readable` e funzioni che aggiornano lo store (es. `load()`, `set()`); nei componenti usare la sottoscrizione `$storeName`.
 4. [ ] Se lo store chiama `invoke`: import da `@tauri-apps/api/core`, uso `await` e `try/catch` (`typescript-frontend-standard.md:48-62`)
 5. [ ] Import da `$lib/stores/...` nei componenti che usano lo store (`typescript-frontend-standard.md:21-34`)
 
@@ -43,5 +43,5 @@ Completamento integrale della checklist obbligatorio prima di proporre implement
 
 ## Note
 
-- In Svelte 5, uno “store” può essere un modulo che esporta `$state` o un oggetto con proprietà reattive; non è obbligatorio usare l’API `writable`/`readable`.
-- Se il progetto usa ancora Svelte 4 store, preferire comunque runes per i nuovi store quando si è su Svelte 5.
+- In PokeTracker gli store sono in `lib/stores/*.ts` (file `.ts` non processati da Svelte per le runes). In questi file usare **sempre** `writable`/`readable`; **non** usare `$state` → a runtime non è definito, con rischio di schermata bianca. Nei componenti `.svelte` la sottoscrizione `$storeName` funziona normalmente. Vedi [versioni-stack-standard](../../standards/versioni-stack-standard.md) § "Store in file .ts".
+- Se in futuro lo store fosse in un file `.svelte.ts` con trasformazione runes abilitata, si potrebbero usare runes; con la struttura attuale, `writable`/`readable` in `.ts` è la scelta obbligatoria e verificata.

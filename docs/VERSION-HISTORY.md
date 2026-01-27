@@ -26,6 +26,16 @@ Breve testo che riassume la release.
 
 ## Versioni
 
+### [0.0.3] - 2026-01-27
+
+#### Descrizione
+Pagina Impostazioni: titolo di pagina rimosso, card Profili con standard titolo+azione; documentato standard in ui-patterns-applied.
+
+#### Change
+- Impostazioni: rimosso titolo "Impostazioni" dal contenuto (ridondante con voce menu)
+- Card Profili: sottotitolo senza max-w-[66ch]; titolo "Profili" con text-lg, min-h-8, flex items-center sulla stessa riga del bottone "Nuovo allenatore"
+- docs/project/ui-patterns-applied.md: standard "Titolo con azione sulla riga" (CardTitle + Button size="sm" → text-lg, min-h-8, flex items-center, font-semibold)
+
 ### [0.0.2] - 2026-01-27
 
 #### Descrizione

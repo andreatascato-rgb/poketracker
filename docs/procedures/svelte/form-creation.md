@@ -35,11 +35,14 @@ Completamento integrale della checklist obbligatorio prima di proporre implement
 2. [ ] Definire struttura e regole (tipo Rust + validazione in Rust; in frontend tipi/ eventuale Zod allineato)
 3. [ ] Backend: validare argomenti all’ingresso del command; restituire `Result<T, String>` (o custom) con messaggio chiaro (`forms-validation-standard.md:34-38`, `input-validation-standard.md`)
 4. [ ] Frontend: validazione lato client per feedback immediato; messaggi vicini al campo; stile coerente con [error-handling-standard](../../standards/error-handling-standard.md)
-5. [ ] Messaggi di errore: chiari e user-facing come da `error-handling-standard`; inline per errori di campo
-6. [ ] Se si usa Zod/Superforms: schema condiviso e `safeParse`; non sostituire validazione backend
+5. [ ] **UI form:** usare componenti da `$lib/components/ui` (Input, Button, ecc.) e Tailwind; rispettare `docs/standards/ui-stack-standard.md` e `docs/standards/design-system-standard.md`; no CSS custom o elementi form da zero
+6. [ ] Messaggi di errore: chiari e user-facing come da `error-handling-standard`; inline per errori di campo
+7. [ ] Se si usa Zod/Superforms: schema condiviso e `safeParse`; non sostituire validazione backend
 
 ## Riferimenti Standard
 
+- `docs/standards/ui-stack-standard.md` — Stack UI (Tailwind + shadcn-svelte) per input, button, label del form
+- `docs/standards/design-system-standard.md` — Stile, token (moderno, professionale, dark)
 - `docs/standards/forms-validation-standard.md:1-50` — Form, schema, frontend/backend
 - `docs/standards/input-validation-standard.md:1-40` — Sicurezza input
 - `docs/standards/error-handling-standard.md` — Messaggi utente

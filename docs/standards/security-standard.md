@@ -30,7 +30,9 @@ Definisce le regole operative di sicurezza per PokeTracker (file system, DB, sid
 ## Tauri (IPC e permessi)
 
 - **Comandi:** whitelist esplicita; validazione parametri in ogni command; vedi [tauri2-permissions-standard](./tauri2-permissions-standard.md).
-- **Permessi:** richiedere solo i permessi necessari; messaggi chiari se permessi mancanti; non esporre dettagli interni all’utente.
+- **Permessi:** richiedere solo i permessi necessari; messaggi chiari se permessi mancanti; non esporre dettagli interni all'utente.
+- **No shell/exec arbitrario dal frontend:** non esporre command che eseguono shell o comandi di sistema arbitrari; operazioni di sistema solo via command Rust con parametri validati e scope limitato (es. sidecar). Vedi [tauri2-sidecar-standard](./tauri2-sidecar-standard.md).
+
 
 ## Dati sensibili e errori
 

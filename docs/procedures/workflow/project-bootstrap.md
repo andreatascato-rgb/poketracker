@@ -16,18 +16,20 @@ Completamento integrale della checklist obbligatorio prima di proporre implement
 
 ## File da Leggere PRIMA
 
-1. **Tauri 2**: `docs/standards/tauri2-standard.md:1-75`
+1. **Versioni e comandi:** `docs/standards/versioni-stack-standard.md` — versioni minime, import esatti (es. `invoke` da `@tauri-apps/api/core`), anti-pattern Svelte 5 / Tauri 2 / Rust.
+
+2. **Tauri 2**: `docs/standards/tauri2-standard.md:1-75`
    - Creazione progetto: righe 10-16
    - Frontend SvelteKit: righe 28-54
    - Permessi: righe 56-61
 
-2. **Svelte/SvelteKit**: `docs/standards/svelte-sveltekit-standard.md:1-80`
-   - Adapter static, SSR false: righe 48-54
+3. **Svelte/SvelteKit**: `docs/standards/svelte-sveltekit-standard.md:1-80`
+   - Adapter static, SSR false: righe 54-59 (sezione «SvelteKit + Tauri (SPA)»)
 
-3. **Struttura progetto**: `docs/project/project-structure.md:1-50`
+4. **Struttura progetto**: `docs/project/project-structure.md:1-50`
    - Cartelle root e src-tauri/src: righe 9-45
 
-4. **Organizzazione file**: `docs/standards/file-organization.md:1-44`
+5. **Organizzazione file**: `docs/standards/file-organization.md:1-44`
    - Documentazione in `docs/`: righe 9-21
 
 ## Checklist Obbligatoria
@@ -38,7 +40,8 @@ Completamento integrale della checklist obbligatorio prima di proporre implement
 4. [ ] Verifica permessi Tauri 2 (`permissions`, non allowlist): `docs/standards/tauri2-standard.md:56-61`
 5. [ ] Allinea versioni `@tauri-apps/api` (npm) e crate `tauri` (Cargo): stessa minor; plugin stessa versione esatta (`tauri2-standard.md:16`)
 6. [ ] Verifica struttura cartelle rispetto a `docs/project/project-structure.md:9-45` — `src-tauri/`, `src/` (frontend), `docs/`
-7. [ ] Se esistono, tooling e lint come da `docs/standards/tooling-standard.md` (opzionale in bootstrap minimo)
+7. [ ] **Verifica compilazione:** Dopo lo scaffold, esegui `cargo check` (o `pnpm tauri build`) e considera il bootstrap concluso solo se la build passa. Vedi [coding-best-practices](../../standards/coding-best-practices.md) § Workflow.
+8. [ ] Se esistono, tooling e lint come da `docs/standards/tooling-standard.md` (opzionale in bootstrap minimo)
 
 ## Riferimenti Standard
 

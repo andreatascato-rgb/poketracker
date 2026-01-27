@@ -15,11 +15,13 @@
 ## REGOLE OPERATIVE
 
 1. Tutti i file markdown di documentazione vanno in `docs/` con sottocartelle appropriate
-2. NON creare cartelle di documentazione nella root del progetto
-3. TUTTI i file markdown devono rispettare `docs/standards/markdown-optimization.md`
-4. Consulta `docs/standards/` per gli standard dettagliati prima di implementare
-5. Procedi direttamente quando la query richiede esplicitamente l'azione
-6. Chiedi conferma per modifiche che cambiano comportamento esistente o non sono esplicitamente richieste
+2. File temporanei (valutazioni, confronti, bozze, analisi di passaggio) vanno in `docs/temp/`
+3. NON creare cartelle di documentazione nella root del progetto
+4. TUTTI i file markdown devono rispettare `docs/standards/markdown-optimization.md`
+5. Consulta `docs/standards/` per gli standard dettagliati prima di implementare
+6. Procedi direttamente quando la query richiede esplicitamente l'azione
+7. Chiedi conferma per modifiche che cambiano comportamento esistente o non sono esplicitamente richieste
+8. Non lasciare commenti // TODO o funzioni/stub vuoti come deliverable: implementare la logica (anche minimale) o tracciare in backlog
 
 ## STANDARD APPLICATI
 
@@ -28,8 +30,15 @@
 - Vedi: `docs/standards/cursorrules-standard.md` per come compilare questo file
 - Vedi: `docs/standards/guide-structure.md` per struttura procedure
 - Vedi: `docs/standards/README.md` per lista completa standard
+- Per versioni stack e comandi verificati (Svelte 5, Tauri 2, Rust): `docs/standards/versioni-stack-standard.md`
+- Per best practice di coding (bridge, panic-free, workflow, no TODO): `docs/standards/coding-best-practices.md`
 - Per termini di dominio: `docs/project/glossary.md`
 - Per vista architettura (stack, flusso dati): `docs/project/architecture-overview.md`
+- Per priorità in trade-off: `docs/project/priorities.md`
+- Per stile UI, layout, token, tipografia, icone (design system, standard Poketrack): `docs/standards/design-system-standard.md`
+- Per pattern UI applicati (empty state, card, CTA, padding): `docs/project/ui-patterns-applied.md`
+- Per riferimento visivo e adozioni da app Poketrack: `docs/project/poketrack-reference.md`
+- Per stack UI (Tailwind, shadcn-svelte, best practice): `docs/standards/ui-stack-standard.md`
 
 ## WORKFLOW OBBLIGATORIO
 

@@ -20,8 +20,7 @@ Completamento integrale della checklist obbligatorio prima di proporre implement
    - Contrasto, focus, semantica, ARIA: righe 7-18
    - Svelte/SvelteKit, toast, form: righe 20-38
 
-2. **UI implementation**: `docs/standards/ui-implementation-standard.md`
-   - Token, contrasto visivo
+2. **Contrasto:** WCAG AA come target minimo.
 
 ## Checklist Obbligatoria
 
@@ -36,7 +35,6 @@ Completamento integrale della checklist obbligatorio prima di proporre implement
 ## Riferimenti Standard
 
 - `docs/standards/accessibility-standard.md:1-55` — Requisiti a11y
-- `docs/standards/ui-implementation-standard.md` — Contrasto, token
 
 ## Note
 

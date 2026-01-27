@@ -45,13 +45,13 @@ Ogni binario deve avere **nome + suffisso della target triple** della piattaform
 
 - **Dipendenze:** `tauri-plugin-shell` (Cargo e, se usato, `@tauri-apps/plugin-shell` per il frontend).
 - **Setup:** `tauri::Builder::default().plugin(tauri_plugin_shell::init())`.
-- **Invoco sidecar:**
+- **Invoco sidecar:** nel codice chiamato dai command usare **`?`** e **`.map_err(|e| e.to_string())`**; **non** `unwrap()`/`expect()` (vedi [rust-tauri-standard](./rust-tauri-standard.md)). Esempio:
 
 ```rust
 use tauri_plugin_shell::ShellExt;
 
-let sidecar = app.shell().sidecar("parser").unwrap();
-let (mut rx, mut child) = sidecar.args(&["--arg1", "val"]).spawn().expect("spawn failed");
+let sidecar = app.shell().sidecar("parser").map_err(|e| e.to_string())?;
+let (mut rx, mut child) = sidecar.args(&["--arg1", "val"]).spawn().map_err(|e| e.to_string())?;
 
 // Eventi stdout/stderr via rx
 while let Some(event) = rx.recv().await {

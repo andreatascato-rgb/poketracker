@@ -4,16 +4,15 @@
 
 Definisce i termini di dominio e tecnici usati in PokeTracker. Usare sempre questi termini in documentazione e codice per consistenza. Riferimento per AI e sviluppatori.
 
-## App e UI
+## App e struttura
 
 | Termine | Significato |
 |---------|-------------|
 | **Top Bar** | Barra superiore fissa con controlli globali: aggiornamento app, avvisi, selettore profilo. |
 | **Sidebar** | Navigazione principale collassabile; voci: Profilo, Editor, Wiki, Impostazioni. Max due livelli (voce → sottovoci). |
 | **Area contenuto** | Zona centrale scrollabile dove compare il contenuto della sezione attiva. Unico contesto con scroll. |
-| **Layout** | Struttura a tre parti: Top Bar + Sidebar + Area contenuto. Fonte: [ui-ux-design](./ui-ux-design.md). |
-| **Primitivo UI** | Componente riutilizzabile di base (Button, Input, Card, Badge, …). Path: `lib/components/ui/`. Vedi [ui-primitives-standard](../standards/ui-primitives-standard.md), [ui-component-catalog](./ui-component-catalog.md). |
-| **Token** | Design token: variabili CSS (es. `--color-primary`, `--spacing-md`) usate per stile coerente. Fonte: [ui-implementation-standard](../standards/ui-implementation-standard.md). |
+| **Layout** | Struttura a tre parti: Top Bar + Sidebar + Area contenuto. |
+| **Componente base** | Componente riutilizzabile di base (Button, Input, Card, Badge, …). Path: `lib/components/ui/`. |
 | **Route** | Pagina SvelteKit in `src/routes/` (es. `+page.svelte`). Ogni voce/sottovoce della sidebar corrisponde a una route. |
 
 ## Profilo e dati allenatore
@@ -68,11 +67,9 @@ Definisce i termini di dominio e tecnici usati in PokeTracker. Usare sempre ques
 | **Knowledge DB / Database conoscenza** | Base di dati (es. SQLite) con informazioni statiche su Pokemon, mosse, nature, ecc. Usata da wiki e UI. Vedi [knowledge-database](./knowledge-database.md). |
 | **Invoke** | Chiamata da frontend a comando Tauri (`invoke('command_name', { ... })`). |
 | **Comando (Tauri)** | Funzione Rust esposta al frontend tramite Tauri; entry point per logica backend. |
-| **Catalog (UI)** | Elenco primitivi e compositi UI riutilizzabili. Fonte: [ui-component-catalog](./ui-component-catalog.md). |
+| **Catalog** | Elenco componenti riutilizzabili (primitivi e compositi). Path: `lib/components/ui/`. |
 | **Reuse-first** | Regola: prima controllare il catalog; se esiste un primitivo/composito adatto, usarlo; creare nuovo solo se manca. |
 
 ## Note
 
-- Per layout e navigazione: [ui-ux-design](./ui-ux-design.md).
 - Per struttura progetto: [project-structure](./project-structure.md).
-- Per primitivi e catalog: [ui-primitives-standard](../standards/ui-primitives-standard.md), [ui-component-catalog](./ui-component-catalog.md).

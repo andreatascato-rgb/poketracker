@@ -102,10 +102,6 @@ Sezione dell'app per gestire e monitorare l'app autonomamente, senza assistenza 
 
 Vedi [self-management.md](./self-management.md) per dettagli completi.
 
-## Design UI/UX
-
-Vedi [ui-ux-design.md](./ui-ux-design.md) per i requisiti di design e stile dell'app.
-
 ## Altre Features
 
 Altre features verranno aggiunte qui man mano che vengono definite.

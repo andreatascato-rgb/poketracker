@@ -11,25 +11,16 @@ Mappa query dell'utente alle procedure corrispondenti. Consulta questa mappa per
 - Query: "bootstrap", "avvia progetto", "setup iniziale", "prima implementazione", "init progetto", "crea progetto da zero", "first implementation", "da zero", "inizializza progetto", "scaffold", "crea app tauri", "inizializza", "avvia da zero"
 - Procedure: `docs/procedures/workflow/project-bootstrap.md`
 
-### Stile / Design Tokens / Tema
-
-- Query: "applica stile", "design tokens", "aggiungi tema", "tema dark", "design system", "token", "stile componente", "CSS variables"
-- Procedure: `docs/procedures/workflow/ui-apply-style.md`
-
 ### Modifica Navigazione / Sidebar / Layout
 
 - Query: "aggiungi voce sidebar", "aggiungi voce menu", "modifica navigazione", "aggiungi sezione Profilo", "cambia ordine voci", "modifica layout", "aggiungi sottovoce Wiki", "rimuovi voce menu", "aggiungi voce Impostazioni"
 - Procedure: `docs/procedures/workflow/layout-navigation-change.md`
 
-### Primitivi UI / Elemento classico
-
-- Query: "crea pulsante", "crea input", "crea card", "crea badge", "aggiungi primitivo UI", "elemento classico UI", "crea Button", "crea Input", "crea componente pulsante", "crea icona pulsante", "crea link stile"
-- Procedure: `docs/procedures/svelte/ui-primitive-creation.md`
-
 ### Componenti Svelte
 
-- Query: "crea componente", "aggiungi componente", "nuovo componente", "component svelte", "svelte component", "aggiungi .svelte", "nuovo componente svelte", "crea .svelte", "creare componente", "aggiungere componente"
+- Query: "crea componente", "aggiungi componente", "nuovo componente", "component svelte", "svelte component", "aggiungi .svelte", "nuovo componente svelte", "crea .svelte", "creare componente", "aggiungere componente", "aggiungi componente UI", "componente UI", "aggiungi button", "aggiungi shadcn"
 - Procedure: `docs/procedures/svelte/component-creation.md`
+- Per componenti UI usare **obbligatoriamente** Tailwind + shadcn-svelte (componenti da `$lib/components/ui`); vedi `docs/standards/ui-stack-standard.md`.
 
 ### Store Svelte
 
@@ -40,16 +31,23 @@ Mappa query dell'utente alle procedure corrispondenti. Consulta questa mappa per
 
 - Query: "crea pagina", "nuova pagina", "aggiungi pagina", "crea route", "nuova route", "aggiungi route", "nuova view", "+page.svelte", "sveltekit route", "creare pagina", "aggiungere route"
 - Procedure: `docs/procedures/svelte/page-creation.md`
+- Per UI della pagina: `docs/standards/ui-stack-standard.md`, `docs/standards/design-system-standard.md`
 
 ### Form e Validazione
 
 - Query: "aggiungi form", "validazione form", "form schema", "validazione input form", "crea form", "form validation"
 - Procedure: `docs/procedures/svelte/form-creation.md`
+- Per UI del form (input, button, label): `docs/standards/ui-stack-standard.md`, `docs/standards/design-system-standard.md`
 
 ### Comandi Rust/Tauri
 
 - Query: "crea comando", "aggiungi comando", "nuovo comando", "tauri command", "rust command", "aggiungi invoke", "nuovo comando tauri", "tauri invoke", "creare comando", "aggiungere comando"
 - Procedure: `docs/procedures/rust/command-creation.md`
+
+### Comando che usa DB
+
+- Query: "comando che usa DB", "comando con query", "comando che legge/scrive DB", "aggiungi comando con database", "comando che usa SQLite", "comando con persistenza", "comando che accede al db"
+- Procedure: `docs/procedures/workflow/command-with-db.md`
 
 ### Nuove Feature
 
@@ -131,14 +129,24 @@ Mappa query dell'utente alle procedure corrispondenti. Consulta questa mappa per
 - Query: "aggiungi dipendenza", "aggiungi pacchetto", "npm install", "cargo add", "dotnet add", "aggiungi libreria", "install package", "aggiungi crate", "aggiungi nuget"
 - Procedure: `docs/procedures/workflow/dependency-add.md`
 
+### Integra libreria / Primo uso
+
+- Query: "integrazione libreria", "integrazione libreria X", "primo uso libreria", "setup libreria", "come usare libreria", "configura libreria", "integra pacchetto", "integra libreria"
+- Procedure: `docs/procedures/workflow/library-integration.md`
+
 ### Test
 
 - Query: "aggiungi test", "scrivi test", "nuovo test", "unit test", "integration test", "test case", "aggiungi unit test", "aggiungi test per"
 - Procedure: `docs/procedures/workflow/test-creation.md`
 
+### Estrai componente
+
+- Query: "estrai componente", "estrai in nuovo file", "spezza componente", "estrai blocco in componente", "estrai blocco in nuovo componente"
+- Procedure: `docs/procedures/workflow/extract-component.md`
+
 ### Refactoring
 
-- Query: "refactor", "refactoring", "ristruttura", "ristrutturazione", "migra codice", "pulizia codice", "estrai componente", "estrai funzione", "rinomina", "sposta file"
+- Query: "refactor", "refactoring", "ristruttura", "ristrutturazione", "migra codice", "pulizia codice", "estrai funzione", "rinomina", "sposta file"
 - Procedure: `docs/procedures/workflow/refactor.md`
 
 ### Creare/Modificare File Markdown
@@ -180,11 +188,11 @@ Se nessun pattern corrisponde alla query:
 - Non assumere che sia permesso procedere senza procedure
 - Proporre all'utente: (a) riformulare la query per matchare un pattern esistente, (b) creare una nuova procedure per quel tipo di azione, oppure (c) confermare esplicitamente di voler procedere senza procedure (con consapevolezza del rischio)
 
-**Se l'utente conferma di procedere senza procedure:** prima di implementare consultare obbligatoriamente `docs/standards/README.md` e gli standard lì elencati rilevanti per il dominio (es. UI → `ui-implementation-standard.md`, `ui-primitives-standard.md`, performance → `performance-standard.md`, sicurezza → `security-standard.md`, build/CI → `ci-cd-standard.md`). Per termini di dominio: `docs/project/glossary.md`. Per vista architettura: `docs/project/architecture-overview.md`.
+**Se l'utente conferma di procedere senza procedure:** prima di implementare consultare obbligatoriamente `docs/standards/README.md` e gli standard lì elencati rilevanti per il dominio (es. performance → `performance-standard.md`, sicurezza → `security-standard.md`, build/CI → `ci-cd-standard.md`). Per termini di dominio: `docs/project/glossary.md`. Per vista architettura: `docs/project/architecture-overview.md`.
 
 ## Note
 
 - Questa mappa deve essere aggiornata quando vengono aggiunte nuove procedure
 - Le cartelle `svelte/`, `rust/`, `workflow/` contengono le procedure rispettive
-- Per "crea pulsante/input/card/badge" usare **Primitivi UI** (`ui-primitive-creation.md`); per "crea componente" generico usare **Componenti Svelte** (`component-creation.md`), che richiama catalog e primitivi quando si tratta di UI
+- Per "crea componente" usare **Componenti Svelte** (`component-creation.md`)
 - In caso di overlap (es. "aggiungi feature X" può richiedere componenti + comandi), usare la procedure **più specifica** per l’azione principale; per feature ampie usare `new-feature.md` che richiama le altre

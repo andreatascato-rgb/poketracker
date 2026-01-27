@@ -38,7 +38,6 @@ Definisce i requisiti minimi di accessibilità per PokeTracker (WCAG-oriented): 
 - [SvelteKit – Accessibility](https://kit.svelte.dev/docs/accessibility)
 - [Svelte – Accessibility warnings](https://svelte.dev/docs/accessibility-warnings)
 - [WCAG 2.1](https://www.w3.org/WAI/WCAG21/quickref/)
-- [ui-implementation-standard](./ui-implementation-standard.md) — token, contrasto
 
 ## Data Decisione
 

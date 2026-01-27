@@ -2,7 +2,9 @@
 
 ## Obiettivo
 
-Definisce come aggiungere, rimuovere o modificare voci e sottovoci della sidebar e come mantenere coerenza con layout Top Bar + Sidebar + Area contenuto. Rispetta [ui-ux-design](../../project/ui-ux-design.md) (ordine voci, max due livelli).
+Definisce come aggiungere, rimuovere o modificare voci e sottovoci della sidebar e come mantenere coerenza con layout Top Bar + Sidebar + Area contenuto. **Layout e dimensioni seguono lo standard Poketrack:** Top Bar 48px, Sidebar 280px (48px collassata), area contenuto flex 1; scroll solo nell'area contenuto. Ordine voci: Profilo → Editor → Wiki → Impostazioni; max due livelli.
+
+Riferimento visivo e token: [poketrack-reference.md](../../project/poketrack-reference.md), [design-system-standard.md](../../standards/design-system-standard.md).
 
 ## Quando Usare Questa Procedure
 
@@ -16,37 +18,48 @@ Completamento integrale della checklist obbligatorio prima di proporre implement
 
 ## File da Leggere PRIMA
 
-1. **UI/UX Design – Sidebar e layout**: `docs/project/ui-ux-design.md:73-111`
-   - Layout tre parti (Top Bar, Sidebar, Area contenuto): righe 73-78
-   - Sidebar: voci, sottovoci, ordine (Profilo → Editor → Wiki → Impostazioni): righe 95-106
-   - Area contenuto: righe 108-111
+1. **Struttura progetto – Layout e routes**: `docs/project/project-structure.md:119-164`
+   - Componenti layout: `lib/components/layout/` (TopBar.svelte, Sidebar.svelte, ContentArea.svelte) — righe 119-122
+   - Route SvelteKit: `src/routes/` — righe 153-164
 
-2. **Struttura progetto – Layout**: `docs/project/project-structure.md:117-122`
-   - Componenti layout: `lib/components/layout/` (TopBar.svelte, Sidebar.svelte, ContentArea.svelte)
-   - Route e contenuto per ogni voce
+2. **Glossario**: `docs/project/glossary.md` — Termini Sidebar, Top Bar, Area contenuto, Route, Profilo, Editor, Wiki, Impostazioni
 
-3. **Glossario**: `docs/project/glossary.md` — Termini Sidebar, Top Bar, Area contenuto, Route, Profilo, Editor, Wiki, Impostazioni
-
-4. **Se si aggiunge una nuova pagina**: procedure [page-creation](../svelte/page-creation.md) per route e `+page.svelte`
+3. **Se si aggiunge una nuova pagina**: procedure [page-creation](../svelte/page-creation.md) per route e `+page.svelte`
 
 ## Checklist Obbligatoria
 
-1. [ ] Leggi `docs/project/ui-ux-design.md:95-106` — Sidebar: voci e sottovoci attuali; **ordine fissato** Profilo → Editor → Wiki → Impostazioni; **max due livelli** (voce → sottovoci)
-2. [ ] Se **nuova voce** sidebar: valutare se rispetta l’ordine e le note in ui-ux-design; aggiungere la voce nella tabella Sidebar di ui-ux-design e aggiornare il codice di `Sidebar.svelte` (o componente equivalente)
-3. [ ] Se **nuova sottovoce**: rispettare max due livelli; allineare a [features.md](../../project/features.md) e ai doc di feature (es. [wiki-offline.md](../../project/wiki-offline.md) per sottosezioni Wiki)
-4. [ ] Componenti layout in `src/lib/components/layout/`: TopBar, Sidebar, ContentArea; modifiche alla nav vanno in Sidebar (e eventuali route)
-5. [ ] Se la nuova voce/sottovoce richiede una **nuova pagina**: seguire [page-creation](../svelte/page-creation.md) per `src/routes/.../+page.svelte` e collegare la route alla sidebar
-6. [ ] Layout: Top Bar e Sidebar **fuori** dal contenitore scrollabile; scroll solo in Area contenuto (`ui-ux-design.md:114-122`)
+1. [ ] **Layout shell standard Poketrack:** Top Bar **48px**, Sidebar **280px** (48px se collassata), area contenuto flex 1; scroll solo in area contenuto. Vedi [design-system-standard.md](../../standards/design-system-standard.md) e [poketrack-reference.md](../../project/poketrack-reference.md).
+2. [ ] Sidebar: **ordine fissato** Profilo → Editor → Wiki → Impostazioni; **max due livelli** (voce → sottovoci)
+3. [ ] Se **nuova voce** sidebar: rispettare l’ordine; aggiornare il codice di Sidebar (o componente equivalente)
+4. [ ] Se **nuova sottovoce**: rispettare max due livelli; allineare a [features.md](../../project/features.md) e ai doc di feature (es. [wiki-offline.md](../../project/wiki-offline.md) per sottosezioni Wiki)
+5. [ ] Componenti layout in `src/lib/components/layout/` o layout in `src/routes/+layout.svelte`; modifiche alla nav vanno in Sidebar (e eventuali route)
+6. [ ] Se la nuova voce/sottovoce richiede una **nuova pagina**: seguire [page-creation](../svelte/page-creation.md) per `src/routes/.../+page.svelte` e collegare la route alla sidebar
+7. [ ] Rispettare [design-system-standard.md](../../standards/design-system-standard.md) per token, tipografia, icone, dimensioni (standard Poketrack)
+8. [ ] **Stack UI obbligatorio:** usare Tailwind e, dove possibile, componenti da [ui-stack-standard.md](../../standards/ui-stack-standard.md). Nuovi elementi di layout/sidebar non devono introdurre CSS custom o componenti UI da zero.
+
+## Verifica obbligatoria dopo modifiche al layout
+
+Per evitare che l’app si veda “vuota” (senza sidebar né pulsante profilo), **dopo ogni modifica** a top bar, sidebar o `+layout.svelte`:
+
+1. [ ] **Dev browser:** `npm run dev` → aprire `http://localhost:1420` → verificare che si vedano **Top Bar** (con pulsante profilo a destra), **Sidebar** (con voci e icone), **Area contenuto**.
+2. [ ] **Dev Tauri:** `tauri dev` → verificare che nella finestra dell’app si vedano gli stessi elementi (Top Bar, Sidebar, Area contenuto).
+3. [ ] **Console:** controllare la console (browser o DevTools Tauri) per errori JavaScript; nessun errore a runtime che blocchi il layout.
+
+Se uno di questi fallisce, non considerare l’implementazione completata. Per analisi casi “layout non visibile”: [analisi-layout-non-visibile.md](../../temp/analisi-layout-non-visibile.md).
+
+**Nota:** l’uso di accessi “sicuri” a `$page` (es. `$page?.url?.pathname ?? ""`) **non** risolve il problema “layout non visibile”; la causa va cercata altrove. Non documentare quella modifica come fix.
 
 ## Riferimenti Standard
 
-- `docs/project/ui-ux-design.md:73-122` — Layout, Sidebar, ordine voci, scroll
-- `docs/project/project-structure.md:117-135` — Componenti layout, routes
-- `docs/project/glossary.md` — Termini navigazione e layout
-- `docs/standards/ui-implementation-standard.md:21-23` — Layout e scroll
+- [poketrack-reference.md](../../project/poketrack-reference.md) — Cosa adottiamo da Poketrack (layout, token)
+- [design-system-standard.md](../../standards/design-system-standard.md) — Token, dimensioni layout, stile sidebar/header
+- [ui-stack-standard.md](../../standards/ui-stack-standard.md) — Stack UI (Tailwind + shadcn-svelte)
+- [project-structure.md](../../project/project-structure.md) — Componenti layout, routes SvelteKit
+- [glossary.md](../../project/glossary.md) — Termini navigazione e layout
 
 ## Note
 
-- **Ordine voci:** Profilo → Editor → Wiki → Impostazioni (prima “il mio allenatore”, poi strumenti, riferimento, sistema). Non invertire senza aggiornare ui-ux-design.
+- **Ordine voci:** Profilo → Editor → Wiki → Impostazioni (prima “il mio allenatore”, poi strumenti, riferimento, sistema).
 - Per “crea pagina” senza toccare la sidebar usare [page-creation](../svelte/page-creation.md).
-- Per “crea componente” (es. nuovo blocco nella Top Bar) usare [component-creation](../svelte/component-creation.md) e [ui-primitive-creation](../svelte/ui-primitive-creation.md) se è un elemento UI classico.
+- Per “crea componente” (es. nuovo blocco nella Top Bar) usare [component-creation](../svelte/component-creation.md).
+

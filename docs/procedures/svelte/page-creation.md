@@ -16,28 +16,31 @@ Completamento integrale della checklist obbligatorio prima di proporre implement
 
 ## File da Leggere PRIMA
 
-1. **SvelteKit + Tauri**: `docs/standards/svelte-sveltekit-standard.md:48-55`
-   - Adapter-static, SSR false, prerender: righe 48-54
+1. **SvelteKit + Tauri**: `docs/standards/svelte-sveltekit-standard.md:54-59`
+   - Adapter-static, SSR false, prerender: sezione «SvelteKit + Tauri (SPA)»
 
 2. **Tauri 2 frontend**: `docs/standards/tauri2-standard.md:28-54`
    - `frontendDist`, devUrl, build: righe 44-54
 
-3. **Struttura progetto**: `docs/project/project-structure.md:111-155`
+3. **Struttura progetto**: `docs/project/project-structure.md:116-166`
    - `lib/components/`, `lib/stores/`, `lib/services/`; routing SvelteKit in `src/routes/`
 
 ## Checklist Obbligatoria
 
-1. [ ] Leggi `docs/standards/svelte-sveltekit-standard.md:48-54` — Nessun prerender per pagine che usano Tauri; layout root con `ssr = false`
+1. [ ] Leggi `docs/standards/svelte-sveltekit-standard.md:54-59` — Nessun prerender per pagine che usano Tauri; layout root con `ssr = false`
 2. [ ] Verifica `docs/project/project-structure.md` — Crea `src/routes/<path>/+page.svelte` (e eventuale `+page.ts` per load); rispetta convenzione SvelteKit
 3. [ ] Per pagine che usano `invoke` o API Tauri: non prerenderare; usare `export const prerender = false` se necessario (`svelte-sveltekit-standard.md:51`)
 4. [ ] Import componenti da `$lib/components/...`; per dati da backend usare load in `+page.ts` con `invoke` o servizi (`typescript-frontend-standard.md:36-62`)
 5. [ ] Rispetta runes e `$props()` nei componenti della pagina (`svelte-sveltekit-standard.md:13-41`)
+6. [ ] **UI/stili:** per contenuto visibile della pagina usare Tailwind e componenti da `$lib/components/ui`; rispettare `docs/standards/ui-stack-standard.md` e `docs/standards/design-system-standard.md` (moderno, professionale, dark, no infantile/banale)
 
 ## Riferimenti Standard
 
-- `docs/standards/svelte-sveltekit-standard.md:48-55` — Adapter, SSR, prerender
+- `docs/standards/ui-stack-standard.md` — Stack UI (Tailwind + shadcn-svelte) per pagine con UI
+- `docs/standards/design-system-standard.md` — Stile, token, tipografia (moderno, professionale, dark)
+- `docs/standards/svelte-sveltekit-standard.md:54-59` — Adapter, SSR, prerender
 - `docs/standards/tauri2-standard.md:28-54` — Build frontend per Tauri
-- `docs/project/project-structure.md:111-155` — Struttura frontend e routes
+- `docs/project/project-structure.md:116-166` — Struttura frontend e routes
 
 ## Note
 

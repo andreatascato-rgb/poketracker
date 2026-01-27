@@ -11,6 +11,7 @@ docs/
 ├── standards/     # Standard e convenzioni del progetto
 ├── procedures/    # Procedure operative per azioni specifiche
 ├── project/       # Informazioni sul progetto e applicazione
+├── temp/          # File temporanei (valutazioni, confronti, bozze)
 └── README.md      # Questo file
 ```
 
@@ -40,6 +41,7 @@ Le informazioni sul progetto e sull'applicazione sono in `docs/project/`. Vedi *
 - **[overview.md](./project/overview.md)** - Panoramica generale dell'app
 - **[glossary.md](./project/glossary.md)** - Glossario termini di dominio e tecnici
 - **[architecture-overview.md](./project/architecture-overview.md)** - Vista architettura (stack, flusso dati)
+- **[offline-data-strategy.md](./project/offline-data-strategy.md)** - Strategia offline e dati locali
 - **[core-functionality.md](./project/core-functionality.md)** - Funzionalità core dell'app
 - **[features.md](./project/features.md)** - Elenco e documentazione delle features
 - **[pokedex-personal.md](./project/pokedex-personal.md)** - Feature: Pokedex Personale
@@ -47,8 +49,6 @@ Le informazioni sul progetto e sull'applicazione sono in `docs/project/`. Vedi *
 - **[save-editor.md](./project/save-editor.md)** - Feature: Editor Salvataggi (PKHeX-like)
 - **[multi-profile.md](./project/multi-profile.md)** - Feature: Gestione Multi-Profilo
 - **[self-management.md](./project/self-management.md)** - Feature: Gestione Interna App
-- **[ui-ux-design.md](./project/ui-ux-design.md)** - Design UI/UX e Stile
-- **[ui-component-catalog.md](./project/ui-component-catalog.md)** - Catalog primitivi e compositi UI (reuse-first)
 - **[database-storage.md](./project/database-storage.md)** - Database e Storage
 - **[parser-architecture.md](./project/parser-architecture.md)** - Architettura Parser
 - **[knowledge-database.md](./project/knowledge-database.md)** - Database Conoscenza
@@ -58,6 +58,10 @@ Le informazioni sul progetto e sull'applicazione sono in `docs/project/`. Vedi *
 - **[deployment.md](./project/deployment.md)** - Deployment e Distribuzione
 - **[performance.md](./project/performance.md)** - Ottimizzazione Performance
 - **[security.md](./project/security.md)** - Sicurezza
+
+## File temporanei
+
+Valutazioni, confronti, bozze e analisi di passaggio vanno in **[temp/](./temp/README.md)**. Quando non servono più, i file in `temp/` possono essere eliminati.
 
 ## Come Usare
 

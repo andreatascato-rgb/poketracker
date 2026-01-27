@@ -13,12 +13,13 @@ Tutti i file markdown di documentazione devono essere organizzati nella cartella
 ```
 docs/
 ├── standards/     # Standard e convenzioni del progetto (README.md)
-├── procedures/    # Procedure operative (INDEX.md)
+├── procedures/   # Procedure operative (INDEX.md)
 ├── project/      # Informazioni su progetto e applicazione (README.md)
-├── ideas/         # Idee, brainstorming, feature requests
+├── temp/         # File temporanei: valutazioni, confronti, bozze (README.md)
+├── ideas/        # Idee, brainstorming, feature requests
 ├── architecture/ # Documentazione architetturale
-├── api/           # Documentazione API
-└── ...            # Altre sottocartelle secondo necessità
+├── api/          # Documentazione API
+└── ...           # Altre sottocartelle secondo necessità
 ```
 
 ## Regole
@@ -37,6 +38,7 @@ Ogni sottocartella principale di `docs/` deve avere un file di orientamento, cos
 | **standards/** | `README.md` | Obiettivo, come funzionano gli standard, lista standard |
 | **project/** | `README.md` | Obiettivo, entry point, elenco/raggruppamento documenti |
 | **procedures/** | `INDEX.md` | Mappa query utente → procedure corrispondenti |
+| **temp/** | `README.md` | File temporanei: valutazioni, confronti, bozze (eliminabili) |
 
 - **README.md**: descrive la cartella, elenca i documenti, indica entry point o gruppi.
 - **INDEX.md**: usato dove serve una mappa per tipo di uso (es. query → procedure).

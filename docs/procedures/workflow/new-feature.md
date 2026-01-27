@@ -23,27 +23,32 @@ Completamento integrale della checklist obbligatorio prima di proporre implement
    - Dove va documentazione e convenzioni
 
 3. **Standard pertinenti**: in base al layer scelto
-   - Frontend UI: `docs/standards/svelte-sveltekit-standard.md`, `docs/standards/typescript-frontend-standard.md`
+   - Frontend UI: `docs/standards/svelte-sveltekit-standard.md`, `docs/standards/typescript-frontend-standard.md`, `docs/standards/ui-stack-standard.md` (Tailwind + shadcn-svelte), `docs/standards/design-system-standard.md` (stile: moderno, professionale, dark, no infantile/banale)
    - Comandi/backend: `docs/standards/rust-tauri-standard.md`, `docs/project/project-structure.md` (commands, services)
 
 ## Checklist Obbligatoria
 
 1. [ ] Leggi `docs/project/project-structure.md:1-110` — Identifica quali layer tocca la feature (solo frontend, solo backend, entrambi)
-2. [ ] Per ogni layer, individua la procedure specifica in `docs/procedures/INDEX.md`:
+2. [ ] **Piano prima di proporre:** Scrivi un breve piano (pseudo-codice o elenco) delle modifiche previste a Rust, Svelte e file di config (tauri, capabilities, ecc.) prima di proporre il diff. Vedi [coding-best-practices](../../standards/coding-best-practices.md) § Workflow.
+3. [ ] Per ogni layer (procedure specifiche), individua la procedure specifica in `docs/procedures/INDEX.md`:
    - Nuovi componenti → `docs/procedures/svelte/component-creation.md`
    - Nuovi store → `docs/procedures/svelte/store-setup.md`
    - Nuove pagine/route → `docs/procedures/svelte/page-creation.md`
    - Nuovi comandi Tauri → `docs/procedures/rust/command-creation.md`
    - Integrazione sidecar → `docs/procedures/workflow/sidecar-setup.md`
-3. [ ] Applica le procedure identificate nell’ordine logico (es. prima command, poi componente che invoca)
-4. [ ] Verifica tutti gli standard referenziati nelle procedure usate
-5. [ ] Se la feature richiede nuovi file in `docs/` (guide, standard): usare `docs/procedures/markdown-creation.md`
+4. [ ] Applica le procedure identificate nell’ordine logico (es. prima command, poi componente che invoca)
+5. [ ] Verifica tutti gli standard referenziati nelle procedure usate
+6. [ ] **Verifica compilazione:** Dopo modifiche a `src-tauri/`, esegui `cargo check` (o `cargo build` / `pnpm tauri build`) e considera il task concluso solo se la build passa. Vedi [coding-best-practices](../../standards/coding-best-practices.md) § Workflow.
+7. [ ] Se la feature richiede nuovi file in `docs/` (guide, standard): usare `docs/procedures/markdown-creation.md`
 
 ## Riferimenti Standard
 
 - `docs/project/project-structure.md:1-110` — Layer e cartelle
+- `docs/project/priorities.md` — Ordine priorità in caso di trade-off
 - `docs/procedures/INDEX.md` — Mappa query → procedure (component-creation, store-setup, command-creation, sidecar-setup, page-creation)
 - `docs/standards/file-organization.md:1-44` — Documentazione in docs/
+- `docs/standards/ui-stack-standard.md` — Se la feature tocca UI: Tailwind + shadcn-svelte, componenti da `$lib/components/ui`
+- `docs/standards/design-system-standard.md` — Stile UI: moderno, professionale, dark, no infantile/banale
 
 ## Note
 

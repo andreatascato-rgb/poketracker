@@ -36,8 +36,7 @@ Descrive la vista tecnica d'insieme: stack, flusso dati e dove vivono le respons
 | **Profili, cartelle salvataggi, Pokedex per profilo** | Backend + DB | `profiles/`, `db/repositories/`, comandi `profile`, `pokedex`. |
 | **File `.sav`**, parsing | Sidecar + Rust | Sidecar C# (PKHeX); Rust in `parser/` chiama sidecar e converte risultati. Vedi [parser-architecture](./parser-architecture.md). |
 | **Knowledge (Pokemon, mosse, nature, wiki)** | Backend + DB / risorse | Knowledge DB o bundle; comandi `wiki`; frontend legge via invoke. Vedi [knowledge-database](./knowledge-database.md). |
-| **Navigazione, layout** | Frontend | `lib/components/layout/` (TopBar, Sidebar, ContentArea); route in `src/routes/`. Vedi [ui-ux-design](./ui-ux-design.md). |
-| **Primitivi UI** | Frontend | `lib/components/ui/`. Vedi [ui-component-catalog](./ui-component-catalog.md). |
+| **Navigazione, layout** | Frontend | `lib/components/layout/` (TopBar, Sidebar, ContentArea); route in `src/routes/`. |
 
 ## Comunicazione Frontend ↔ Backend
 

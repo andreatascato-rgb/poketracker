@@ -63,7 +63,8 @@ Definisce strict mode, path alias, tipi condivisi con Rust e pattern di invocazi
 
 ## Tipi condivisi con Rust
 
-Due approcci:
+- **Non** usare **`any`** per argomenti o ritorno di `invoke`: sempre interfacce/tipi espliciti che rispecchiano le struct Rust (parametri e return type dei command devono essere tipizzati).
+- Due approcci:
 
 ### Opzione A: Generazione automatica
 

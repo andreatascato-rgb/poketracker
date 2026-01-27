@@ -47,6 +47,10 @@ Svelte 5 sostituisce la reattività implicita con le **runes**. Preferirle sempr
 - **`onMount`** resta disponibile ma in migrazione viene mappato su legacy; per nuovo codice usare `$effect` con eventuale teardown.
 - Per eventi su `window`: usare **`<svelte:window>`** (binding e listener con cleanup automatico).
 
+## Separazione logica (UI vs business)
+
+- I file **`.svelte`** contengono solo **UI**, stato locale (runes) e **chiamate a servizi/store**; la **logica di business** resta in Rust ed è esposta tramite command. I componenti usano i servizi (che incapsulano `invoke`), non `invoke` sparso nei template. Vedi [architecture-overview](../project/architecture-overview.md), [typescript-frontend-standard](./typescript-frontend-standard.md).
+
 ## SvelteKit + Tauri (SPA)
 
 - **Adapter:** `@sveltejs/adapter-static` con `fallback: 'index.html'`.

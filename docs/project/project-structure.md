@@ -28,15 +28,15 @@ poketracker/
 │   │   └── ParserService.cs
 │   └── PokeTracker.Parser.csproj
 │
-├── src/                       # Frontend Svelte
-│   ├── lib/
+├── src/                       # Frontend Svelte/SvelteKit
+│   ├── lib/                   # Codice condiviso (componenti, store, servizi)
 │   │   ├── components/        # Componenti Svelte
 │   │   ├── stores/            # Svelte stores
-│   │   ├── routes/            # Routing (se usi SvelteKit)
-│   │   ├── services/          # Servizi frontend
+│   │   ├── services/          # Servizi frontend (wrapper invoke)
 │   │   └── utils/             # Utility frontend
-│   ├── App.svelte
-│   └── main.ts
+│   ├── routes/                # Routing SvelteKit (+page.svelte, +layout.svelte)
+│   ├── app.html
+│   └── (entry SvelteKit)
 │
 ├── docs/                      # Documentazione (già presente)
 ├── resources/                 # Risorse app (icone, immagini)
@@ -115,7 +115,7 @@ src-tauri/src/
 src/
 ├── lib/
 │   ├── components/            # Componenti Svelte
-│   │   ├── ui/                # Primitivi UI (Button, Input, Card, Badge, …) — vedi ui-primitives-standard, ui-component-catalog
+│   │   ├── ui/                # Componenti shadcn-svelte (Button, Input, Card, …); aggiunti con npx shadcn-svelte@latest add <nome>
 │   │   ├── layout/
 │   │   │   ├── TopBar.svelte
 │   │   │   ├── Sidebar.svelte
@@ -140,7 +140,7 @@ src/
 │   │   ├── wiki.ts           # Store Wiki
 │   │   └── app.ts            # Store app state
 │   │
-│   ├── services/              # Servizi frontend
+│   ├── services/              # Servizi frontend (wrapper invoke)
 │   │   ├── tauri.ts          # Wrapper comandi Tauri
 │   │   ├── profile.ts        # Servizio profili
 │   │   ├── pokedex.ts        # Servizio Pokedex
@@ -150,8 +150,20 @@ src/
 │       ├── types.ts          # TypeScript types
 │       └── helpers.ts        # Helper functions
 │
-├── App.svelte                 # Root component
-└── main.ts                    # Entry point
+├── routes/                    # Routing SvelteKit (vedi glossary: Route)
+│   ├── +layout.svelte        # Layout root (ssr = false per Tauri)
+│   ├── +layout.ts            # Load condiviso (opzionale)
+│   ├── +page.svelte          # Home / default
+│   ├── profilo/              # Route /profilo
+│   │   └── +page.svelte
+│   ├── editor/
+│   │   └── +page.svelte
+│   ├── wiki/
+│   │   └── +page.svelte
+│   └── impostazioni/
+│       └── +page.svelte
+│
+└── app.html                   # Shell HTML (entry SvelteKit)
 ```
 
 ## Sidecar C# (src-sidecar/)
@@ -200,6 +212,13 @@ src-sidecar/
 - Componenti: `PascalCase.svelte`
 - Stores: `camelCase.ts`
 - Servizi: `camelCase.ts`
+
+## Sviluppo locale (dev)
+
+- **Avvio:** `npm run tauri dev`. Tenere il processo in esecuzione e **non chiudere** la finestra dell’app.
+- **Task Cursor/VS Code:** è definito il task **"Tauri Dev"** in `.vscode/tasks.json` (cartella gitignored). Per usarlo: *Run Task* → *Tauri Dev*. Evita di digitare il comando a ogni sessione.
+- **Modifiche frontend (Svelte, CSS, TS):** Vite invia aggiornamenti via HMR. Se in Tauri non vedi le modifiche, usare il **pulsante Ricarica** (icona refresh) in top bar a destra — visibile solo in dev — per ricaricare la WebView senza riavviare `tauri dev`.
+- **Modifiche Rust (`src-tauri`):** Tauri osserva i file, ricompila e riavvia l’app; la finestra si chiude e riapre da sola.
 
 ## Note
 

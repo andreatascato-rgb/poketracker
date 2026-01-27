@@ -15,10 +15,16 @@ Definisce edition, crates, error handling, logging e uso del database nel backen
 - **thiserror**: per definire tipi di errore domain-specific con `#[derive(thiserror::Error)]` e messaggi chiari.
 - **anyhow**: per propagare errori eterogenei con `?` in funzioni helper; **non** usare `anyhow::Result` come tipo di ritorno dei command senza convertirlo (vedi Error handling).
 
+## Tipi che attraversano IPC
+
+- Ogni **struct o tipo** usato come parametro o ritorno di un command deve avere **`#[derive(serde::Serialize, serde::Deserialize)]`** (e `Clone`/`Debug` se servono).
+- Garantisce che il bridge Rust ↔ frontend sia tipizzato e coerente; il frontend definisce interfacce TypeScript che rispecchiano queste struct (vedi [typescript-frontend-standard](./typescript-frontend-standard.md)).
+
 ## Error handling nei command
 
 - I command devono restituire **`Result<T, E>`** con **`E: Serialize`** (e compatibile con il layer IPC Tauri).
 - **Non** fare `panic!` nei command: in sync crasano l’app; in async è comunque sconsigliato.
+- **Non** usare **`unwrap()`** né **`expect()`** nel codice dei command né nel codice da essi chiamato (service, repo, helper): un panic crasherebbe l'app. Usare **`?`** e **`.map_err(|e| e.to_string())`** (o altro `E: Serialize`) e far risalire l'errore al frontend.
 - Opzioni per `E`:
   1. **`Result<T, String>`**: ` Err(e.to_string())` o `map_err(|e| e.to_string())` — semplice, messaggio testuale al frontend.
   2. **Enum custom**: definire un enum di errori, implementare `serde::Serialize` (es. serializzare come stringa o come oggetto `{ code, message }`) e usarlo come `E`.

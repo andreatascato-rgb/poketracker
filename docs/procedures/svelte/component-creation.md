@@ -16,42 +16,41 @@ Completamento integrale della checklist obbligatorio prima di proporre implement
 
 ## File da Leggere PRIMA
 
-1. **Se è un elemento UI classico** (pulsante, input, card, badge, icona, link, …): usare la procedure [ui-primitive-creation.md](./ui-primitive-creation.md); non questa. Verificare prima [ui-component-catalog](../../project/ui-component-catalog.md) e [ui-primitives-standard](../../standards/ui-primitives-standard.md).
-
-2. **Svelte 5 / SvelteKit**: `docs/standards/svelte-sveltekit-standard.md:1-80`
+1. **Svelte 5 / SvelteKit**: `docs/standards/svelte-sveltekit-standard.md:1-80`
    - Runes `$state`, `$derived`, `$effect`: righe 13-31
    - Props `$props()`, `$bindable()`: righe 33-41
    - Preferenza `$effect` vs onMount: righe 43-47
 
-3. **Struttura progetto**: `docs/project/project-structure.md:111-135`
-   - Cartella `lib/components/` e sottocartelle (layout, profile, pokedex, wiki, editor, management, **ui** per primitivi)
+2. **Struttura progetto**: `docs/project/project-structure.md:117-136`
+   - Cartella `lib/components/` e sottocartelle (ui, layout, profile, pokedex, wiki, editor, management)
 
-4. **TypeScript/Frontend**: `docs/standards/typescript-frontend-standard.md:21-34`
+3. **TypeScript/Frontend**: `docs/standards/typescript-frontend-standard.md:21-34`
    - Path alias `$lib`, `$components` se configurati
 
-5. **Componenti UI:** prima di introdurre stili ad hoc, verificare [ui-component-catalog](../../project/ui-component-catalog.md) e [ui-primitives-standard](../../standards/ui-primitives-standard.md); preferire composizione da primitivi esistenti. Se si introduce un nuovo primitivo, seguire [ui-primitive-creation.md](./ui-primitive-creation.md) e aggiornare il catalog.
+4. **Se il componente è UI**: `docs/standards/ui-stack-standard.md` — Stack obbligatorio Tailwind + shadcn-svelte; usare componenti da `$lib/components/ui` (Button, Input, Card, ecc.) quando disponibili; non introdurre CSS custom o componenti UI da zero.
 
 ## Checklist Obbligatoria
 
 1. [ ] Leggi `docs/standards/svelte-sveltekit-standard.md:13-31` — Usa runes (`$state`, `$derived`, `$effect`) per reattività; niente `let` reattivo senza runes nei nuovi componenti
 2. [ ] Leggi `docs/standards/svelte-sveltekit-standard.md:33-41` — Props con `$props()`; per two-way usare `$bindable()`
-3. [ ] Verifica `docs/project/project-structure.md:117-135` — Crea il file in `src/lib/components/<dominio>/NomeComponente.svelte` (es. `pokedex/PokemonCard.svelte`); usa PascalCase per il file
+3. [ ] Verifica `docs/project/project-structure.md:117-136` — Crea il file in `src/lib/components/<dominio>/NomeComponente.svelte` (es. `pokedex/PokemonCard.svelte`); usa PascalCase per il file
 4. [ ] Per effetti (interval, listener, subscribe): usare `$effect` con funzione di cleanup in return (`svelte-sveltekit-standard.md:24-30`)
 5. [ ] Per eventi su `window`: usare `<svelte:window>` e binding/listener con cleanup (`svelte-sveltekit-standard.md:46-47`)
 6. [ ] Import da `$lib/...` o alias configurati (`typescript-frontend-standard.md:21-34`)
 7. [ ] Se il componente invoca comandi Tauri: usare `invoke` da `@tauri-apps/api/core` e `try/catch` (`typescript-frontend-standard.md:36-62`)
+8. [ ] **Se il componente è UI visibile:** leggere `docs/standards/ui-stack-standard.md`; usare Tailwind (classi utility) e componenti da `$lib/components/ui` (Button, Input, Card, ecc.) quando disponibili; non introdurre CSS custom o componenti UI da zero al posto di Tailwind/shadcn
 
 ## Riferimenti Standard
 
+- `docs/standards/ui-stack-standard.md` — Se il componente è UI: usare Tailwind + shadcn-svelte, best practice e anti-pattern
+- `docs/standards/design-system-standard.md` — Se il componente è UI visibile: token, tipografia, icone, stile (moderno, professionale, dark)
+- `docs/standards/versioni-stack-standard.md` — Versioni Svelte 5, comandi esatti, anti-pattern (non usare `$:`, `let` reattivo, `export let`)
 - `docs/standards/svelte-sveltekit-standard.md:1-80` — Runes, props, $effect, adapter
-- `docs/project/project-structure.md:111-135` — Dove creare componenti
+- `docs/project/project-structure.md:117-136` — Dove creare componenti
 - `docs/standards/typescript-frontend-standard.md:1-70` — Alias, invoke, errori
-- `docs/standards/ui-primitives-standard.md` — Primitivi, catalog, reuse-first (per componenti UI)
-- `docs/project/ui-component-catalog.md` — Catalog primitivi e compositi
-
 ## Note
 
 - Naming file: PascalCase (es. `PokemonCard.svelte`).
-- Sottocartelle per dominio: layout, profile, pokedex, wiki, editor, management; **ui** per primitivi (Button, Input, Card, …).
-- Per elementi UI classici (pulsante, input, card, badge, …) usare la procedure [ui-primitive-creation.md](./ui-primitive-creation.md).
+- Sottocartelle per dominio: layout, profile, pokedex, wiki, editor, management.
+- **Componenti UI:** vanno in `layout/` (TopBar, Sidebar, ContentArea) o in altre sottocartelle di dominio; per elementi riutilizzabili (button, input, card) usare quelli in `$lib/components/ui` da shadcn-svelte; per nuovi primitivi UI usare `npx shadcn-svelte@latest add <nome>` e metterli in `$lib/components/ui/`.
 - Per aggiungere una nuova pagina/route SvelteKit, usare la procedure `page-creation.md` se disponibile, altrimenti rispettare `src/routes/` e `+page.svelte`/`+layout.svelte`.

@@ -36,6 +36,7 @@ Completamento integrale della checklist obbligatorio prima di proporre implement
 
 - `docs/standards/performance-standard.md:1-65` — Lazy load, virtualizzazione, DB, IPC
 - `docs/project/performance.md:1-70` — Strategia e target
+- `docs/project/priorities.md` — In trade-off (es. leggibilità vs velocità): correttezza > performance > funzionalità
 
 ## Note
 

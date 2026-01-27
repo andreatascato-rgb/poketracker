@@ -22,6 +22,8 @@ Tutti i file `.md` in questa cartella (escluso questo README) sono standard del 
 | [cursorrules-standard.md](./cursorrules-standard.md) | Standard per compilare `.cursorrules` |
 | [markdown-optimization.md](./markdown-optimization.md) | Markdown ottimizzato per AI |
 | [guide-structure.md](./guide-structure.md) | Struttura guide obbligatorie |
+| [versioni-stack-standard.md](./versioni-stack-standard.md) | Versioni stack, comandi verificati, anti-pattern (Svelte 5 / Tauri 2 / Rust) |
+| [coding-best-practices.md](./coding-best-practices.md) | Best practice bridge/panic-free/Svelte/workflow (checkpoint AI, rimandi agli standard) |
 | [tauri2-standard.md](./tauri2-standard.md) | Standard Tauri 2 |
 | [tauri2-sidecar-standard.md](./tauri2-sidecar-standard.md) | Standard sidecar Tauri 2 |
 | [rust-tauri-standard.md](./rust-tauri-standard.md) | Standard Rust/Tauri |
@@ -33,13 +35,13 @@ Tutti i file `.md` in questa cartella (escluso questo README) sono standard del 
 | [ci-cd-standard.md](./ci-cd-standard.md) | CI/CD, pipeline, quality gates, release flow |
 | [tauri2-permissions-standard.md](./tauri2-permissions-standard.md) | Permissions e capabilities Tauri 2 |
 | [database-migrations-standard.md](./database-migrations-standard.md) | Migrazioni DB SQLite (Rust) |
-| [ui-implementation-standard.md](./ui-implementation-standard.md) | Implementazione UI, design tokens, tema, layout |
-| [ui-primitives-standard.md](./ui-primitives-standard.md) | Primitivi UI, catalog, reuse-first, mappa elemento/standard |
 | [error-handling-standard.md](./error-handling-standard.md) | Gestione errori user-facing, toast, logging |
 | [forms-validation-standard.md](./forms-validation-standard.md) | Form e validazione (frontend + backend) |
 | [input-validation-standard.md](./input-validation-standard.md) | Validazione input e sicurezza (never trust frontend) |
 | [security-standard.md](./security-standard.md) | Sicurezza (file system, DB, sidecar, Tauri, dati sensibili) |
 | [accessibility-standard.md](./accessibility-standard.md) | Accessibilità (a11y), WCAG, ARIA |
+| [design-system-standard.md](./design-system-standard.md) | Design system: stile, token, tipografia, layout, icone (standard Poketrack, dark) |
+| [ui-stack-standard.md](./ui-stack-standard.md) | Stack UI: Tailwind + shadcn-svelte (bits-ui), best practice, anti-pattern |
 | [logging-standard.md](./logging-standard.md) | Logging backend e frontend, livelli, formato |
 | [i18n-standard.md](./i18n-standard.md) | Internazionalizzazione, traduzioni, locale |
 | [performance-standard.md](./performance-standard.md) | Performance, lazy load, virtualizzazione, DB, IPC |
