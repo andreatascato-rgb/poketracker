@@ -12,6 +12,7 @@ vite.config.js.timestamp-*
 # C# / .NET (sidecar)
 **/bin/
 **/obj/
+src-sidecar/publish/
 .vs/
 *.user
 *.suo
