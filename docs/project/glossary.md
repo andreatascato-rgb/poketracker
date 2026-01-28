@@ -8,8 +8,8 @@ Definisce i termini di dominio e tecnici usati in PokeTracker. Usare sempre ques
 
 | Termine | Significato |
 |---------|-------------|
-| **Top Bar** | Barra superiore fissa con controlli globali: aggiornamento app, avvisi, selettore profilo. |
-| **Sidebar** | Navigazione principale collassabile; voci: Profilo, Editor, Wiki, Impostazioni. Max due livelli (voce → sottovoci). |
+| **Top Bar** | Barra superiore fissa con controlli globali: aggiornamento app, icona notifiche (centro notifiche), selettore profilo. Vedi [notifications-and-error-archive](./notifications-and-error-archive.md) per notifiche. |
+| **Sidebar** | Navigazione principale collassabile; voci: Home, Allenatore (route /profilo), Editor, Wiki, Impostazioni. Pianificata: **Archivio** (sottosezione Errori). Max due livelli (voce → sottovoci). Etichetta «Allenatore» per la voce profilo. |
 | **Area contenuto** | Zona centrale scrollabile dove compare il contenuto della sezione attiva. Unico contesto con scroll. |
 | **Layout** | Struttura a tre parti: Top Bar + Sidebar + Area contenuto. |
 | **Componente base** | Componente riutilizzabile di base (Button, Input, Card, Badge, …). Path: `lib/components/ui/`. |
@@ -19,10 +19,11 @@ Definisce i termini di dominio e tecnici usati in PokeTracker. Usare sempre ques
 
 | Termine | Significato |
 |---------|-------------|
-| **Profilo** | Contesto utente/allenatore: dati isolati (Pokedex, percorso salvataggi, statistiche). Più profili = più “allenatori” sullo stesso PC. |
+| **Profilo** | Contesto utente/allenatore: dati isolati (Pokedex, percorsi salvataggi, statistiche). Più profili = più “allenatori” sullo stesso PC. |
 | **Allenatore** | Sinonimo di profilo in contesto gioco: l’entità i cui dati di gioco (save, Pokedex) sono gestiti dal profilo. |
 | **Selettore profilo** | Controllo in Top Bar per cambiare il profilo attivo; i dati in sidebar e area contenuto si aggiornano. |
-| **Cartella salvataggi** | Percorso sul filesystem dove l’app cerca i file `.sav` per il profilo attivo. Assegnato per profilo. |
+| **Cartella main** | Preferenza globale (impostata una volta): percorso dove l’utente tiene emulatori e save. Usata solo come comodo (es. apertura Sfoglia, suggerimenti). Opzionale; non è monitorata. |
+| **Percorsi salvataggi** | Elenco di percorsi sul filesystem scelti dall’utente e associati al profilo. L’app monitora solo questi path per cercare file `.sav` per quel profilo. Ogni profilo può avere più percorsi. |
 
 ## Salvataggio e editor
 
@@ -55,7 +56,10 @@ Definisce i termini di dominio e tecnici usati in PokeTracker. Usare sempre ques
 |---------|-------------|
 | **Impostazioni** | Voce sidebar: configurazione app e gestione interna (backup, risorse, log, updater). Vedi [self-management](./self-management.md). |
 | **Self-management** | Gestione interna app: backup, risorse, log, aggiornamenti. Documentata in [self-management](./self-management.md). |
-| **Avvisi** | Pannello da Top Bar: errori/azioni da correggere e ultimi aggiornamenti. |
+| **Avvisi** | Messaggio transiente (toast/snackbar) per segnalare subito un problema o un risultato. |
+| **Notifiche** | Centro notifiche in-app: icona in Top Bar; clic apre componente dedicato con elenco notifiche (avvisi, errori, info). Le notifiche di tipo errore generano anche una voce in Archivio → Errori. Vedi [notifications-and-error-archive](./notifications-and-error-archive.md). |
+| **Archivio** | Sezione sidebar pianificata; sottosezione **Errori** con tabella (data, tipo errore, apri dettaglio, elimina). Scopo: log completo da copiare/incollare (es. per supporto o assistente AI). Vedi [notifications-and-error-archive](./notifications-and-error-archive.md). |
+| **Registro errori** | Insieme delle voci in Archivio → Errori; ogni voce ha data, tipo, dettaglio completo copiabile, azione elimina. Standard: quando una notifica riguarda un errore, si crea anche una voce nel registro. |
 | **Multi-profilo** | Gestione di più profili/allenatori separati sull’app. Vedi [multi-profile](./multi-profile.md). |
 
 ## Tecnico (architettura, codice)

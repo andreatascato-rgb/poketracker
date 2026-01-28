@@ -25,7 +25,7 @@ Gestione completa profili dall'interno dell'app:
 - Creare nuovi profili
 - Eliminare profili
 - Rinominare profili
-- Cambiare cartella salvataggi per profilo
+- Gestire cartella main (globale) e percorsi salvataggi per profilo
 - Visualizzare dettagli profilo
 
 ### Configurazione App

@@ -24,5 +24,9 @@ pub fn migrations() -> Migrations<'static> {
             "DELETE FROM profiles WHERE id = 'default';
              DELETE FROM app_state WHERE key = 'active_profile_id';",
         ),
+        // SQLite non ammette DEFAULT (datetime('now')) in ALTER ADD COLUMN → uso valore costante e poi backfill
+        M::up("ALTER TABLE profiles ADD COLUMN created_at TEXT NOT NULL DEFAULT '1970-01-01 00:00:00';"),
+        M::up("ALTER TABLE profiles ADD COLUMN updated_at TEXT NOT NULL DEFAULT '1970-01-01 00:00:00';"),
+        M::up("UPDATE profiles SET created_at = datetime('now'), updated_at = datetime('now') WHERE created_at = '1970-01-01 00:00:00';"),
     ])
 }

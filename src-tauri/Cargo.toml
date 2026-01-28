@@ -1,6 +1,6 @@
 [package]
 name = "poketracker"
-version = "0.0.3"
+version = "0.1.0"
 description = "PokeTracker - Pokedex personale e gestione salvataggi Pokemon"
 edition = "2021"
 
@@ -12,9 +12,13 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 tauri-build = { version = "2", features = [] }
 
 [dependencies]
+chrono = { version = "0.4", features = ["serde"] }
 tauri = { version = "2", features = [] }
+tauri-plugin-dialog = "2"
 tauri-plugin-opener = "2"
+tauri-plugin-shell = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 rusqlite = { version = "0.31", features = ["bundled"] }
 rusqlite_migration = { version = "1", features = [] }
+notify = "6"

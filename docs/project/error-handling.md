@@ -156,6 +156,16 @@ try {
 - Notifiche toast per errori
 - Log errori per debugging
 
+### Registro errori e notifiche (standard prodotto)
+
+Quando un errore deve essere visibile all’utente (es. versione non determinata con languageId raw, sidecar fallito), **non** mostrare dati di debug direttamente nelle schermate operative. Invece:
+
+1. **Avviso (transiente):** toast/snackbar breve che segnala il problema.
+2. **Notifica (persistente):** voce nel centro notifiche, apribile da icona dedicata in Top Bar; clic sull’icona apre un componente dedicato alle notifiche.
+3. **Archivio errori:** creare una voce in **Archivio → Errori** (sezione sidebar “Archivio”, sottosezione “Errori”) con: **Data**, **Tipo errore**, pulsante **Apri** (apre dettaglio completo copiabile), azione **Elimina**. Scopo: avere un log completo da copiare/incollare (es. per supporto o assistente AI).
+
+Vedi [notifications-and-error-archive.md](./notifications-and-error-archive.md) per scelte UX complete, posizione “dove si vede oggi il fallimento” (es. languageId raw nel dialog Salvataggi) e definizione di Top Bar notifiche, Archivio, tabella Errori.
+
 ## Logging
 
 ### Strategia Logging

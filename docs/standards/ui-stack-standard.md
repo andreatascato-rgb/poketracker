@@ -28,14 +28,14 @@ Definisce lo stack e le best practice per implementare l’UI/UX di PokeTracker:
 
 - **Svelte 5**: shadcn-svelte e bits-ui supportano Svelte 5; usare le API aggiornate (snippet invece di `let:`, `ref` invece di `el` dove indicato dalla doc).
 - **SvelteKit**: setup ufficiale shadcn-svelte per SvelteKit; Tailwind integrato nel build.
-- **Design system**: i token visivi (palette, spacing, font, dimensioni layout) definiti in `docs/standards/design-system-standard.md` si implementano tramite variabili CSS in `src/app.css` (sezione `.dark`), in linea con lo **standard Poketrack**. Layout shell: Top Bar 48px, Sidebar 280px; vedi anche `docs/project/poketrack-reference.md`.
+- **Design system**: i token visivi (palette, spacing, font, dimensioni layout) definiti in `docs/standards/design-system-standard.md` si implementano tramite variabili CSS in `src/app.css` (sezione `.dark`), in linea con lo **standard Poketrack**. Layout shell: Top Bar 48px, Sidebar 220px in PokeTracker; vedi anche `docs/project/poketrack-reference.md`.
 
 ## Best practice
 
 ### Organizzazione
 
 - **Componenti UI riutilizzabili** in `src/lib/components/ui/` (o sotto-cartelle tipo `ui/button`, `ui/dialog`): qui finiscono i componenti aggiunti via CLI shadcn-svelte e quelli costruiti su bits-ui.
-- **Layout** (TopBar, Sidebar, ContentArea) in `src/lib/components/layout/`; possono usare componenti da `ui/` e classi Tailwind.
+- **Layout**: shell e nav in `src/routes/+layout.svelte` (markup inline); componenti in `src/lib/components/layout/` esistono ma non sono usati dal layout principale. Tailwind e componenti da `ui/`.
 - **Un solo posto per il tema**: Tailwind config + eventuale `app.css` per variabili globali; evitare valori magici ripetuti nei componenti.
 - **`cn()` (classnames)** per concatenare classi Tailwind e varianti; usare l’helper fornito da shadcn-svelte dove presente.
 
@@ -50,6 +50,11 @@ Definisce lo stack e le best practice per implementare l’UI/UX di PokeTracker:
 - **Estendere, non modificare alla cieca**: partire dal componente shadcn, estendere con classi/varianti; evitare fork pesanti che poi non si riescono a aggiornare.
 - **Composizione** preferita a ereditarietà o wrapper molto “spessi”; tenere i componenti UI presentazionali e la logica nei livelli superiori (pagine, layout).
 
+### Responsive (layout adattivo)
+
+- **Mobile-first:** stile base per viewport piccola; prefissi `sm:`, `md:`, `lg:`, `xl:`, `2xl:` per viewport maggiori. Vedi `docs/standards/responsive-design-standard.md` per breakpoint, unità fluide, touch target e container queries.
+- **Breakpoint Tailwind:** usare i default (sm 640px, md 768px, lg 1024px, xl 1280px, 2xl 1536px) senza ridefinirli salvo necessità documentata.
+
 ### Accessibilità
 
 - **Non disattivare comportamenti bits-ui** (focus, keyboard, ARIA) senza motivo; per personalizzazioni che toccano a11y, verificare `docs/standards/accessibility-standard.md`.
@@ -59,6 +64,10 @@ Definisce lo stack e le best practice per implementare l’UI/UX di PokeTracker:
 
 - **Import solo ciò che serve**: i componenti shadcn-svelte sono nel codebase, quindi tree-shaking dipende da come li importi; evitare barrel file che importano tutto l’`ui/`.
 - **Lazy load** per route o modali pesanti solo dove serve; non è sostitutivo di una struttura componenti snella.
+
+### Stili su root di child component (icone, librerie)
+
+Quando si applica una **classe** a un componente importato (es. icona Lucide `<CheckCircle class="top-bar-btn-icon status-active" />`), l'elemento che riceve la classe è il **root del child** (es. SVG). I **selettori scoped** del file corrente (il parent) **non** matchano quell'elemento: Svelte aggiunge l'attributo scoped solo agli elementi del componente corrente. Di conseguenza regole come `.top-bar-btn-icon.status-active { color: ... }` **non** si applicano. Per far applicare gli stili: usare **`:global(.top-bar-btn-icon)`** e **`:global(.top-bar-btn-icon.status-active)`** nel parent, oppure wrappare l'icona in un elemento del parent (es. `<span class="top-bar-btn-icon status-active">`) e stilare quello. In caso di bug "elemento non cambia aspetto pur con stato corretto", verificare per prima cosa questa catena (v. `docs/procedures/workflow/bug-fix.md`).
 
 ## Anti-pattern da evitare
 
@@ -71,6 +80,7 @@ Definisce lo stack e le best practice per implementare l’UI/UX di PokeTracker:
 ## Riferimenti
 
 - **Design system (token, dimensioni, standard Poketrack)**: `docs/standards/design-system-standard.md`
+- **Responsive (breakpoint, mobile-first, touch)**: `docs/standards/responsive-design-standard.md`
 - **Cosa adottiamo da Poketrack**: `docs/project/poketrack-reference.md`
 - **Accessibilità**: `docs/standards/accessibility-standard.md`
 - **Creazione componenti**: `docs/procedures/svelte/component-creation.md`

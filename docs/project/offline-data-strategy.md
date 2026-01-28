@@ -14,7 +14,7 @@ Riassume la strategia di dati offline e persistenza per PokeTracker: tutto local
 
 | Dato | Dove | Fonte di verità |
 |------|------|------------------|
-| **Profili, cartelle save, Pokedex per profilo** | DB SQLite (Rust), path da `app.path().app_data_dir()` | [database-storage](./database-storage.md), [architecture-overview](./architecture-overview.md) |
+| **Profili, cartella main, percorsi salvataggi per profilo, Pokedex** | DB SQLite (Rust), path da `app.path().app_data_dir()` | [database-storage](./database-storage.md), [architecture-overview](./architecture-overview.md) |
 | **Knowledge (Pokemon, mosse, nature, wiki)** | DB o bundle locale; lettura via comandi Rust | [knowledge-database](./knowledge-database.md) |
 | **File `.sav`** | Filesystem; lettura/parsing via sidecar C# | [parser-architecture](./parser-architecture.md), [core-functionality](./core-functionality.md) |
 | **Risorse (icone, sprite)** | Bundle app o download locale; path da app | [features](./features.md), [pokedex-personal](./pokedex-personal.md) |
@@ -32,7 +32,7 @@ Riassume la strategia di dati offline e persistenza per PokeTracker: tutto local
 
 ## Riferimenti
 
-- [core-functionality](./core-functionality.md) — Offline, persistenza, profili, cartella save, controllo automatico
+- [core-functionality](./core-functionality.md) — Offline, persistenza, profili, cartella main e percorsi salvataggi, controllo automatico
 - [architecture-overview](./architecture-overview.md) — Stack, flusso dati, dove vivono profilo/Pokedex/wiki
 - [database-storage](./database-storage.md) — DB e storage
 - [knowledge-database](./knowledge-database.md) — Knowledge DB e wiki

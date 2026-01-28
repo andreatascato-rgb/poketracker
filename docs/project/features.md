@@ -77,9 +77,9 @@ Sistema di gestione di più profili/allenatori separati, ognuno con dati e file 
 **Funzionalità:**
 - Creazione profili multipli (senza login)
 - Dati completamente separati per ogni profilo
-- Cartella salvataggi diversa per ogni profilo
+- Cartella main opzionale (globale, una volta); percorsi salvataggi per ogni profilo (più path per profilo)
 - Switch tra profili senza logout/login
-- Monitoraggio separato per ogni profilo
+- Monitoraggio separato per ogni profilo (solo sui percorsi assegnati)
 
 Vedi [multi-profile.md](./multi-profile.md) per dettagli completi.
 

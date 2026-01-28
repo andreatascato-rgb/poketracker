@@ -33,10 +33,10 @@ Descrive la vista tecnica d'insieme: stack, flusso dati e dove vivono le respons
 | Dato / responsabilità | Layer | Path o componente tipo |
 |------------------------|--------|--------------------------|
 | **Profilo attivo, preferenze UI** | Frontend | Store `app` / `profile`; selettore in Top Bar. |
-| **Profili, cartelle salvataggi, Pokedex per profilo** | Backend + DB | `profiles/`, `db/repositories/`, comandi `profile`, `pokedex`. |
+| **Profili, cartella main, percorsi salvataggi per profilo, Pokedex** | Backend + DB | `profiles/`, `db/repositories/`, comandi `profile`, `pokedex`. |
 | **File `.sav`**, parsing | Sidecar + Rust | Sidecar C# (PKHeX); Rust in `parser/` chiama sidecar e converte risultati. Vedi [parser-architecture](./parser-architecture.md). |
 | **Knowledge (Pokemon, mosse, nature, wiki)** | Backend + DB / risorse | Knowledge DB o bundle; comandi `wiki`; frontend legge via invoke. Vedi [knowledge-database](./knowledge-database.md). |
-| **Navigazione, layout** | Frontend | `lib/components/layout/` (TopBar, Sidebar, ContentArea); route in `src/routes/`. |
+| **Navigazione, layout** | Frontend | Layout shell e nav in `src/routes/+layout.svelte` (markup inline). Componenti in `lib/components/layout/` esistono ma non sono usati dal layout principale. Route in `src/routes/`. |
 
 ## Comunicazione Frontend ↔ Backend
 

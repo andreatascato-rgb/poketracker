@@ -33,6 +33,16 @@ Completamento integrale della checklist obbligatorio prima di proporre implement
 6. [ ] Verifica che la modifica rispetti gli standard del progetto (error handling, tipi, runes, ecc.)
 7. [ ] Indica come l’utente può **verificare** il fix (passi riproducibili o test manuali)
 
+## Bug "UI non riflette lo stato" (obbligatorio)
+
+Quando il sintomo è **"l'interfaccia non si aggiorna"** o **"l'elemento non cambia aspetto pur essendo lo stato corretto"** (es. icona che dovrebbe diventare verde ma resta bianca), **prima di iterare oltre 2–3 tentativi**:
+
+1. [ ] **Catena completa da verificare** (in ordine):
+   - **Stato alla fonte**: lo store / la variabile contiene il valore atteso? (log alla scrittura)
+   - **Reattività**: il componente che legge lo stato si ri-renderizza quando il valore cambia? (sottoscrizione corretta: store con `$` in Svelte, o `$state` letto nel componente; non getter da modulo `.svelte.ts` per valore riassegnato)
+   - **Applicabilità CSS**: il selettore raggiunge l'elemento effettivo? Se la **classe è sul root di un child component** (es. icona Lucide), il CSS **scoped** del file corrente **non** si applica. Usare **`:global(.classe)`** per gli stili che devono applicarsi a quel root, oppure wrappare l'icona in un elemento del parent che ha la classe. V. `docs/standards/design-system-standard.md` (Icone) e `docs/standards/ui-stack-standard.md` (Stili su child component).
+2. [ ] **Dopo 2–3 tentativi falliti sullo stesso bug**: fermarsi, formulare **ipotesi precise** (es. "reattività cross-module", "CSS scoped non arriva al child"), **strumentare** (log mirati o debug mode) per validare/smentire, poi correggere **solo in base a evidenza**. Non continuare a cambiare codice a caso.
+
 ## Riferimenti Standard
 
 - `docs/project/project-structure.md:1-50` — Dove cercare il codice

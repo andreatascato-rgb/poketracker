@@ -41,7 +41,10 @@ Tutti i file `.md` in questa cartella (escluso questo README) sono standard del 
 | [security-standard.md](./security-standard.md) | Sicurezza (file system, DB, sidecar, Tauri, dati sensibili) |
 | [accessibility-standard.md](./accessibility-standard.md) | Accessibilità (a11y), WCAG, ARIA |
 | [design-system-standard.md](./design-system-standard.md) | Design system: stile, token, tipografia, layout, icone (standard Poketrack, dark) |
+| [interaction-states-standard.md](./interaction-states-standard.md) | Stati interattivi: hover (transizione), active (istantaneo), no scale; per pulsanti, nav, icon-btn |
+| [responsive-design-standard.md](./responsive-design-standard.md) | Design responsive: mobile-first, breakpoint, unità fluide, touch, container queries (best practice 2026) |
 | [ui-stack-standard.md](./ui-stack-standard.md) | Stack UI: Tailwind + shadcn-svelte (bits-ui), best practice, anti-pattern |
+| [breadcrumb-standard.md](./breadcrumb-standard.md) | Breadcrumb: posizione (alto a sinistra), stile, touch, accessibilità |
 | [logging-standard.md](./logging-standard.md) | Logging backend e frontend, livelli, formato |
 | [i18n-standard.md](./i18n-standard.md) | Internazionalizzazione, traduzioni, locale |
 | [performance-standard.md](./performance-standard.md) | Performance, lazy load, virtualizzazione, DB, IPC |

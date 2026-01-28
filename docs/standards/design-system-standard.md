@@ -38,17 +38,27 @@ I token sotto sono quelli **adottati da Poketrack** (stile VS Code). Vivono in `
 | `--font-primary` | `'Segoe UI', 'SF Pro Display', -apple-system, …` | Font UI |
 | `--font-size-body` | `13px` | Corpo e voci menu |
 | `--spacing-xs` … `--spacing-xl` | 4px, 8px, 12px, 16px, 24px | Spaziature |
-| `--hover-bg` | `#2a2d2e` | Hover su voci/pulsanti |
-| `--focus-ring` | `#007acc` | Focus, accent, selezione |
+| `--hover-bg` | `#2a2d2e` | Hover su voci/pulsanti; sfondo lieve voce corrente sidebar |
+| `--pressed-bg` | `#1f2224` | Sfondo `:active` (pressione); istantaneo, no transizione. Vedi `interaction-states-standard.md` |
+| `--active-bg` | `#094771` | Stati "selezionato" in liste/dropdown (es. opzione Profilo); **non** usato per voce corrente sidebar |
+| `--focus-ring` | `#007acc` | Focus, accent, barra indicatore voce corrente sidebar |
+| `--transition-default` | `200ms ease-out` | Transizioni UI (hover, focus, aperture/chiusure dialog, sidebar, voci) |
 
 Mappatura per Tailwind/shadcn: in `.dark` risultano `--background: var(--bg-primary)`, `--foreground: var(--text-primary)`; `--sidebar` e varianti per la sidebar.
+
+### Transizioni
+
+- **Token:** `--transition-default: 200ms ease-out` in `src/app.css` (sezione `.dark`). Valore adottato da Poketrack.
+- **Regola:** per hover, focus, aperture/chiusure (dialog, sidebar, voci) usare `var(--transition-default)` in stili custom/inline, oppure durata equivalente: Tailwind `duration-200` = 200ms. I componenti UI e il layout devono allinearsi a questo valore per un mood coerente.
+- **Stati interattivi (hover, active):** hover con transizione fluida; `:active` **senza** transizione (feedback istantaneo). Dettaglio in `docs/standards/interaction-states-standard.md`.
+- **Riduzione movimento:** quando l'utente preferisce meno movimento (`prefers-reduced-motion: reduce`), le transizioni e le animazioni vanno ridotte o disattivate. Implementazione globale in `src/app.css`; dettagli in `docs/standards/accessibility-standard.md`.
 
 ### Layout shell (dimensioni — da Poketrack)
 
 | Elemento | Valore | Note |
 |----------|--------|------|
 | Top Bar | altezza **48px**, min-height 48px | Padding 0 16px (`--spacing-lg`), bordo sotto `--border-primary` |
-| Sidebar | larghezza **280px** (espansa), **48px** (collassata) | bg `--bg-secondary`, bordo destro `--border-primary`; header min-height 40px, padding 8px |
+| Sidebar | larghezza **220px** in PokeTracker (espansa), **48px** (collassata); standard Poketrack 280px | bg `--bg-secondary`, bordo destro `--border-primary`; header min-height 40px, padding 8px |
 | Area contenuto | flex 1, overflow-y auto | bg `--bg-primary`; solo questa zona scrolla |
 | Scrollbar | nascosta | In tutta l'app (classe `.poketrack-layout` o equivalente) |
 
@@ -72,18 +82,26 @@ Top Bar e Sidebar **non** scrollano; lo scroll è solo nell'area contenuto.
 - **Stile**: lineari, minimali, stile "product icons" (VS Code / Material); evitare 3D, cartoon o decorative.
 - **Coerenza**: stesso peso (stroke), stessa dimensione base per voci dello stesso tipo.
 - **Riuso**: preferire set esistente o libreria coerente; evitare mix di stili.
+- **Stili su icone da libreria (es. Lucide)**: le classi sono applicate al **root del component child** (es. l'elemento SVG). Il **CSS scoped** del file che usa l'icona **non** si applica a quell'elemento (lo scope è solo sugli elementi del componente corrente). Per colore, dimensioni o varianti (es. `.status-active`): usare **`:global(.classe)`** nel foglio di stile del parent, oppure wrappare l'icona in un elemento (es. `<span class="...">`) definito nel parent così lo stile scoped si applica. In caso di bug "icona non cambia aspetto pur con stato corretto", verificare per prima cosa l'applicabilità del selettore (v. `docs/procedures/workflow/bug-fix.md` — Bug "UI non riflette lo stato").
+
+## Responsive (layout adattivo)
+
+- **Breakpoint e comportamento:** `docs/standards/responsive-design-standard.md` (mobile-first, breakpoint, unità fluide, touch target).
+- **Shell su viewport stretta:** Sidebar collassata (48px) o nascosta con toggle; Area contenuto sempre utilizzabile; Top Bar invariata (48px).
+- **Dimensioni fisse** (Top Bar 48px, Sidebar 220px espansa) restano da questo standard; il “quando” collassare o adattare è nello standard responsive.
 
 ## Pattern da VS Code / Poketrack
 
-- **Sidebar**: voci raggruppate per funzione; icone + label; al più due livelli (voce → sottovoci); ordine fissato: Profilo → Editor → Wiki → Impostazioni.
+- **Sidebar**: voci raggruppate per funzione; icone + label; al più due livelli (voce → sottovoci); ordine fissato: Home → Allenatore (/profilo) → Editor → Wiki → Impostazioni. **Stati voci:** hover = superficie rialzata (`--bg-tertiary`); voce corrente = barra verticale a sinistra 3px (`--focus-ring`) + sfondo lieve (`--hover-bg`), testo `--text-primary`. Non usare sfondo pieno colorato per la voce corrente (best practice: indicatore chiaro e non distraente).
 - **Top Bar**: titolo/azioni essenziali; niente clutter.
 - **Area contenuto**: sfondo `--bg-primary`, ben separata dalla sidebar.
 - **Stato e feedback**: messaggi chiari (toast, inline); non affidarsi solo al colore (vedi `docs/standards/accessibility-standard.md` e `docs/standards/error-handling-standard.md`).
 
 ## Applicazione
 
-- **Nuovi componenti UI**: usare i token sopra (colori, spaziature), tipografia e stile icone. Creazione: `docs/procedures/svelte/component-creation.md`.
-- **Modifiche a layout/navigazione**: rispettare struttura a tre parti, dimensioni Top Bar 48px e Sidebar 280px, ordine voci. Vedi `docs/procedures/workflow/layout-navigation-change.md`.
+- **Nuovi componenti UI**: usare i token sopra (colori, spaziature, transizioni), tipografia e stile icone. Creazione: `docs/procedures/svelte/component-creation.md`.
+- **Transizioni:** usare `var(--transition-default)` per hover, focus e aperture/chiusure; rispettare `prefers-reduced-motion` (vedi sotto e `docs/standards/accessibility-standard.md`).
+- **Modifiche a layout/navigazione**: rispettare struttura a tre parti, dimensioni Top Bar 48px e Sidebar 220px (PokeTracker), ordine voci. Vedi `docs/procedures/workflow/layout-navigation-change.md`.
 - **Accessibilità**: contrasto, focus, semantica e `prefers-reduced-motion` obbligatori; `docs/standards/accessibility-standard.md`.
 
 ## Pattern applicati (design e stile consolidati)
@@ -97,7 +115,10 @@ Per **empty state, card, CTA, padding area contenuto**, **suddivisione sezioni**
 | **Cosa adottiamo da Poketrack** | `docs/project/poketrack-reference.md` |
 | **Pattern UI applicati (empty state, CTA, card)** | `docs/project/ui-patterns-applied.md` |
 | **Stack UI (Tailwind, shadcn-svelte)** | `docs/standards/ui-stack-standard.md` |
+| **Stati interattivi (hover, active)** | `docs/standards/interaction-states-standard.md` |
+| **Loading, sync, watcher (UX)** | `docs/project/loading-and-sync-ux.md` |
 | Modifica sidebar / layout / navigazione | `docs/procedures/workflow/layout-navigation-change.md` |
+| Layout adattivo / breakpoint / responsive | `docs/standards/responsive-design-standard.md`, `docs/procedures/workflow/responsive-design-change.md` |
 | Nuovo componente Svelte | `docs/procedures/svelte/component-creation.md` |
 | Accessibilità | `docs/standards/accessibility-standard.md` |
 | Toast, errori user-facing | `docs/standards/error-handling-standard.md` |

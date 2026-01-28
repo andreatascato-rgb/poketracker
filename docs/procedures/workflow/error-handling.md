@@ -25,19 +25,23 @@ Completamento integrale della checklist obbligatorio prima di proporre implement
 
 3. **Rust/Invoke**: `docs/standards/rust-tauri-standard.md` (Result nei command), `docs/standards/typescript-frontend-standard.md` (try/catch invoke)
 
+4. **Se l’errore deve andare in Archivio Errori (errore di sistema):** `docs/project/notifications-and-error-archive.md` — sezione **“Standard operativo: collegare un caso reale”**. Usare `reportSystemError({ type, detail, toastMessage? })` da `$lib/stores/error-archive.ts`; non ripetere toast + addErrorEntry a mano.
+
 ## Checklist Obbligatoria
 
 1. [ ] Leggi `docs/standards/error-handling-standard.md:12-18` — Usa toast per azione singola/errore breve; inline per validazione form; modal per errori bloccanti
 2. [ ] Messaggi utente: brevi, concreti, actionable; evitare “Si è verificato un errore” (`error-handling-standard.md:20-24`)
 3. [ ] Per errori da `invoke`: mappare messaggio backend su messaggio user-facing se necessario; loggare dettaglio tecnico (`error-handling-standard.md:24-26`)
-4. [ ] Toast/notifiche: `role="status"` o `role="alert"`, `aria-live="polite"`, rispettare `prefers-reduced-motion` (`error-handling-standard.md:36-38`)
-5. [ ] Backend: usare livelli tauri-plugin-log come da `error-handling-standard.md:28-32`; non loggare secret/PII in chiaro
-6. [ ] Frontend: `console.error` (o logger) per errori da invoke e UI; contesto (command, payload essenziale) (`error-handling-standard.md:32-34`)
+4. [ ] **Se è errore di sistema** (sidecar/DB/operazione fallita, non validazione utente): leggere `docs/project/notifications-and-error-archive.md` (Standard operativo) e usare **`reportSystemError({ type, detail, toastMessage? })`** per toast + Archivio Errori; quando esiste il centro notifiche, aggiungere anche la notifica
+5. [ ] Toast/notifiche: `role="status"` o `role="alert"`, `aria-live="polite"`, rispettare `prefers-reduced-motion` (`error-handling-standard.md:36-38`)
+6. [ ] Backend: usare livelli tauri-plugin-log come da `error-handling-standard.md:28-32`; non loggare secret/PII in chiaro
+7. [ ] Frontend: `console.error` (o logger) per errori da invoke e UI; contesto (command, payload essenziale) (`error-handling-standard.md:32-34`)
 
 ## Riferimenti Standard
 
 - `docs/standards/error-handling-standard.md:1-60` — User-facing, messaggi, logging
 - `docs/project/error-handling.md:1-80` — Strategia e categorie
+- `docs/project/notifications-and-error-archive.md` — Standard operativo “collegare un caso reale” (toast + Archivio + notifica); helper `reportSystemError`
 - `docs/standards/rust-tauri-standard.md` — Result, logging Rust
 - `docs/standards/typescript-frontend-standard.md` — invoke, try/catch
 

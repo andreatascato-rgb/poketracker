@@ -26,6 +26,18 @@ Breve testo che riassume la release.
 
 ## Versioni
 
+### [0.1.0] - 2026-01-28
+
+#### Descrizione
+Shell UI Poketrack (Top Bar + Sidebar) con navigazione e componenti UI base; avvio foundation feature (profilo, sync, archivio errori, sidecar).
+
+#### Change
+- Layout: top bar + sidebar (collassabile), breadcrumb, stati interattivi e icone uniche
+- Profilo: selector e flusso gestione profili (UI + command/DB)
+- Sync/Watcher: store sync e watcher lato Tauri; UX loading/sync documentata
+- UI primitives: tooltip/sonner/empty-state/breadcrumb e standard responsive/interactions
+- Sidecar/parser: integrazione binario e prime logiche rilevamento save
+
 ### [0.0.3] - 2026-01-27
 
 #### Descrizione

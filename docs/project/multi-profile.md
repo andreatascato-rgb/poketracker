@@ -20,11 +20,13 @@ L'app deve supportare più profili/allenatori contemporaneamente, ognuno complet
 ### Separazione Dati
 
 Ogni profilo mantiene dati separati:
-- Cartella salvataggi assegnata
+- Elenco di percorsi salvataggi assegnati (più path per profilo)
 - Pokedex personale
 - Dati allenatore
 - Progresso gioco
 - Tutti i dati estratti dai salvataggi
+
+La **cartella main** (opzionale, globale, impostata una volta) non è dati di profilo: serve solo come comodo per Sfoglia e suggerimenti. Vedi [glossary](./glossary.md), [core-functionality](./core-functionality.md).
 
 ### Switch Profili
 
@@ -35,16 +37,16 @@ Ogni profilo mantiene dati separati:
 
 ### Monitoraggio per Profilo
 
-Ogni profilo monitora la propria cartella:
-- Controllo automatico all'avvio per il profilo attivo
-- Monitoraggio continuo della cartella del profilo attivo
+Ogni profilo monitora solo i propri percorsi salvataggi:
+- Controllo automatico all'avvio per i percorsi del profilo attivo
+- Monitoraggio continuo di ogni percorso assegnato al profilo attivo
 - Dati aggiornati solo per il profilo attivo
 - Altri profili mantengono i loro dati salvati
 
 ## Integrazione con Sistema Esistente
 
 Questa feature si integra con:
-- Sistema di assegnazione cartella (per profilo)
+- Cartella main (preferenza globale) e sistema di assegnazione percorsi per profilo
 - Sistema di analisi salvataggi (per profilo)
 - Sistema di sincronizzazione (per profilo attivo)
 - Persistenza dati (salvataggio separato per profilo)

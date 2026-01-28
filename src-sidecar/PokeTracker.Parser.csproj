@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <PublishSingleFile>true</PublishSingleFile>
+    <SelfContained>true</SelfContained>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="PKHeX.Core" Version="24.5.5" />
+  </ItemGroup>
+
+  <Target Name="CopyToTauriBinaries" AfterTargets="Publish">
+    <PropertyGroup>
+      <TauriBinariesPath>$(MSBuildProjectDirectory)\..\src-tauri\binaries</TauriBinariesPath>
+    </PropertyGroup>
+    <Copy SourceFiles="$(PublishDir)\$(AssemblyName).exe" DestinationFiles="$(TauriBinariesPath)\parser-x86_64-pc-windows-msvc.exe" SkipUnchangedFiles="true" />
+  </Target>
+
+</Project>

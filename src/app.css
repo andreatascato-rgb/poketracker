@@ -55,8 +55,15 @@
   --spacing-lg: 16px;
   --spacing-xl: 24px;
   --hover-bg: #2a2d2e;
+  --pressed-bg: #1f2224;
   --active-bg: #094771;
   --focus-ring: #007acc;
+  /** Colore icone azioni modifica/primarie, più chiaro del focus-ring per leggibilità su dark */
+  --icon-edit: #7ec8ff;
+  /** Colore icone azioni distruttive (es. elimina), vivido e riconoscibile su dark */
+  --icon-destructive: #f87171;
+  /** Colore icone stato valido/successo (es. cartella main impostata, validazione ok) */
+  --icon-success: #4ade80;
   --transition-default: 200ms ease-out;
   --font-weight-normal: 400;
   --font-weight-medium: 500;
@@ -104,6 +111,19 @@
   --sidebar-accent-foreground: oklch(0.97 0 0);
   --sidebar-border: var(--border-subtle);
   --sidebar-ring: oklch(0.55 0.18 260);
+}
+
+/* Input: no suggerimenti browser e sfondo mai bianco (focus/autofill/suggerimenti) */
+.dark input[data-slot="input"] {
+  -webkit-autofill: none;
+}
+.dark input[data-slot="input"]:-webkit-autofill,
+.dark input[data-slot="input"]:-webkit-autofill:hover,
+.dark input[data-slot="input"]:-webkit-autofill:focus,
+.dark input[data-slot="input"]:-webkit-autofill:active {
+  -webkit-text-fill-color: var(--text-primary);
+  -webkit-box-shadow: 0 0 0 1000px var(--bg-primary) inset;
+  caret-color: var(--text-primary);
 }
 
 @theme inline {
@@ -167,4 +187,34 @@
   display: none;
   width: 0;
   height: 0;
+}
+
+/* prefers-reduced-motion: riduce/disattiva transizioni e animazioni in tutta l'app (design-system, accessibility-standard) */
+@media (prefers-reduced-motion: reduce) {
+  html *,
+  html *::before,
+  html *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Tooltip: stile coerente con design system Poketrack */
+.poketrack-tooltip {
+  font-family: var(--font-primary, inherit);
+}
+
+/* Toast (svelte-sonner): larghezza esattamente al contenuto, senza spazio vuoto a destra. Solo nel Toaster Poketrack. */
+[data-sonner-toaster].poketrack-toaster [data-sonner-toast] {
+  width: max-content !important;
+  min-width: max-content; /* larghezza naturale del testo+icona, niente vuoto a destra */
+  max-width: min(420px, 92vw); /* messaggi lunghi e viewport stretta */
+  overflow-wrap: normal; /* evita wrap in mezzo alla parola (la lib usa anywhere) */
+}
+
+[data-sonner-toaster].poketrack-toaster {
+  width: max-content !important;
+  min-width: max-content;
+  max-width: min(420px, 92vw);
 }

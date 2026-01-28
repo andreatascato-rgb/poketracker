@@ -1,6 +1,6 @@
 {
   "name": "poketracker",
-  "version": "0.0.3",
+  "version": "0.1.0",
   "description": "PokeTracker - Pokedex personale e gestione salvataggi Pokemon",
   "type": "module",
   "scripts": {
@@ -9,16 +9,19 @@
     "preview": "vite preview",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
-    "tauri": "tauri"
+    "tauri": "tauri",
+    "icon": "node scripts/generate-icon.mjs"
   },
   "license": "MIT",
   "dependencies": {
     "@tauri-apps/api": "^2",
+    "@tauri-apps/plugin-dialog": "^2.6.0",
     "@tauri-apps/plugin-opener": "^2"
   },
   "devDependencies": {
     "@internationalized/date": "^3.10.1",
     "@lucide/svelte": "^0.561.0",
+    "@resvg/resvg-js": "^2.6.2",
     "@sveltejs/adapter-static": "^3.0.6",
     "@sveltejs/kit": "^2.9.0",
     "@sveltejs/vite-plugin-svelte": "^5.0.0",
@@ -26,8 +29,10 @@
     "@tauri-apps/cli": "^2",
     "bits-ui": "^2.15.4",
     "clsx": "^2.1.1",
+    "mode-watcher": "^1.1.0",
     "svelte": "^5.0.0",
     "svelte-check": "^4.0.0",
+    "svelte-sonner": "^1.0.7",
     "tailwind-merge": "^3.4.0",
     "tailwind-variants": "^3.2.2",
     "tailwindcss": "^4.1.18",

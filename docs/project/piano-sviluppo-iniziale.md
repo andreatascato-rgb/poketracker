@@ -27,7 +27,7 @@ Elenco ordinato delle prime azioni da fare per passare dallo stato attuale (solo
 **Cosa:** Shell UI con Top Bar + Sidebar + Area contenuto; route/placeholder per Profilo, Editor, Wiki, Impostazioni.
 
 **Perché:** L'utente deve poter navigare tra le sezioni (Profilo, Editor, Wiki, Impostazioni). Layout e terminologia in `docs/project/glossary.md`.
-
+tauri dev
 **Come:** Procedure `docs/procedures/workflow/layout-navigation-change.md` e `docs/procedures/svelte/page-creation.md`. Layout in `lib/components/layout/`, route in `src/routes/`.
 
 **Output atteso:** App con tre zone (Top Bar, Sidebar, Area contenuto) e quattro voci di menu che caricano pagine placeholder.
@@ -60,7 +60,7 @@ Elenco ordinato delle prime azioni da fare per passare dallo stato attuale (solo
 
 ### 5. Prima pagina contenuto reale
 
-**Cosa:** Una pagina (es. Profilo o Impostazioni) che usa il layout, mostra dati del profilo attivo e magari un messaggio di stato (es. "Nessuna cartella salvataggi").
+**Cosa:** Una pagina (es. Profilo o Impostazioni) che usa il layout, mostra dati del profilo attivo e magari un messaggio di stato (es. "Nessun percorso salvataggi configurato").
 
 **Perché:** Chiude il loop: si apre l'app, si naviga, si vede un contenuto legato ai dati.
 
@@ -72,7 +72,7 @@ Elenco ordinato delle prime azioni da fare per passare dallo stato attuale (solo
 
 ## Cosa non è in questo piano (dopo)
 
-- Sidecar/parser C# e file `.sav` → dopo passo 5, con `docs/procedures/workflow/sidecar-setup.md`.
+- **Riconoscimento gioco/versione da .sav** (sidecar C# + PKHeX) → dopo passo 5. Spec: [sav-game-version-detection.md](./sav-game-version-detection.md). Procedure: [sidecar-setup.md](../procedures/workflow/sidecar-setup.md), [dependency-add.md](../procedures/workflow/dependency-add.md), [library-integration.md](../procedures/workflow/library-integration.md).
 - Pokedex, Wiki, Editor → feature vere; da pianificare quando layout + profilo + DB base sono solidi.
 - Versioning: alla fine del passo 1 (o al primo push) inizializzare `docs/VERSION-HISTORY.md` e versione `0.1.0` come da `docs/standards/versioning-standard.md`.
 

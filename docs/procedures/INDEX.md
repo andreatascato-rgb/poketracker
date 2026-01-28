@@ -16,6 +16,12 @@ Mappa query dell'utente alle procedure corrispondenti. Consulta questa mappa per
 - Query: "aggiungi voce sidebar", "aggiungi voce menu", "modifica navigazione", "aggiungi sezione Profilo", "cambia ordine voci", "modifica layout", "aggiungi sottovoce Wiki", "rimuovi voce menu", "aggiungi voce Impostazioni"
 - Procedure: `docs/procedures/workflow/layout-navigation-change.md`
 
+### Layout Responsive / Breakpoint / Adattivo
+
+- Query: "rendi responsive", "design responsive", "layout mobile", "breakpoint", "layout adattivo", "adatta a viewport", "mobile-first", "sidebar su schermo piccolo", "tipografia fluida", "container query"
+- Procedure: `docs/procedures/workflow/responsive-design-change.md`
+- Standard: `docs/standards/responsive-design-standard.md`
+
 ### Componenti Svelte
 
 - Query: "crea componente", "aggiungi componente", "nuovo componente", "component svelte", "svelte component", "aggiungi .svelte", "nuovo componente svelte", "crea .svelte", "creare componente", "aggiungere componente", "aggiungi componente UI", "componente UI", "aggiungi button", "aggiungi shadcn"
@@ -32,6 +38,12 @@ Mappa query dell'utente alle procedure corrispondenti. Consulta questa mappa per
 - Query: "crea pagina", "nuova pagina", "aggiungi pagina", "crea route", "nuova route", "aggiungi route", "nuova view", "+page.svelte", "sveltekit route", "creare pagina", "aggiungere route"
 - Procedure: `docs/procedures/svelte/page-creation.md`
 - Per UI della pagina: `docs/standards/ui-stack-standard.md`, `docs/standards/design-system-standard.md`
+- **Se la pagina include una lista o tabella che può essere vuota:** applicare obbligatoriamente la regola empty state in `docs/project/ui-patterns-applied.md` (sezione Empty state) e usare il componente `$lib/components/ui/empty-state`.
+
+### Empty state (liste / tabelle vuote)
+
+- Query: "empty state", "stato vuoto", "lista vuota", "tabella vuota", "nessun dato", "vista quando non ci sono dati", "vuota quando non ci sono"
+- Regola: `docs/project/ui-patterns-applied.md` (sezione Empty state). Usare il componente `$lib/components/ui/empty-state`; in empty state mostrare solo il CTA centrato, non il pulsante in header (CardAction). Riferimento: `src/routes/profilo/salvataggi/+page.svelte`, `src/routes/impostazioni/profili/+page.svelte`.
 
 ### Form e Validazione
 
@@ -53,21 +65,29 @@ Mappa query dell'utente alle procedure corrispondenti. Consulta questa mappa per
 
 - Query: "nuova feature", "aggiungi feature", "implementa feature", "nuova funzionalità", "aggiungi funzionalità", "implementa funzionalità", "nuova capacità", "aggiungi capacità", "new feature", "implementa"
 - Procedure: `docs/procedures/workflow/new-feature.md`
+- **Se la feature introduce una vista con lista/tabella che può essere vuota:** applicare la regola empty state in `docs/project/ui-patterns-applied.md` (sezione Empty state) e usare il componente `$lib/components/ui/empty-state`.
 
 ### Bug Fix
 
 - Query: "fix bug", "correggi bug", "risolvi bug", "bug fix", "fix", "correggi", "risolvi", "non funziona", "errore", "fix error", "correggi errore", "risolvi errore"
 - Procedure: `docs/procedures/workflow/bug-fix.md`
+- **Se il bug è "UI non si aggiorna" / "elemento non cambia aspetto"** (es. icona che dovrebbe cambiare colore ma resta uguale): obbligatoria la sezione **"Bug UI non riflette lo stato"** nella procedure (catena stato → reattività → CSS; dopo 2–3 tentativi falliti: ipotesi + strumentazione, non iterare a caso).
 
 ### Modifica Comportamento (Behavior Change)
 
 - Query: "cambia comportamento", "modifica come funziona", "cambia logica di", "modifica comportamento di", "cambia il funzionamento di", "vuoi che faccia", "invece di X faccia Y", "cambia la logica", "modifica il flusso"
 - Procedure: `docs/procedures/workflow/behavior-change.md`
 
-### Gestione Errori (User-Facing / Toast / Logging)
+### Loading / Sync / Watcher (UX)
 
-- Query: "gestisci errore", "user-facing error", "toast errore", "error boundary", "messaggio di fallimento", "aggiungi toast", "notifica errore"
+- Query: "loading UX", "stati di caricamento", "overlay sync", "watcher loading", "più sync insieme", "best practice loading", "inline vs overlay", "feedback sync"
+- Doc: `docs/project/loading-and-sync-ux.md` — best practice UX per loading, sync e watcher (overlay vs inline, soglie, multi-sync).
+
+### Gestione Errori (User-Facing / Toast / Logging / Archivio)
+
+- Query: "gestisci errore", "user-facing error", "toast errore", "error boundary", "messaggio di fallimento", "aggiungi toast", "notifica errore", "collegare errore a archivio", "aggiungi caso errore sistema", "errore in archivio", "reportSystemError"
 - Procedure: `docs/procedures/workflow/error-handling.md`
+- Se l’errore deve andare in Archivio Errori (errore di sistema): leggere **Standard operativo** in `docs/project/notifications-and-error-archive.md` e usare `reportSystemError` da `$lib/stores/error-archive.ts`.
 
 ### Accessibilità (a11y)
 

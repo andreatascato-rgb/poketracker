@@ -2,6 +2,7 @@
   import { activeProfile, loadProfiles, profiles, setActiveProfile } from "$lib/stores/profile";
   import { onMount } from "svelte";
   import { User } from "@lucide/svelte";
+  import { Tooltip, TooltipContent, TooltipTrigger } from "$lib/components/ui/tooltip";
 
   let open = $state(false);
   let triggerRef = $state<HTMLDivElement | null>(null);
@@ -31,19 +32,23 @@
 <svelte:window onkeydown={handleKeydown} />
 
 <div class="profile-selector-wrap" bind:this={triggerRef}>
-  <button
-    type="button"
-    class="profile-selector-trigger"
-    aria-haspopup="listbox"
-    aria-expanded={open}
-    aria-controls="profile-listbox"
-    id="profile-trigger"
-    title="Seleziona profilo"
-    aria-label="Seleziona profilo"
-    onclick={toggle}
-  >
-    <User class="profile-selector-trigger-icon" aria-hidden="true" />
-  </button>
+  <Tooltip>
+    <TooltipTrigger>
+      <button
+        type="button"
+        class="profile-selector-trigger"
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-controls="profile-listbox"
+        id="profile-trigger"
+        aria-label="Seleziona profilo"
+        onclick={toggle}
+      >
+        <User class="profile-selector-trigger-icon" aria-hidden="true" />
+      </button>
+    </TooltipTrigger>
+    <TooltipContent side="bottom" sideOffset={6}>Seleziona profilo</TooltipContent>
+  </Tooltip>
 
   {#if open}
     <!-- Backdrop: click outside chiude -->
@@ -98,6 +103,11 @@
 
   .profile-selector-trigger:hover {
     background: var(--hover-bg, #2a2d2e);
+  }
+
+  .profile-selector-trigger:active {
+    background: var(--pressed-bg, #1f2224);
+    transition: none;
   }
 
   .profile-selector-trigger:focus-visible {
@@ -155,6 +165,11 @@
 
   .profile-selector-option:hover {
     background: var(--hover-bg, #2a2d2e);
+  }
+
+  .profile-selector-option:active {
+    background: var(--pressed-bg, #1f2224);
+    transition: none;
   }
 
   .profile-selector-option[aria-selected="true"] {

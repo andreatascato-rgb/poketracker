@@ -3,19 +3,30 @@
   import "../app.css";
   import { page } from "$app/stores";
   import { dev } from "$app/environment";
-  import { activeProfile, loadProfiles } from "$lib/stores/profile";
+  import { invoke } from "@tauri-apps/api/core";
+  import { profiles, profilesLoaded, activeProfile, loadProfiles } from "$lib/stores/profile";
+  import { watchedCount, setWatchedCount, canLayoutSetWatchedCount } from "$lib/stores/sync.svelte";
+  import OnboardingView from "$lib/components/onboarding/OnboardingView.svelte";
   import ProfileSelector from "$lib/components/profile/ProfileSelector.svelte";
-  import { Home, User, Pencil, BookOpen, Settings, ChevronLeft, CheckCircle, FolderOpen, RefreshCw } from "@lucide/svelte";
+  import { User, Users, Pencil, BookOpen, Settings, ChevronLeft, ChevronRight, CheckCircle, FolderOpen, RefreshCw, LayoutDashboard, Archive, AlertCircle, PawPrint, Zap, Leaf } from "@lucide/svelte";
+  import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "$lib/components/ui/tooltip";
+  import { Toaster } from "$lib/components/ui/sonner";
+  import { Breadcrumb } from "$lib/components/ui/breadcrumb";
 
   let { children } = $props();
 
   /** Titolo pagina derivato dal path (per top bar). */
   const ROUTE_TITLES: Record<string, string> = {
-    "/": "Home",
-    "/profilo": "Allenatore",
+    "/profilo/dashboard": "Allenatore · Dashboard",
+    "/profilo/salvataggi": "Allenatore · Salvataggi",
     "/editor": "Editor",
     "/wiki": "Wiki",
+    "/wiki/pokemon": "Wiki · Pokemon",
+    "/wiki/mosse": "Wiki · Mosse",
+    "/wiki/nature": "Wiki · Nature",
+    "/archivio/errori": "Archivio · Errori",
     "/impostazioni": "Impostazioni",
+    "/impostazioni/profili": "Impostazioni · Profili",
   };
 
   function pageTitle(path: string): string {
@@ -27,33 +38,141 @@
     return "Pagina";
   }
 
-  /** Stato sync placeholder: idle | synced | pending. Per ora sempre synced. */
-  let syncStatus = $state<"idle" | "synced" | "pending">("synced");
-
-  function openSaveFolder() {
-    // Placeholder: comando Tauri "apri cartella salvataggi" quando disponibile
+  /** Breadcrumb: items per Top Bar (docs/standards/breadcrumb-standard.md). Primo = nome profilo (mai link, "l'inizio"); ultimo senza href = pagina corrente. */
+  type BreadcrumbItem = { label: string; href?: string };
+  function getBreadcrumbItems(path: string, profileName: string): BreadcrumbItem[] {
+    const root = { label: profileName };
+    if (path === "/") return [root];
+    if (path === "/profilo/dashboard") return [root, { label: "Allenatore", href: "/profilo/dashboard" }, { label: "Dashboard" }];
+    if (path === "/profilo/salvataggi") return [root, { label: "Allenatore", href: "/profilo/dashboard" }, { label: "Salvataggi" }];
+    if (path === "/editor") return [root, { label: "Editor" }];
+    if (path === "/wiki") return [root, { label: "Wiki" }];
+    if (path === "/wiki/pokemon") return [root, { label: "Wiki", href: "/wiki" }, { label: "Pokemon" }];
+    if (path === "/wiki/mosse") return [root, { label: "Wiki", href: "/wiki" }, { label: "Mosse" }];
+    if (path === "/wiki/nature") return [root, { label: "Wiki", href: "/wiki" }, { label: "Nature" }];
+    if (path === "/archivio/errori") return [root, { label: "Archivio", href: "/archivio/errori" }, { label: "Errori" }];
+    if (path === "/impostazioni") return [root, { label: "Impostazioni" }];
+    if (path === "/impostazioni/profili") return [root, { label: "Impostazioni", href: "/impostazioni" }, { label: "Profili" }];
+    if (path.startsWith("/profilo/")) return [root, { label: "Allenatore", href: "/profilo/dashboard" }, { label: pageTitle(path) }];
+    if (path.startsWith("/wiki/")) return [root, { label: "Wiki", href: "/wiki" }, { label: pageTitle(path) }];
+    if (path.startsWith("/archivio/")) return [root, { label: "Archivio", href: "/archivio/errori" }, { label: pageTitle(path) }];
+    if (path.startsWith("/impostazioni/")) return [root, { label: "Impostazioni", href: "/impostazioni" }, { label: pageTitle(path) }];
+    return [root, { label: pageTitle(path) }];
   }
 
-  const sidebarItems = [
-    { label: "Home", href: "/", icon: Home },
-    { label: "Allenatore", href: "/profilo", icon: User },
+
+  type SidebarChild = { label: string; href: string; icon: typeof Users | typeof LayoutDashboard | typeof FolderOpen | typeof AlertCircle | typeof PawPrint | typeof Zap | typeof Leaf };
+  type SidebarItem =
+    | { label: string; href: string; icon: typeof Pencil; children?: undefined }
+    | { label: string; href: string; icon: typeof User | typeof BookOpen | typeof Settings | typeof Archive; children: SidebarChild[] };
+  const sidebarItems: SidebarItem[] = [
     { label: "Editor", href: "/editor", icon: Pencil },
-    { label: "Wiki", href: "/wiki", icon: BookOpen },
-    { label: "Impostazioni", href: "/impostazioni", icon: Settings },
-  ] as const;
+    {
+      label: "Allenatore",
+      href: "/profilo/dashboard",
+      icon: User,
+      children: [
+        { label: "Dashboard", href: "/profilo/dashboard", icon: LayoutDashboard },
+        { label: "Salvataggi", href: "/profilo/salvataggi", icon: FolderOpen },
+      ],
+    },
+    {
+      label: "Wiki",
+      href: "/wiki",
+      icon: BookOpen,
+      children: [
+        { label: "Pokemon", href: "/wiki/pokemon", icon: PawPrint },
+        { label: "Mosse", href: "/wiki/mosse", icon: Zap },
+        { label: "Nature", href: "/wiki/nature", icon: Leaf },
+      ],
+    },
+    {
+      label: "Archivio",
+      href: "/archivio/errori",
+      icon: Archive,
+      children: [{ label: "Errori", href: "/archivio/errori", icon: AlertCircle }],
+    },
+    {
+      label: "Impostazioni",
+      href: "/impostazioni",
+      icon: Settings,
+      children: [{ label: "Profili", href: "/impostazioni/profili", icon: Users }],
+    },
+  ];
 
   let sidebarCollapsed = $state(false);
   /** Deferred so first paint completes before sidebar (sidebar render was blocking mount in Tauri webview) */
   let showSidebar = $state(false);
+  /** Una sola sezione espansa alla volta. Href della sezione aperta; "" = utente ha chiuso; null = nessuna sezione contiene la route. Solo il toggle utente cambia questo stato (la navigazione non lo resetta). */
+  let expandedSection = $state<string | null>(null);
+  const EXPANDED_NONE = "";
+
+  /** "In sezione" = path è il padre o una sottovoce (o sotto-path). Usato per espansione e toggle. */
+  function isInSection(path: string, item: SidebarItem): boolean {
+    if (!("children" in item) || !item.children || item.href === "/") return false;
+    return (
+      path === item.href ||
+      path.startsWith(item.href + "/") ||
+      item.children.some((c) => path === c.href || path.startsWith(c.href + "/"))
+    );
+  }
+
+  /** Href della sezione che contiene il path (per inizializzazione). */
+  function sectionContaining(path: string): string | null {
+    const item = sidebarItems.find(
+      (it) => "children" in it && it.children && isInSection(path, it)
+    );
+    return item ? item.href : null;
+  }
+
+  function toggleSection(href: string) {
+    const path = $page?.url?.pathname ?? "";
+    const item = sidebarItems.find((it) => "children" in it && it.href === href);
+    const inSection = item ? isInSection(path, item) : false;
+    const isCurrentlyExpanded = expandedSection === href || (expandedSection === null && inSection);
+    if (isCurrentlyExpanded) {
+      expandedSection = EXPANDED_NONE;
+    } else {
+      expandedSection = href;
+    }
+  }
+
+  /** Stato espanso solo utente: la navigazione non lo cambia. Inizializzazione una tantum al primo path. */
+  let expandedInitialized = $state(false);
+  $effect(() => {
+    const path = $page?.url?.pathname ?? "";
+    if (!expandedInitialized) {
+      expandedInitialized = true;
+      expandedSection = sectionContaining(path) ?? null;
+    }
+  });
 
   function isSidebarActive(href: string): boolean {
     const path = $page?.url?.pathname ?? "";
     return path === href || (path.startsWith(href + "/") && href !== "/");
   }
 
+  $effect(() => {
+    const n = $watchedCount;
+    // #region agent log
+    if (import.meta.env.DEV) fetch('http://127.0.0.1:7246/ingest/e155c680-47df-4a07-9855-14bedbe06598',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'+layout.svelte:$effect',message:'Layout $watchedCount',data:{watchedCount:n},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'B'})}).catch(()=>{});
+    // #endregion
+  });
+
   onMount(() => {
     showSidebar = true;
     loadProfiles();
+    invoke<string[]>("get_sav_watched_paths")
+      .then((paths) => {
+        const can = canLayoutSetWatchedCount();
+        // #region agent log
+        if (import.meta.env.DEV) fetch('http://127.0.0.1:7246/ingest/e155c680-47df-4a07-9855-14bedbe06598',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'+layout.svelte:onMount',message:'Layout onMount get_sav_watched_paths',data:{pathsLength:paths?.length??0,canLayoutSet:can,willOverwrite:can},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'C'})}).catch(()=>{});
+        // #endregion
+        if (can) setWatchedCount(paths?.length ?? 0);
+      })
+      .catch(() => {
+        if (canLayoutSetWatchedCount()) setWatchedCount(0);
+      });
   });
 </script>
 
@@ -61,47 +180,48 @@
   <title>PokeTracker</title>
 </svelte:head>
 
+{#if $profilesLoaded && $profiles.length === 0}
+  <OnboardingView />
+{:else}
 <!-- Shell layout: TopBar + Sidebar + Main. Stile Poketrack (font/token); sidebar 220px compatta. -->
 <div class="poketrack-layout app">
+  <TooltipProvider delayDuration={300}>
   <header class="top-bar" aria-label="Intestazione">
     <div class="top-bar-left" aria-label="Contesto">
-      <span class="top-bar-app-name">PokeTracker</span>
-      <span class="top-bar-sep" aria-hidden="true">·</span>
-      <span class="top-bar-page-title">{pageTitle($page?.url?.pathname ?? "/")}</span>
+      <Breadcrumb items={getBreadcrumbItems($page?.url?.pathname ?? "/", $activeProfile?.name ?? "—")} class="flex-1 min-w-0" />
     </div>
     <div class="top-bar-right" role="toolbar" aria-label="Azioni barra superiore">
-      <button
-        type="button"
-        class="top-bar-btn"
-        title={syncStatus === "synced" ? "Salvataggi sincronizzati" : syncStatus === "pending" ? "Aggiornamento in corso…" : "Stato sincronizzazione"}
-        aria-label={syncStatus === "synced" ? "Salvataggi sincronizzati" : syncStatus === "pending" ? "Aggiornamento in corso" : "Stato sincronizzazione"}
-      >
-        {#if syncStatus === "pending"}
-          <RefreshCw class="top-bar-btn-icon spinning" aria-hidden="true" />
-        {:else}
-          <CheckCircle class="top-bar-btn-icon status-ok" aria-hidden="true" />
-        {/if}
-      </button>
-      <button
-        type="button"
-        class="top-bar-btn"
-        title="Apri cartella salvataggi"
-        aria-label="Apri cartella salvataggi"
-        onclick={openSaveFolder}
-      >
-        <FolderOpen class="top-bar-btn-icon" aria-hidden="true" />
-      </button>
+      <Tooltip>
+        <TooltipTrigger>
+          <button
+            type="button"
+            class="top-bar-btn"
+            aria-label={$watchedCount > 0 ? ($watchedCount === 1 ? "1 watcher attivo" : `${$watchedCount} watcher attivi`) : "Nessun watcher attivo"}
+          >
+            <CheckCircle class="top-bar-btn-icon {$watchedCount > 0 ? 'status-active' : ''}" aria-hidden="true" />
+          </button>
+        </TooltipTrigger>
+        <TooltipContent side="bottom" sideOffset={6}>
+          {$watchedCount > 0
+            ? ($watchedCount === 1 ? "1 watcher attivo" : `${$watchedCount} watcher attivi`)
+            : "Nessun watcher attivo"}
+        </TooltipContent>
+      </Tooltip>
       <ProfileSelector />
       {#if dev}
-        <button
-          type="button"
-          class="top-bar-btn"
-          title="Ricarica interfaccia (dev) – vedi modifiche senza riavviare tauri dev"
-          aria-label="Ricarica interfaccia"
-          onclick={() => window.location.reload()}
-        >
-          <RefreshCw class="top-bar-btn-icon" aria-hidden="true" />
-        </button>
+        <Tooltip>
+          <TooltipTrigger>
+            <button
+              type="button"
+              class="top-bar-btn"
+              aria-label="Ricarica interfaccia"
+              onclick={() => window.location.reload()}
+            >
+              <RefreshCw class="top-bar-btn-icon" aria-hidden="true" />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent side="bottom" sideOffset={6}>Ricarica interfaccia (dev) – vedi modifiche senza riavviare tauri dev</TooltipContent>
+        </Tooltip>
       {/if}
     </div>
   </header>
@@ -115,47 +235,157 @@
     </main>
     {#if showSidebar}
     <aside class="sidebar" class:sidebar-collapsed={sidebarCollapsed} aria-label="Sidebar">
-      <div class="sidebar-header">
-        <button
-          type="button"
-          class="sidebar-toggle"
-          aria-label={sidebarCollapsed ? "Espandi sidebar" : "Collassa sidebar"}
-          aria-expanded={!sidebarCollapsed}
-          title={sidebarCollapsed ? "Espandi sidebar" : "Collassa sidebar"}
-          onclick={() => (sidebarCollapsed = !sidebarCollapsed)}
-        >
-          <span class="sidebar-chevron" class:rotated={sidebarCollapsed} aria-hidden="true">
-            <ChevronLeft class="sidebar-icon-svg" />
+        <div class="sidebar-header">
+          {#if sidebarCollapsed}
+            <Tooltip>
+              <TooltipTrigger>
+                <button
+                  type="button"
+                  class="sidebar-toggle"
+                  aria-label="Espandi sidebar"
+                  aria-expanded={false}
+                  onclick={() => (sidebarCollapsed = !sidebarCollapsed)}
+                >
+                  <span class="sidebar-chevron rotated" aria-hidden="true">
+                    <ChevronLeft class="sidebar-icon-svg" />
+                  </span>
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="right" sideOffset={8}>Espandi sidebar</TooltipContent>
+            </Tooltip>
+          {:else}
+            <Tooltip>
+              <TooltipTrigger>
+<button
+                type="button"
+                class="sidebar-toggle"
+                aria-label="Collassa sidebar"
+                aria-expanded={true}
+                onclick={() => (sidebarCollapsed = !sidebarCollapsed)}
+              >
+                  <span class="sidebar-chevron" aria-hidden="true">
+                    <ChevronLeft class="sidebar-icon-svg" />
+                  </span>
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="right" sideOffset={8}>Collassa sidebar</TooltipContent>
+            </Tooltip>
+          {/if}
+          <span class="sidebar-trainer-name-wrap">
+            <Tooltip>
+              <TooltipTrigger>
+                <span class="sidebar-trainer-name">
+                  {$activeProfile?.name ?? "—"}
+                </span>
+              </TooltipTrigger>
+              <TooltipContent side="right" sideOffset={8}>{$activeProfile?.name ?? "Nessun profilo"}</TooltipContent>
+            </Tooltip>
           </span>
-        </button>
-        <span class="sidebar-trainer-name" title={$activeProfile?.name ?? "Nessun profilo"}>
-          {$activeProfile?.name ?? "—"}
-        </span>
-      </div>
-      <nav class="sidebar-nav" aria-label="Navigazione principale">
-        {#each sidebarItems as item}
-          {@const Icon = item.icon}
-          {@const active = isSidebarActive(item.href)}
-          <a
-            href={item.href}
-            class="sidebar-item"
-            class:active
-            aria-current={active ? "page" : undefined}
-            title={sidebarCollapsed ? item.label : undefined}
-          >
-            <span class="sidebar-item-icon" aria-hidden="true">
-              <Icon class="sidebar-icon-svg" />
-            </span>
-            {#if !sidebarCollapsed}
-              <span class="sidebar-item-label">{item.label}</span>
+        </div>
+        <nav class="sidebar-nav" aria-label="Navigazione principale">
+          {#each sidebarItems as item}
+            {@const Icon = item.icon}
+            {@const active = isSidebarActive(item.href)}
+            {#if item.children}
+              {@const inThisSection = isInSection($page?.url?.pathname ?? "", item)}
+              {@const isExpanded = expandedSection === item.href || (expandedSection === null && inThisSection)}
+              <div class="sidebar-group">
+                {#if sidebarCollapsed}
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <button
+                        type="button"
+                        class="sidebar-item sidebar-parent"
+                        aria-expanded={isExpanded}
+                        aria-haspopup="true"
+                        onclick={() => toggleSection(item.href)}
+                      >
+                        <span class="sidebar-item-icon" aria-hidden="true">
+                          <Icon class="sidebar-icon-svg" />
+                        </span>
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="right" sideOffset={8}>{item.label}</TooltipContent>
+                  </Tooltip>
+                {:else}
+                  <button
+                    type="button"
+                    class="sidebar-item sidebar-parent"
+                    aria-expanded={isExpanded}
+                    aria-haspopup="true"
+                    onclick={() => toggleSection(item.href)}
+                  >
+                    <span class="sidebar-item-icon" aria-hidden="true">
+                      <Icon class="sidebar-icon-svg" />
+                    </span>
+                    <span class="sidebar-item-label">{item.label}</span>
+                    <span class="sidebar-group-chevron" class:expanded={isExpanded} aria-hidden="true">
+                      <ChevronRight class="sidebar-icon-svg" />
+                    </span>
+                  </button>
+                {/if}
+                {#if !sidebarCollapsed}
+                  <div class="sidebar-children-wrapper" class:expanded={isExpanded} role="group" aria-label="Sottosezioni {item.label}">
+                    <div class="sidebar-children">
+                      {#each item.children as child}
+                        {@const childActive = isSidebarActive(child.href)}
+                        {@const ChildIcon = child.icon}
+                        <a
+                          href={child.href}
+                          class="sidebar-item sidebar-subitem"
+                          class:active={childActive}
+                          aria-current={childActive ? "page" : undefined}
+                        >
+                          <span class="sidebar-item-icon" aria-hidden="true">
+                            <ChildIcon class="sidebar-icon-svg" />
+                          </span>
+                          <span class="sidebar-item-label">{child.label}</span>
+                        </a>
+                      {/each}
+                    </div>
+                  </div>
+                {/if}
+              </div>
+            {:else}
+              {#if sidebarCollapsed}
+                <Tooltip>
+                  <TooltipTrigger>
+                    <a
+                      href={item.href}
+                      class="sidebar-item"
+                      class:active
+                      aria-current={active ? "page" : undefined}
+                    >
+                      <span class="sidebar-item-icon" aria-hidden="true">
+                        <Icon class="sidebar-icon-svg" />
+                      </span>
+                    </a>
+                  </TooltipTrigger>
+                  <TooltipContent side="right" sideOffset={8}>{item.label}</TooltipContent>
+                </Tooltip>
+              {:else}
+<a
+                href={item.href}
+                class="sidebar-item"
+                class:active
+                aria-current={active ? "page" : undefined}
+              >
+                <span class="sidebar-item-icon" aria-hidden="true">
+                  <Icon class="sidebar-icon-svg" />
+                </span>
+                <span class="sidebar-item-label">{item.label}</span>
+              </a>
+              {/if}
             {/if}
-          </a>
-        {/each}
-      </nav>
+          {/each}
+        </nav>
     </aside>
     {/if}
   </div>
+  </TooltipProvider>
 </div>
+{/if}
+<Toaster />
 
 <style>
   .poketrack-layout.app {
@@ -193,24 +423,6 @@
     flex: 1;
   }
 
-  .top-bar-app-name {
-    font-weight: var(--font-weight-medium, 500);
-    color: var(--text-primary, #cccccc);
-    white-space: nowrap;
-  }
-
-  .top-bar-sep {
-    color: var(--text-secondary, #858585);
-    user-select: none;
-  }
-
-  .top-bar-page-title {
-    color: var(--text-primary, #cccccc);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
   .top-bar-right {
     display: flex;
     align-items: center;
@@ -238,33 +450,23 @@
     background: var(--hover-bg, #2a2d2e);
   }
 
+  .top-bar-btn:active {
+    background: var(--pressed-bg, #1f2224);
+    transition: none;
+  }
+
   .top-bar-btn:focus-visible {
     outline: 2px solid var(--focus-ring, #007acc);
     outline-offset: 0;
   }
 
-  .top-bar-btn-icon {
-    width: var(--icon-size-ui-primary, 18px);
-    height: var(--icon-size-ui-primary, 18px);
+  /* :global: la classe è sull'icona Lucide (child component), lo scope non la raggiunge. Nessun width/height così resta la dimensione default Lucide (24px) come prima. */
+  :global(.top-bar-btn-icon) {
     flex-shrink: 0;
     color: inherit;
   }
-
-  .top-bar-btn-icon.status-ok {
-    color: var(--text-secondary, #858585);
-  }
-
-  .top-bar-btn-icon.spinning {
-    animation: top-bar-spin 1s linear infinite;
-  }
-
-  @keyframes top-bar-spin {
-    from {
-      transform: rotate(0deg);
-    }
-    to {
-      transform: rotate(360deg);
-    }
+  :global(.top-bar-btn-icon.status-active) {
+    color: var(--icon-success);
   }
 
   .app-body {
@@ -305,15 +507,31 @@
     min-height: 40px;
   }
 
-  .sidebar-trainer-name {
+  .sidebar-trainer-name-wrap {
     flex: 1;
     min-width: 0;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    min-height: 32px;
+  }
+
+  .sidebar-trainer-name {
+    display: block;
     font-size: var(--font-size-ui-primary, 14px);
     font-weight: var(--font-weight-normal, 400);
+    line-height: 1.25;
     color: var(--text-secondary, #858585);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+  }
+
+  .sidebar.sidebar-collapsed .sidebar-trainer-name-wrap {
+    position: absolute;
+    width: 0;
+    overflow: hidden;
+    opacity: 0;
   }
 
   .sidebar.sidebar-collapsed .sidebar-trainer-name {
@@ -342,6 +560,11 @@
     background: var(--hover-bg, #2a2d2e);
   }
 
+  .sidebar-toggle:active {
+    background: var(--pressed-bg, #1f2224);
+    transition: none;
+  }
+
   .sidebar-toggle:focus-visible {
     outline: 2px solid var(--focus-ring, #007acc);
     outline-offset: 0;
@@ -356,6 +579,24 @@
 
   .sidebar-chevron.rotated {
     transform: rotate(180deg);
+  }
+
+  .sidebar-group-chevron {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: transform var(--transition-default, 200ms ease-out);
+  }
+
+  .sidebar-group-chevron.expanded {
+    transform: rotate(90deg);
+  }
+
+  .sidebar-group-chevron :global(svg) {
+    width: 16px;
+    height: 16px;
+    color: var(--text-secondary, #858585);
   }
 
   /* Icone voci: token --icon-size-ui-primary (stesso di toolbar/Default); chevron toggle resta 16px */
@@ -393,6 +634,77 @@
     overflow-x: hidden;
   }
 
+  .sidebar-group {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .sidebar-parent {
+    width: 100%;
+    text-align: left;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font: inherit;
+    color: inherit;
+  }
+
+  .sidebar-parent:hover {
+    background: var(--hover-bg, #2a2d2e);
+  }
+
+  .sidebar-parent:active {
+    background: var(--pressed-bg, #1f2224);
+    transition: none;
+  }
+
+  .sidebar-parent:focus-visible {
+    outline: 2px solid var(--focus-ring, #007acc);
+    outline-offset: -2px;
+  }
+
+  .sidebar-parent .sidebar-item-label {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .sidebar-children-wrapper {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows var(--transition-default, 200ms ease-out);
+  }
+
+  .sidebar-children-wrapper.expanded {
+    grid-template-rows: 1fr;
+  }
+
+  .sidebar-children-wrapper > .sidebar-children {
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .sidebar-children {
+    margin-inline-start: 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    border-inline-start: 2px solid var(--border-primary, #3e3e42);
+    padding-inline-start: 10px;
+  }
+
+  .sidebar-subitem {
+    padding-inline-start: 0;
+  }
+
+  .sidebar-subitem .sidebar-item-icon {
+    flex-shrink: 0;
+  }
+
+  .sidebar-subitem .sidebar-item-label {
+    flex: 1;
+  }
+
   .sidebar-item {
     display: flex;
     align-items: center;
@@ -415,18 +727,37 @@
     padding: 8px;
   }
 
+  /* Hover: superficie “raised” riconoscibile (best practice 2025–2026: feedback chiaro ma non invasivo) */
   .sidebar-item:hover {
+    background: var(--bg-tertiary, #2d2d30);
+    color: var(--text-primary, #cccccc);
+  }
+
+  .sidebar-item:active {
+    background: var(--pressed-bg, #1f2224);
+    transition: none;
+  }
+
+  /* Active (voce corrente): barra a sinistra + sfondo lieve, mai solo colore (W3C), non distraente (UX Movement) */
+  .sidebar-item.active {
     background: var(--hover-bg, #2a2d2e);
     color: var(--text-primary, #cccccc);
   }
 
-  .sidebar-item.active {
-    background: var(--active-bg, #094771);
-    color: #fff;
+  .sidebar-item.active::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: var(--focus-ring, #007acc);
+    border-radius: 0 2px 2px 0;
+    pointer-events: none;
   }
 
   .sidebar-item.active .sidebar-item-icon :global(svg) {
-    color: #fff;
+    color: inherit;
   }
 
   .sidebar-item:focus-visible {
@@ -445,6 +776,21 @@
     width: 0;
     overflow: hidden;
     opacity: 0;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .sidebar {
+      transition: none;
+    }
+    .sidebar-chevron {
+      transition: none;
+    }
+    .sidebar-group-chevron {
+      transition: none;
+    }
+    .sidebar-children-wrapper {
+      transition: none;
+    }
   }
 
   .main-content {

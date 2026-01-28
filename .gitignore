@@ -36,3 +36,6 @@ Thumbs.db
 
 # Tauri build output (se fuori da src-tauri/target)
 dist/
+
+# Icone generate (sorgente: src-tauri/icons/pokeball.svg)
+app-icon.png

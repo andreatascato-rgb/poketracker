@@ -17,10 +17,16 @@ Definisce i requisiti minimi di accessibilità per PokeTracker (WCAG-oriented): 
 - **Avvisi compile-time:** rispettare i warning di accessibilità di Svelte (es. click su non-interattivi senza handler tastiera, uso errato di ARIA).
 - **Eventi:** per azioni su elementi non nativamente interattivi (es. `div` con `on:click`) fornire equivalente da tastiera (es. `on:keydown` con Enter/Space) e ruoli/ARIA appropriati.
 
+## Riduzione movimento (prefers-reduced-motion)
+
+- Quando l'utente preferisce meno movimento (`prefers-reduced-motion: reduce`), transizioni e animazioni vanno ridotte o disattivate.
+- **Implementazione globale:** in `src/app.css` un blocco `@media (prefers-reduced-motion: reduce)` applica `transition-duration: 0.01ms` e `animation-duration: 0.01ms` a tutta l'app. Nuove animazioni/transizioni devono rispettare questa preferenza (il blocco globale le sovrascrive; per eccezioni documentare il motivo).
+- Riferimento design system: `docs/standards/design-system-standard.md` (§ Transizioni).
+
 ## Toast e Notifiche
 
 - Usare `role="status"` o `role="alert"` a seconda della priorità; `aria-live="polite"` (o `assertive` per alert critici).
-- Rispettare `prefers-reduced-motion` per animazioni.
+- Rispettare `prefers-reduced-motion` per animazioni (v. sezione "Riduzione movimento" sopra).
 - Non affidarsi solo al colore per indicare successo/errore; usare icona o testo.
 
 ## Form
