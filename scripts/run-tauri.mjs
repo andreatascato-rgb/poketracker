@@ -1,7 +1,7 @@
 /**
- * Avvia il CLI Tauri con CARGO_HOME e RUSTUP_HOME.
- * Percorso Rust: RUST_ROOT da .env (copia .env.example in .env) oppure default C:\_Main\_app.
- * Usato quando Rust/Cargo sono in cartella custom (es. dopo aver spostato le cartelle).
+ * Avvia il CLI Tauri.
+ * Se in .env è impostato RUST_ROOT, usa quella cartella per CARGO_HOME/RUSTUP_HOME (Rust custom).
+ * Altrimenti usa l'installazione Rust dell'utente (es. C:\Users\<user>\.cargo).
  */
 import { spawn } from 'child_process';
 import { readFileSync } from 'fs';
@@ -17,15 +17,15 @@ try {
     if (m) process.env.RUST_ROOT = m[1].trim().replace(/^["']|["']$/g, '');
   }
 } catch (_) {}
-const RUST_ROOT = process.env.RUST_ROOT ?? 'C:\\_Main\\_app';
-const CARGO_BIN = `${RUST_ROOT}\\.cargo\\bin`;
 
-const env = {
-  ...process.env,
-  CARGO_HOME: `${RUST_ROOT}\\.cargo`,
-  RUSTUP_HOME: `${RUST_ROOT}\\.rustup`,
-  PATH: `${CARGO_BIN};${process.env.PATH || ''}`,
-};
+const env = { ...process.env };
+if (process.env.RUST_ROOT) {
+  const RUST_ROOT = process.env.RUST_ROOT;
+  const CARGO_BIN = `${RUST_ROOT}\\.cargo\\bin`;
+  env.CARGO_HOME = `${RUST_ROOT}\\.cargo`;
+  env.RUSTUP_HOME = `${RUST_ROOT}\\.rustup`;
+  env.PATH = `${CARGO_BIN};${process.env.PATH || ''}`;
+}
 
 let args = process.argv.slice(2);
 if (args.length === 0) args = ['dev'];

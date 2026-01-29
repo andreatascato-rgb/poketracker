@@ -1,6 +1,6 @@
 {
   "name": "poketracker",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "PokeTracker - Pokedex personale e gestione salvataggi Pokemon",
   "type": "module",
   "scripts": {

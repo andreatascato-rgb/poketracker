@@ -26,6 +26,15 @@ Breve testo che riassume la release.
 
 ## Versioni
 
+### [0.2.1] - 2026-01-29
+
+#### Descrizione
+Fix script e configurazione: run-tauri, cargo-check, .env.example, Cargo.lock.
+
+#### Change
+- Script run-tauri e cargo-check aggiornati
+- .env.example e Cargo.lock allineati
+
 ### [0.2.0] - 2026-01-29
 
 #### Descrizione
