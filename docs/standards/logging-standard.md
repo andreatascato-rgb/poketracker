@@ -42,4 +42,4 @@ In **produzione** preferire livello ≥ `info` (o `warn`) per ridurre volume e c
 
 ## Note
 
-- Per “aggiungi logging”, “configura log level” usare questo standard e la procedure corrispondente.
+- Per “aggiungi logging”, “configura log level” usare questo standard e la procedura corrispondente.

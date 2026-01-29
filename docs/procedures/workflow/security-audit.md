@@ -4,7 +4,7 @@
 
 Definisce come eseguire una verifica di sicurezza in linea con [security-standard](../../standards/security-standard.md) e [security](../../project/security.md).
 
-## Quando Usare Questa Procedure
+## Quando Usare Questa Procedura
 
 - Query: "verifica sicurezza", "security audit", "sicurezza generale", "controlla sicurezza", "audit sicurezza", "check sicurezza"
 - Quando si deve verificare o migliorare il rispetto delle pratiche di sicurezza (senza focus specifico su sola validazione input)
@@ -43,5 +43,5 @@ Completamento integrale della checklist obbligatorio prima di proporre implement
 
 ## Note
 
-- Per “validazione input” mirata usare la procedure [input-validation](../../workflow/input-validation.md).
+- Per “validazione input” mirata usare la procedura [input-validation](../../workflow/input-validation.md).
 - Questa procedure si applica quando l’obiettivo è una verifica complessiva di sicurezza o un audit.

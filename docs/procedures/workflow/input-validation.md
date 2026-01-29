@@ -4,7 +4,7 @@
 
 Definisce come validare e sanitizzare l’input in ingresso ai command Tauri in linea con [input-validation-standard](../../standards/input-validation-standard.md).
 
-## Quando Usare Questa Procedure
+## Quando Usare Questa Procedura
 
 - Query: "validazione input", "sanitizza", "sicurezza input", "input validation", "never trust frontend", "valida argomenti"
 - Quando si deve validare o sanitizzare i payload di `invoke` o l’input utente in Rust

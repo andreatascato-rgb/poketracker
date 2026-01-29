@@ -52,4 +52,4 @@ Definisce quando e come ottimizzare le performance in PokeTracker, in linea con 
 
 ## Note
 
-- Per “ottimizza performance”, “lazy load”, “virtualizza lista”, “indice DB” usare questo standard e la procedure performance-optimization.
+- Per “ottimizza performance”, “lazy load”, “virtualizza lista”, “indice DB” usare questo standard e la procedura performance-optimization.

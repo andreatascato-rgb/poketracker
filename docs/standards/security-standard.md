@@ -55,5 +55,5 @@ Definisce le regole operative di sicurezza per PokeTracker (file system, DB, sid
 
 ## Note
 
-- Per “validazione input” usare [input-validation-standard](./input-validation-standard.md) e la procedure corrispondente.
-- Per “verifica sicurezza”, “security audit”, “sicurezza generale” usare questo standard e la procedure `docs/procedures/workflow/security-audit.md`.
+- Per “validazione input” usare [input-validation-standard](./input-validation-standard.md) e la procedura corrispondente.
+- Per “verifica sicurezza”, “security audit”, “sicurezza generale” usare questo standard e la procedura `docs/procedures/workflow/security-audit.md`.

@@ -4,7 +4,7 @@
 
 Definisce come individuare, correggere e verificare un bug in modo mirato, senza alterare comportamento non richiesto.
 
-## Quando Usare Questa Procedure
+## Quando Usare Questa Procedura
 
 - Query: "fix bug", "correggi bug", "risolvi bug", "bug fix", "fix", "correggi", "risolvi", "non funziona", "errore", "fix error", "correggi errore"
 - Quando l’utente segnala un comportamento errato o un errore da correggere

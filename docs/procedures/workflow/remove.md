@@ -4,7 +4,7 @@
 
 Definisce come rimuovere in modo coerente un componente, un comando, un servizio, una pagina o altra risorsa senza lasciare riferimenti orfani.
 
-## Quando Usare Questa Procedure
+## Quando Usare Questa Procedura
 
 - Query: "rimuovi", "elimina", "delete", "togli", "rimuovi componente", "elimina comando", "rimuovi feature", "delete file"
 - Quando l'utente chiede esplicitamente di eliminare una parte del codice o una funzionalità
@@ -40,4 +40,4 @@ Completamento integrale della checklist obbligatorio prima di proporre implement
 ## Note
 
 - Non rimuovere codice “a sorpresa”: la richiesta deve essere esplicita (“rimuovi X”, “elimina Y”). In caso di dubbio chiedere conferma.
-- Per “refactoring che sposta/rinomina” usare la procedure `refactor.md`; per “rimuovi e basta” usare questa.
+- Per “refactoring che sposta/rinomina” usare la procedura `refactor.md`; per “rimuovi e basta” usare questa.

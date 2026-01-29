@@ -101,9 +101,9 @@ Definisce strategie di ottimizzazione performance per l'applicazione PokeTracker
 - Reactive updates solo quando necessario
 
 **Assets:**
-- Lazy load immagini HD
-- Compressione sprite
-- CDN o local cache per risorse
+- Lazy load immagini HD (se presenti)
+- Compressione sprite dove utile
+- **Solo locale:** risorse (sprite Pokedex, icone) da bundle o cache locale; nessun CDN a runtime. Vedi [pokedex-sprites](./pokedex-sprites.md), [offline-data-strategy](./offline-data-strategy.md).
 
 ## Profiling
 

@@ -17,13 +17,21 @@ Riassume la strategia di dati offline e persistenza per PokeTracker: tutto local
 | **Profili, cartella main, percorsi salvataggi per profilo, Pokedex** | DB SQLite (Rust), path da `app.path().app_data_dir()` | [database-storage](./database-storage.md), [architecture-overview](./architecture-overview.md) |
 | **Knowledge (Pokemon, mosse, nature, wiki)** | DB o bundle locale; lettura via comandi Rust | [knowledge-database](./knowledge-database.md) |
 | **File `.sav`** | Filesystem; lettura/parsing via sidecar C# | [parser-architecture](./parser-architecture.md), [core-functionality](./core-functionality.md) |
-| **Risorse (icone, sprite)** | Bundle app o download locale; path da app | [features](./features.md), [pokedex-personal](./pokedex-personal.md) |
+| **Risorse (icone, sprite)** | **Solo locale:** bundle app (es. `static/pokedex-sprites/`) o pre-scaricati; nessuna dipendenza da rete a runtime per core. Vedi [pokedex-sprites](./pokedex-sprites.md). | [features](./features.md), [pokedex-personal](./pokedex-personal.md), [pokedex-sprites](./pokedex-sprites.md) |
 
 ## Cache-First (Implicito)
 
 - **Tutto è già “cache”:** non c’è distinzione “rete vs locale”; l’unica fonte è locale.
 - **Aggiornamento dati:** (a) all’avvio: controllo file `.sav` in cartella profilo, estrazione/aggiornamento; (b) con app aperta: monitoraggio cartella, rilevazione modifiche, aggiornamento incrementale. Vedi [core-functionality](./core-functionality.md) (Controllo automatico, Riconoscimento automatico).
 - **Persistenza:** dati estratti salvati in DB locale per restare disponibili anche senza accesso ai file `.sav` originali.
+
+## Watcher e persistenza (nessuna perdita dati spegnendo)
+
+- **Watcher:** serve a scansionare i save (prima volta) e ad aggiornare il DB quando i file cambiano. Puoi tenerlo acceso o spegnerlo quando vuoi.
+- **Spegnere il watcher** (disattivare il monitoraggio su un percorso) **non cancella** i dati già in DB: voci salvataggio (`sav_entries`), stato Pokedex (`pokedex_state`), ecc. restano in SQLite.
+- **Riaccendere il watcher:** alla prossima modifica del file (o a una sync manuale) i dati si aggiornano; il DB continua a conservare anche i dati precedenti fino a nuova scrittura.
+- **Rimuovere una voce salvataggio** (`remove_sav_entry`) toglie solo quel percorso dalla lista e dal watcher; **non** svuota `pokedex_state` (il Pokedex del profilo resta com’è).
+- In sintesi: il DB è la memoria persistente; il watcher è solo il “trigger” per aggiornare quella memoria. Nessuna falla: spegnere il watcher non fa perdere dati.
 
 ## Sync Futuro (Opzionale)
 

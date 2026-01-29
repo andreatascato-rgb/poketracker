@@ -4,7 +4,7 @@
 
 Definisce come introdurre o modificare layout adattivi (breakpoint, comportamento su viewport stretta/larga, tipografia fluida, container queries) in modo coerente con le best practice 2026. **Standard di riferimento:** `docs/standards/responsive-design-standard.md`. **Stack:** Tailwind + shadcn; shell e token da `docs/standards/design-system-standard.md` e `docs/standards/ui-stack-standard.md`.
 
-## Quando Usare Questa Procedure
+## Quando Usare Questa Procedura
 
 - Query: "rendi responsive", "design responsive", "layout mobile", "breakpoint", "layout adattivo", "adatta a viewport", "mobile-first", "sidebar su schermo piccolo", "tipografia fluida", "container query"
 - Quando si aggiungono o cambiano comportamenti in base alla larghezza viewport o al contesto contenitore

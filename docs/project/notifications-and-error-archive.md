@@ -2,7 +2,7 @@
 
 ## Obiettivo
 
-Definisce le scelte UX e di prodotto per: (1) dove e come mostrare avvisi/notifiche invece di dati di debug in schermata; (2) standard per errori → notifica + registro in Archivio; (3) Top Bar con icona notifiche e componente dedicato; (4) sezione sidebar **Archivio** con sottosezione **Errori** per log completo da incollare (es. ad assistente AI).
+Definisce le scelte UX e di prodotto per: (1) dove e come mostrare avvisi/notifiche invece di dati di debug in schermata; (2) standard per errori → notifica + registro in Archivio; (3) Top Bar con icona notifiche e componente dedicato; (4) **Impostazioni → Errori** per log completo da incollare (nessuna voce sidebar «Archivio») (es. ad assistente AI).
 
 **Stato:** scelte definite; implementazione da pianificare.
 
@@ -60,11 +60,11 @@ Scopo principale dell’Archivio errori: avere un **log completo** da poter copi
 
 ---
 
-## Archivio in sidebar
+## Errori in Impostazioni
 
-- **Sezione sidebar:** **Archivio** (nuova voce, ordine da definire rispetto a Home / Allenatore / Editor / Wiki / Impostazioni; candidata dopo Wiki o prima di Impostazioni).
-- **Sottosezione:** **Errori** (prima sottosezione di Archivio; altre sottosezioni possibili in futuro, es. cronologia export, backup, ecc.).
-- **Route:** da definire (es. `/archivio`, `/archivio/errori`).
+- **Sezione sidebar:** **Impostazioni** (sottosezioni: Profili, Errori).
+- **Sottosezione:** **Errori** (registro errori di sistema; altre sottosezioni Impostazioni possibili in futuro).
+- **Route:** `/impostazioni/errori`.
 - **Contenuto pagina Errori:**
   - Tabella con colonne: **Data** | **Tipo errore** | **Apri (icona)** | **Azioni (Elimina)**.
   - Clic su “Apri” apre il **componente di visualizzazione dettaglio errore** (drawer/dialog/sheet) con testo completo copiabile.
@@ -92,7 +92,7 @@ L’utente può in qualunque momento aprire Archivio → Errori, ordinare per da
 | Dove mostrarlo in futuro | Non in schermata; tramite avviso (toast) + notifica (centro notifiche) + Archivio Errori |
 | Notifiche | Icona in Top Bar; clic apre componente dedicato (centro notifiche in-app) |
 | Errori | Standard: toast + notifica + voce in Archivio → Errori con Data, Tipo, Apri (dettaglio copiabile), Elimina |
-| Archivio | Nuova sezione in sidebar; sottosezione Errori con tabella e componente “dettaglio errore” |
+| Errori (posizione) | Impostazioni → Errori; tabella e componente “dettaglio errore” |
 | Scopo Archivio Errori | Log completo da copiare/incollare (es. per supporto o assistente AI) |
 
 ---
@@ -115,7 +115,7 @@ Per ogni errore di sistema fare **sempre** nell’ordine:
 
 1. **Toast** — messaggio breve user-facing (es. “Versione non determinata. Controlla le notifiche.”). Usare `toast.error(...)` dal componente sonner.
 2. **Archivio** — creare una voce in Archivio → Errori tramite **`reportSystemError({ type, detail, toastMessage? })`** (helper in `$lib/stores/error-archive.ts`). Lo helper fa toast + addErrorEntry; se si passa `toastMessage` quello viene usato per il toast, altrimenti `type`.
-3. **Notifica** — quando il centro notifiche (Top Bar) sarà implementato, aggiungere una voce con titolo/riepilogo e azione “Vedi in Archivio errori” (link a `/archivio/errori` o alla voce se esiste id).
+3. **Notifica** — quando il centro notifiche (Top Bar) sarà implementato, aggiungere una voce con titolo/riepilogo e azione “Vedi in Archivio errori” (link a `/impostazioni/errori` o alla voce se esiste id).
 
 Oggi: obbligatori **toast + archivio**; notifica quando il componente esiste.
 
@@ -151,7 +151,7 @@ Oggi: obbligatori **toast + archivio**; notifica quando il componente esiste.
 ### Riferimento implementativo
 
 - Store e helper: `src/lib/stores/error-archive.ts` — `reportSystemError`, `addErrorEntry`, `errorArchiveEntries`.
-- Pagina Archivio → Errori: `src/routes/archivio/errori/+page.svelte`.
+- Pagina Impostazioni · Errori: `src/routes/impostazioni/errori/+page.svelte`.
 - Procedure per “aggiungi gestione errore”: `docs/procedures/workflow/error-handling.md` (rimanda qui per errori che vanno in Archivio).
 
 ---

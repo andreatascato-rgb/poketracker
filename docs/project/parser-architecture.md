@@ -47,33 +47,27 @@ PKHeX (C#) è la libreria standard che risolve tutti questi problemi, ma integra
 ### App C# Sidecar
 
 **Struttura:**
-- Console app C# minimale
-- Usa PKHeX come libreria
-- Accetta comandi via CLI args o stdin
-- Output JSON su stdout
+- Console app C# in `src-sidecar/` (Program.cs)
+- Usa PKHeX.Core come libreria
+- Input: comando + argomenti via CLI args
+- Output: JSON su stdout (UTF-8); errori su stderr e exit code non-zero
 
-**Operazioni:**
-- `read <filepath>`: Legge salvataggio e ritorna JSON
-- `write <filepath> <json>`: Scrive modifiche al salvataggio
-- `validate <filepath>`: Valida salvataggio
+**Operazioni (contratto attuale):**
+- `detect <filepath>`: Riconoscimento gioco/versione/lingua/generazione. Ritorna JSON `{ game, version, generation, languageIdRaw }`.
+- `pokedex <filepath>`: Estrazione stato Pokedex (visto/catturato) per le specie valide per la generazione del save. Usa **solo** l’API tipata PKHeX: `SaveFile.GetSeen(speciesId)` e `SaveFile.GetCaught(speciesId)`. Range specie dipendente da `SaveFile.Generation` (nessuna reflection, nessun range hardcoded). Ritorna JSON `{ entries: [{ species_id, status }] }`.
+
+**Nessuna operazione di scrittura:** il sidecar è read-only (lettura salvataggio e dati Pokedex).
 
 ### Integrazione Tauri
 
 **Rust chiama sidecar:**
-```rust
-// Esempio pseudocodice
-let output = Command::new("pkhex-sidecar.exe")
-    .arg("read")
-    .arg(save_file_path)
-    .output()?;
-    
-let data: SaveData = serde_json::from_slice(&output.stdout)?;
-```
+- `src-tauri/src/commands/save_detect.rs`: invoca il sidecar con `detect <path>` o `pokedex <path>`, legge stdout, deserializza JSON, restituisce `Result` al frontend.
+- Validazione path (non vuoto, file esistente dove richiesto) lato Rust prima dello spawn.
 
 **Gestione errori:**
-- Controllo exit code processo
-- Parsing JSON con validazione
-- Timeout per operazioni lunghe
+- Exit code processo: 0 = successo, non-zero = errore
+- JSON su stdout con eventuale campo `error` per messaggio user-facing
+- Rust: parsing JSON con `map_err`; nessun `unwrap_or_default` che nasconda errori di parsing
 
 ## Distribuzione
 

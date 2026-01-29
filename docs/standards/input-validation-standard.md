@@ -41,4 +41,4 @@ Definisce il principio “never trust frontend” e dove validare/sanitizzare l�
 
 ## Note
 
-- Per “validazione input”, “sanitizza”, “sicurezza dati” usare questo standard e la procedure corrispondente.
+- Per “validazione input”, “sanitizza”, “sicurezza dati” usare questo standard e la procedura corrispondente.

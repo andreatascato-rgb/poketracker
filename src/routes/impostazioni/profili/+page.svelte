@@ -1,8 +1,10 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { invoke } from "@tauri-apps/api/core";
   import { profiles, activeProfile, loadProfiles } from "$lib/stores/profile";
   import type { Profile } from "$lib/stores/profile";
+  import * as profileService from "$lib/services/profile";
+  import * as savService from "$lib/services/sav";
+  import { reportSystemError } from "$lib/stores/error-archive";
   import { Button } from "$lib/components/ui/button";
   import { Input } from "$lib/components/ui/input";
   import { Label } from "$lib/components/ui/label";
@@ -16,10 +18,11 @@
     CardAction,
   } from "$lib/components/ui/card";
   import { Tooltip, TooltipContent, TooltipTrigger } from "$lib/components/ui/tooltip";
+  import { EmptyState } from "$lib/components/ui/empty-state";
   import { toast } from "$lib/components/ui/sonner";
-  import { UserPlus, Pencil, Trash2, CheckCircle, ChevronRight } from "@lucide/svelte";
+  import { UserPlus, Pencil, Trash2, CheckCircle } from "@lucide/svelte";
 
-  /** Numero salvataggi del profilo attivo (get_sav_entries); per altri profili non disponibile senza backend per-profile. */
+  /** Numero salvataggi del profilo attivo (get_sav_entries). */
   let savCount = $state(0);
 
   let createDialogOpen = $state(false);
@@ -49,6 +52,11 @@
     createDialogOpen = true;
   }
 
+  function closeCreateDialog() {
+    createDialogOpen = false;
+    createError = "";
+  }
+
   async function submitCreate(e: Event) {
     e.preventDefault();
     createError = "";
@@ -59,7 +67,7 @@
     }
     createSubmitting = true;
     try {
-      await invoke("create_profile", { name: trimmed });
+      await profileService.createProfile(trimmed);
       createDialogOpen = false;
       await loadProfiles();
       toast.success("Profilo creato.");
@@ -67,15 +75,10 @@
       const msg = err instanceof Error ? err.message : String(err);
       createError = msg;
       toast.error(msg);
-      console.error("create_profile failed:", err);
+      reportSystemError({ type: "Creazione profilo fallita", detail: msg });
     } finally {
       createSubmitting = false;
     }
-  }
-
-  function closeCreateDialog() {
-    createDialogOpen = false;
-    createError = "";
   }
 
   function openRename(p: Profile) {
@@ -83,6 +86,12 @@
     renameNome = p.name;
     renameError = "";
     renameDialogOpen = true;
+  }
+
+  function closeRenameDialog() {
+    renameDialogOpen = false;
+    renameError = "";
+    renameProfileId = null;
   }
 
   async function submitRename(e: Event) {
@@ -96,7 +105,7 @@
     }
     renameSubmitting = true;
     try {
-      await invoke("rename_profile", { id: renameProfileId, newName: trimmed });
+      await profileService.renameProfile(renameProfileId, trimmed);
       renameDialogOpen = false;
       await loadProfiles();
       toast.success("Profilo rinominato.");
@@ -104,16 +113,10 @@
       const msg = err instanceof Error ? err.message : String(err);
       renameError = msg;
       toast.error(msg);
-      console.error("rename_profile failed:", err);
+      reportSystemError({ type: "Rinomina profilo fallita", detail: msg });
     } finally {
       renameSubmitting = false;
     }
-  }
-
-  function closeRenameDialog() {
-    renameDialogOpen = false;
-    renameError = "";
-    renameProfileId = null;
   }
 
   function openDelete(p: Profile) {
@@ -135,7 +138,7 @@
     deleteError = "";
     deleteSubmitting = true;
     try {
-      await invoke("delete_profile", { id: deleteProfile.id });
+      await profileService.deleteProfile(deleteProfile.id);
       closeDelete();
       await loadProfiles();
       toast.success("Profilo eliminato.");
@@ -143,13 +146,12 @@
       const msg = err instanceof Error ? err.message : String(err);
       deleteError = msg;
       toast.error(msg);
-      console.error("delete_profile failed:", err);
+      reportSystemError({ type: "Eliminazione profilo fallita", detail: msg });
     } finally {
       deleteSubmitting = false;
     }
   }
 
-  /** Formatta data ISO in locale italiano (gg/mm/aaaa). */
   function formatDate(iso: string): string {
     try {
       return new Date(iso).toLocaleDateString("it-IT", {
@@ -164,7 +166,7 @@
 
   async function loadSavCount() {
     try {
-      const list = await invoke<{ path: string }[]>("get_sav_entries");
+      const list = await savService.getSavEntries();
       savCount = list?.length ?? 0;
     } catch {
       savCount = 0;
@@ -176,20 +178,28 @@
   });
 </script>
 
-<!-- Con 0 profili il layout mostra OnboardingView; questa pagina è raggiungibile solo con almeno un profilo. -->
+<!-- Empty state obbligatorio (ui-patterns-applied): lista profili può essere vuota. -->
+{#if $profiles.length === 0}
+  <div class="flex min-h-[calc(100vh-96px)] flex-col items-center justify-center" role="region" aria-label="Stato vuoto: nessun profilo">
+    <EmptyState
+      title="Crea il tuo primo allenatore"
+      description="Aggiungi un profilo per iniziare a tracciare salvataggi e Pokedex. Potrai creare più profili (es. uno per gioco) e attivare quello in uso."
+      icon={UserPlus}
+      ctaLabel="Crea nuovo allenatore"
+      ctaIcon={UserPlus}
+      onCtaClick={openCreate}
+      ariaLabel="Stato vuoto: nessun profilo"
+    />
+  </div>
+{:else}
 <Card
     role="region"
-    aria-labelledby="impostazioni-profili-title"
+    aria-labelledby="profili-title"
     class="w-full min-w-0"
   >
     <CardHeader>
-      <CardTitle
-        id="impostazioni-profili-title"
-        class="text-xl font-semibold min-h-9 flex items-center gap-2"
-      >
-        <span class="text-muted-foreground">Impostazioni</span>
-        <ChevronRight class="size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
-        <span>Profili</span>
+      <CardTitle id="profili-title" class="text-xl font-semibold min-h-9">
+        Profili
       </CardTitle>
       <CardAction>
         <Button
@@ -303,8 +313,9 @@
       </div>
     </CardContent>
 </Card>
+{/if}
 
-<!-- Dialog Nuovo allenatore -->
+<!-- Dialog Nuovo allenatore (minimale) -->
 <Dialog.Root bind:open={createDialogOpen}>
   <Dialog.Content aria-label="Nuovo allenatore">
     <form id="impostazioni-create-trainer-form" class="grid gap-4" onsubmit={submitCreate}>
@@ -345,7 +356,7 @@
   </Dialog.Content>
 </Dialog.Root>
 
-<!-- Dialog Rinomina profilo -->
+<!-- Dialog Rinomina profilo (minimale) -->
 <Dialog.Root bind:open={renameDialogOpen}>
   <Dialog.Content aria-label="Rinomina profilo">
     <form id="impostazioni-rename-form" class="grid gap-4" onsubmit={submitRename}>

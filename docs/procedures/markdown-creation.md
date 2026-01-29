@@ -1,6 +1,6 @@
 # Procedure: Creare/Modificare File Markdown
 
-## Quando Usare Questa Procedure
+## Quando Usare Questa Procedura
 
 - Query: "crea file md", "modifica file md", "crea standard", "documentazione", "crea guida", "crea procedure"
 - Quando devi creare o modificare qualsiasi file `.md` in `docs/`

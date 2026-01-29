@@ -4,7 +4,7 @@
 
 Definisce come aggiungere un servizio frontend che incapsula le chiamate `invoke` a comandi Tauri (tipi, errori, riuso).
 
-## Quando Usare Questa Procedure
+## Quando Usare Questa Procedura
 
 - Query: "crea servizio", "aggiungi servizio", "servizio frontend", "wrapper invoke", "servizio tauri", "aggiungi servizio che chiama backend"
 - Quando si deve introdurre un modulo in `src/lib/services/` che espone funzioni che chiamano comandi Tauri

@@ -2,7 +2,7 @@
 
 ## Obiettivo
 
-Definisce come strutturare le procedure in `docs/procedures/` per garantire che l'AI consulti sempre le informazioni corrette prima di agire.
+Definisce come strutturare le procedure in `docs/procedures/` per garantire che l'AI consulti sempre le informazioni corrette prima di agire. Le procedure sono obbligatorie: nessuna approssimazione, nessun indovinare, nessuna implementazione non documentata. L'AI deve leggere la procedura per intero e completare la checklist prima di proporre o implementare.
 
 ## Struttura Obbligatoria
 
@@ -11,9 +11,9 @@ Ogni procedure deve seguire questa struttura:
 ```markdown
 # Procedure: [Nome Azione]
 
-## Quando Usare Questa Procedure
+## Quando Usare Questa Procedura
 
-[Pattern di query che attivano questa procedure. Se la query corrisponde, la procedure è OBBLIGATORIA.]
+[Pattern di query che attivano questa procedura. Se la query corrisponde, la procedura è OBBLIGATORIA.]
 
 ## Obbligatorietà
 
@@ -41,9 +41,9 @@ Completamento integrale della checklist obbligatorio prima di proporre implement
 
 ## Sezioni Dettagliate
 
-### Quando Usare Questa Procedure
+### Quando Usare Questa Procedura
 
-- Elenca pattern di query che attivano la procedure
+- Elenca pattern di query che attivano la procedura
 - Esempio: "crea componente", "aggiungi componente", "nuovo componente svelte"
 - Sii specifico ma inclusivo
 
@@ -56,7 +56,7 @@ Completamento integrale della checklist obbligatorio prima di proporre implement
 ### Checklist Obbligatoria
 
 - Step numerati e verificabili, da eseguire **in ordine 1, 2, 3…**; non saltare step
-- Ogni step deve avere riferimento preciso a `file.md:riga`; aprire il file indicato, non basarsi solo sul riassunto nella procedure
+- Ogni step deve avere riferimento preciso a `file.md:riga`; aprire il file indicato, non basarsi solo sul riassunto nella procedura
 - Non procedere se checklist non completata
 
 ### Riferimenti Standard
@@ -96,9 +96,9 @@ docs/procedures/
 
 ## Ottimizzazione per uso da parte dell'AI
 
-- **Trigger obbligatori**: in "Quando Usare" indicare che, se la query corrisponde ai pattern, la procedure è obbligatoria e non si propone implementazione senza averla completata
+- **Trigger obbligatori**: in "Quando Usare" indicare che, se la query corrisponde ai pattern, la procedura è obbligatoria e non si propone implementazione senza averla completata
 - **Ordine checklist**: eseguire gli step 1, 2, 3… in sequenza; non saltare
-- **Riferimenti file:riga**: per ogni step che cita un file, aprire quel file (e le righe se indicate); non duplicare contenuti lunghi nella procedure
+- **Riferimenti file:riga**: per ogni step che cita un file, aprire quel file (e le righe se indicate); non duplicare contenuti lunghi nella procedura
 - **Brevità**: preferire "Leggi X", "Applica Y" con riferimento a `docs/...`; evitare incollare interi blocchi già presenti negli standard
 - **Blocco Obbligatorietà**: ogni procedure deve contenere la sezione "## Obbligatorietà" con la frase: *Completamento integrale della checklist obbligatorio prima di proporre implementazione. Nessuna eccezione.*
 

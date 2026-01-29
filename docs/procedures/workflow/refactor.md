@@ -4,7 +4,7 @@
 
 Definisce come pianificare e eseguire un refactoring senza cambiare il comportamento osservabile dell’app, rispettando standard e struttura.
 
-## Quando Usare Questa Procedure
+## Quando Usare Questa Procedura
 
 - Query: "refactor", "refactoring", "ristruttura", "ristrutturazione", "migra codice", "pulizia codice", "estrai componente", "estrai funzione", "rinomina", "sposta file"
 - Quando l’obiettivo è migliorare struttura/leggibilità senza aggiungere feature né correggere bug specifici
@@ -42,4 +42,4 @@ Completamento integrale della checklist obbligatorio prima di proporre implement
 ## Note
 
 - Refactoring “grande” (es. migrazione Svelte 4 → 5, cambio architettura) va spezzato in step e possibilmente documentato in una procedure dedicata o in docs/project/.
-- Se la richiesta mescola refactoring e nuova feature (o bug fix), applicare prima la procedure corrispondente (new-feature, bug-fix) e trattare il refactoring come passo aggiuntivo esplicito.
+- Se la richiesta mescola refactoring e nuova feature (o bug fix), applicare prima la procedura corrispondente (new-feature, bug-fix) e trattare il refactoring come passo aggiuntivo esplicito.

@@ -4,7 +4,7 @@
 
 Definisce come aggiungere una nuova migrazione allo schema SQLite in PokeTracker (rusqlite o sqlx in Rust).
 
-## Quando Usare Questa Procedure
+## Quando Usare Questa Procedura
 
 - Query: "aggiungi migrazione", "migrazione db", "cambia schema", "nuova migrazione", "migration", "schema db", "aggiungi tabella", "modifica tabella"
 - Quando si deve cambiare lo schema del database (nuove tabelle, colonne, indici) in modo versionato

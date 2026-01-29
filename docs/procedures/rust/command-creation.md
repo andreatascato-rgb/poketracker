@@ -4,7 +4,7 @@
 
 Definisce come aggiungere un nuovo comando Tauri (Rust) esposto al frontend e come invocarlo dal frontend in modo sicuro e tipizzato.
 
-## Quando Usare Questa Procedure
+## Quando Usare Questa Procedura
 
 - Query: "crea comando", "aggiungi comando", "nuovo comando", "tauri command", "rust command", "aggiungi invoke", "nuovo comando tauri", "tauri invoke"
 - Quando si deve esporre una nuova funzionalità Rust al frontend via `invoke`

@@ -4,7 +4,7 @@
 
 Definisce come aggiungere test (unit o integration) in PokeTracker rispettando la strategia di testing e la struttura del progetto.
 
-## Quando Usare Questa Procedure
+## Quando Usare Questa Procedura
 
 - Query: "aggiungi test", "scrivi test", "nuovo test", "unit test", "integration test", "test case", "aggiungi unit test", "aggiungi test per"
 - Quando si deve introdurre o estendere test per frontend (Vitest/Playwright), backend Rust (cargo test) o sidecar

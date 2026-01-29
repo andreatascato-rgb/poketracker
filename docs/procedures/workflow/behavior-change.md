@@ -4,7 +4,7 @@
 
 Definisce come modificare il comportamento esistente di una parte dell'app (logica, flusso, regole) **senza** correggere un bug né aggiungere una nuova feature. Esempi: "cambia come funziona X", "modifica la logica di Y", "cambia l'ordine di Z", "vuoi che invece di A faccia B".
 
-## Quando Usare Questa Procedure
+## Quando Usare Questa Procedura
 
 - Query: "cambia comportamento", "modifica come funziona", "cambia logica di", "modifica comportamento di", "cambia il funzionamento di", "vuoi che faccia", "invece di X faccia Y", "cambia la logica", "modifica il flusso"
 - Quando l'utente chiede di **cambiare intenzionalmente** il comportamento attuale (non correggere un errore, non aggiungere capacità nuova)

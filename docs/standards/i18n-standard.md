@@ -44,4 +44,4 @@ Definisce come gestire traduzioni e locale in PokeTracker (frontend Svelte; even
 
 ## Note
 
-- Per “aggiungi traduzione”, “i18n”, “nuova lingua” usare questo standard e la procedure i18n-setup o aggiungi-traduzione.
+- Per “aggiungi traduzione”, “i18n”, “nuova lingua” usare questo standard e la procedura i18n-setup o aggiungi-traduzione.

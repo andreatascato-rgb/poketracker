@@ -4,7 +4,7 @@
 
 Definisce come aggiungere una nuova pagina (route) in SvelteKit per PokeTracker, rispettando adapter-static e SSR disattivato.
 
-## Quando Usare Questa Procedure
+## Quando Usare Questa Procedura
 
 - Query: "crea pagina", "nuova pagina", "aggiungi pagina", "crea route", "nuova route", "aggiungi route", "nuova view", "+page.svelte", "sveltekit route"
 - Quando si deve introdurre una nuova route in `src/routes/` (nuovo `+page.svelte` o sottocartella)
@@ -45,4 +45,4 @@ Completamento integrale della checklist obbligatorio prima di proporre implement
 ## Note
 
 - In PokeTracker il frontend è SPA in finestra Tauri; le pagine non usano SSR né prerendering che chiamano Tauri.
-- Per aggiungere solo un componente (non una route), usare la procedure `component-creation.md`.
+- Per aggiungere solo un componente (non una route), usare la procedura `component-creation.md`.

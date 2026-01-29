@@ -4,7 +4,7 @@
 
 Definisce come applicare ottimizzazioni performance in linea con [performance-standard](../../standards/performance-standard.md) e [performance](../../project/performance.md).
 
-## Quando Usare Questa Procedure
+## Quando Usare Questa Procedura
 
 - Query: "ottimizza", "performance", "lazy load", "virtualizza lista", "indice DB", "ottimizza performance", "lista lenta", "rendering lento"
 - Quando si deve ridurre tempo di risposta, uso memoria o carico iniziale

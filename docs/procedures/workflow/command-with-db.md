@@ -4,7 +4,7 @@
 
 Definisce come aggiungere o modificare un comando Tauri che legge o scrive sul database SQLite (Rust). Estende [command-creation](../rust/command-creation.md) con passi specifici per DB: schema, repository, prepared statements.
 
-## Quando Usare Questa Procedure
+## Quando Usare Questa Procedura
 
 - Query: "comando che usa DB", "comando con query", "comando che legge/scrive DB", "aggiungi comando con database", "comando che usa SQLite", "comando con persistenza"
 - Quando il comando deve accedere ai dati persistenti (profili, Pokedex, wiki, ecc.) tramite il layer DB Rust

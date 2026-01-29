@@ -4,7 +4,7 @@
 
 Definisce come aggiungere un nuovo componente Svelte (Svelte 5 runes) nel frontend PokeTracker, nella cartella e con convenzioni corrette.
 
-## Quando Usare Questa Procedure
+## Quando Usare Questa Procedura
 
 - Query: "crea componente", "aggiungi componente", "nuovo componente", "component svelte", "svelte component", "aggiungi .svelte", "nuovo componente svelte", "crea .svelte"
 - Quando si deve introdurre un nuovo file `.svelte` in `src/lib/components/` (o sottocartella)
@@ -53,4 +53,4 @@ Completamento integrale della checklist obbligatorio prima di proporre implement
 - Naming file: PascalCase (es. `PokemonCard.svelte`).
 - Sottocartelle per dominio: layout, profile, pokedex, wiki, editor, management.
 - **Componenti UI:** vanno in `layout/` (TopBar, Sidebar, ContentArea) o in altre sottocartelle di dominio; per elementi riutilizzabili (button, input, card) usare quelli in `$lib/components/ui` da shadcn-svelte; per nuovi primitivi UI usare `npx shadcn-svelte@latest add <nome>` e metterli in `$lib/components/ui/`.
-- Per aggiungere una nuova pagina/route SvelteKit, usare la procedure `page-creation.md` se disponibile, altrimenti rispettare `src/routes/` e `+page.svelte`/`+layout.svelte`.
+- Per aggiungere una nuova pagina/route SvelteKit, usare la procedura `page-creation.md` se disponibile, altrimenti rispettare `src/routes/` e `+page.svelte`/`+layout.svelte`.

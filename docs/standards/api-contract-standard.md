@@ -41,4 +41,4 @@ Definisce come evolvere i contratti tra frontend e backend (comandi Tauri, tipi 
 
 ## Note
 
-- Per “cambia contratto”, “aggiungi campo”, “breaking change API” usare questo standard e la procedure api-contract-change.
+- Per “cambia contratto”, “aggiungi campo”, “breaking change API” usare questo standard e la procedura api-contract-change.

@@ -29,6 +29,7 @@ Per partire dallo sviluppo: **[piano-sviluppo-iniziale.md](./piano-sviluppo-iniz
 ### Features (dettaglio)
 
 - **[pokedex-personal.md](./pokedex-personal.md)** - Pokedex personale
+- **[pokedex-sprites.md](./pokedex-sprites.md)** - Sprite Pokedex (offline, gen 1–4, script download)
 - **[wiki-offline.md](./wiki-offline.md)** - Wiki offline
 - **[save-editor.md](./save-editor.md)** - Editor salvataggi (PKHeX-like)
 - **[multi-profile.md](./multi-profile.md)** - Gestione multi-profilo
@@ -41,6 +42,7 @@ Per partire dallo sviluppo: **[piano-sviluppo-iniziale.md](./piano-sviluppo-iniz
 - **[offline-data-strategy.md](./offline-data-strategy.md)** - Strategia offline e dati locali
 - **[project-structure.md](./project-structure.md)** - Struttura progetto
 - **[parser-architecture.md](./parser-architecture.md)** - Architettura parser
+- **[pokedex-parser-strategy.md](./pokedex-parser-strategy.md)** - Strategia: parser Pokedex per gioco/versione (solo tracciamento Pokedex)
 - **[sav-game-version-detection.md](./sav-game-version-detection.md)** - Spec: riconoscimento gioco/versione da .sav (PKHeX, sidecar C#)
 - **[knowledge-database.md](./knowledge-database.md)** - Database conoscenza
 - **[database-storage.md](./database-storage.md)** - Database e storage

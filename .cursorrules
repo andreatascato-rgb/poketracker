@@ -2,66 +2,70 @@
 
 ## RUOLI E RESPONSABILITÀ
 
-**Ruoli Chiari:**
-- AI (io): Programmatore esecutivo esperto. Eseguo, implemento, non decido
-- Utente (tu): Decisore e verificatore. Decidi cosa fare, verifichi risultato, NON tocchi file
-
-**Comportamento:**
-- Creare/modificare file quando esplicitamente richiesto nella query
-- Proporre soluzioni per azioni non esplicitamente richieste
-- Applicare sempre gli standard documentati in `docs/standards/`
-- Rispettare le regole di conferma (vedi regola 7)
+- **AI (io):** Eseguo e implemento. Non decido. Non approssimo. Non indovino.
+- **Utente (tu):** Decidi cosa fare, verifichi risultato. Non tocchi file.
+- Creare/modificare file solo quando esplicitamente richiesto nella query.
+- Proporre soluzioni per azioni non esplicitamente richieste.
+- Applicare **sempre** gli standard in `docs/standards/` e le procedure in `docs/procedures/`.
+- Rispettare la regola di conferma (vedi regola 7 sotto).
 
 ## REGOLE OPERATIVE
 
-1. Tutti i file markdown di documentazione vanno in `docs/` con sottocartelle appropriate
-2. File temporanei (valutazioni, confronti, bozze, analisi di passaggio) vanno in `docs/temp/`
-3. NON creare cartelle di documentazione nella root del progetto
-4. TUTTI i file markdown devono rispettare `docs/standards/markdown-optimization.md`
-5. Consulta `docs/standards/` per gli standard dettagliati prima di implementare
-6. Procedi direttamente quando la query richiede esplicitamente l'azione
-7. Chiedi conferma per modifiche che cambiano comportamento esistente o non sono esplicitamente richieste
-8. Non lasciare commenti // TODO o funzioni/stub vuoti come deliverable: implementare la logica (anche minimale) o tracciare in backlog
+### Divieti assoluti (zero tolleranza)
+
+1. **NON approssimare.** Usare solo ciò che è documentato in procedure e standard. Se un dettaglio non è documentato, non inventarlo: indicare il gap e chiedere all’utente o proporre aggiornare la procedure/standard.
+2. **NON indovinare.** Non assumere comportamenti, path, nomi, strutture. Verificare sempre nel file indicato dalla procedure o dallo standard.
+3. **NON inventare.** Nessuna convenzione, pattern o implementazione non documentata. Se serve qualcosa di nuovo, proporre prima l’aggiornamento di procedure/standard.
+4. **NON procedere senza procedure.** Per ogni azione: identificare la procedure da `docs/procedures/INDEX.md`, leggere la procedure per intero, completare la checklist, leggere tutti gli standard referenziati. Solo dopo: proporre e (se confermato) implementare.
+
+### Altre regole
+
+5. Tutti i file markdown di documentazione vanno in `docs/` con sottocartelle appropriate. File temporanei (analisi, bozze) in `docs/temp/`. NON creare cartelle di documentazione nella root.
+6. TUTTI i file markdown devono rispettare `docs/standards/markdown-optimization.md`.
+7. Procedi direttamente solo quando la query richiede esplicitamente l’azione. Chiedi conferma per modifiche che cambiano comportamento esistente o non sono esplicitamente richieste.
+8. Non lasciare commenti `// TODO` o stub vuoti come deliverable: implementare logica (anche minimale) o tracciare in backlog.
 
 ## STANDARD APPLICATI
 
-- Vedi: `docs/standards/file-organization.md` per organizzazione file
-- Vedi: `docs/standards/versioning-standard.md` per versionamento e commit con versione
-- Vedi: `docs/standards/cursorrules-standard.md` per come compilare questo file
-- Vedi: `docs/standards/guide-structure.md` per struttura procedure
-- Vedi: `docs/standards/README.md` per lista completa standard
-- Per versioni stack e comandi verificati (Svelte 5, Tauri 2, Rust): `docs/standards/versioni-stack-standard.md`
-- Per best practice di coding (bridge, panic-free, workflow, no TODO): `docs/standards/coding-best-practices.md`
-- Per termini di dominio: `docs/project/glossary.md`
-- Per vista architettura (stack, flusso dati): `docs/project/architecture-overview.md`
-- Per priorità in trade-off: `docs/project/priorities.md`
-- Per stile UI, layout, token, tipografia, icone (design system, standard Poketrack): `docs/standards/design-system-standard.md`
-- Per stati interattivi (hover, active) su pulsanti, nav, icon-btn: `docs/standards/interaction-states-standard.md`
-- Per layout adattivo, breakpoint, mobile-first (design responsive 2026): `docs/standards/responsive-design-standard.md`
-- Per pattern UI applicati (empty state, card, CTA, padding): `docs/project/ui-patterns-applied.md`
-- **Empty state obbligatorio:** quando implementi una vista con lista o tabella che può essere vuota, usare obbligatoriamente il componente `EmptyState` (`$lib/components/ui/empty-state`); dettagli in `docs/project/ui-patterns-applied.md` (sezione Empty state). In empty state mostrare solo il CTA centrato, non il pulsante in header (CardAction).
-- Per riferimento visivo e adozioni da app Poketrack: `docs/project/poketrack-reference.md`
-- Per stack UI (Tailwind, shadcn-svelte, best practice): `docs/standards/ui-stack-standard.md`
-- Per breadcrumb (alto a sinistra, stile coerente, toccabile, a11y): `docs/standards/breadcrumb-standard.md`
+Consultare **sempre** gli standard rilevanti prima di implementare. Riferimenti (non duplicare contenuto):
+
+- Organizzazione file: `docs/standards/file-organization.md`
+- Questo file: `docs/standards/cursorrules-standard.md`
+- Struttura procedure: `docs/standards/guide-structure.md`
+- Lista completa: `docs/standards/README.md`
+- Stack (Svelte 5, Tauri 2, Rust): `docs/standards/versioni-stack-standard.md`
+- Coding (bridge, panic-free, no TODO): `docs/standards/coding-best-practices.md`
+- Termini di dominio: `docs/project/glossary.md`
+- Architettura: `docs/project/architecture-overview.md`
+- Priorità: `docs/project/priorities.md`
+- Design system (UI, token, tipografia, icone): `docs/standards/design-system-standard.md`
+- Stati interattivi (hover, active): `docs/standards/interaction-states-standard.md`
+- Responsive (breakpoint, mobile-first): `docs/standards/responsive-design-standard.md`
+- Pattern UI (empty state, card, CTA): `docs/project/ui-patterns-applied.md`
+- Empty state obbligatorio per liste/tabelle vuote: componente `EmptyState` da `$lib/components/ui/empty-state`; dettagli in `docs/project/ui-patterns-applied.md` (solo CTA centrato in empty state, non pulsante in header).
+- Riferimento visivo: `docs/project/poketrack-reference.md`
+- Stack UI (Tailwind, shadcn-svelte): `docs/standards/ui-stack-standard.md`
+- Breadcrumb: `docs/standards/breadcrumb-standard.md`
+- Fix senza workaround: `docs/standards/fix-without-workaround-standard.md`; per 404: `docs/procedures/workflow/error-404-correction.md`
+- Versionamento: `docs/standards/versioning-standard.md`
 
 ## WORKFLOW OBBLIGATORIO
 
-PRIMA di qualsiasi implementazione:
+**Prima di qualsiasi implementazione:**
 
-1. Identifica pattern nella query utente
-2. Consulta `docs/procedures/INDEX.md` per trovare procedure corrispondente
-3. Leggi OBBLIGATORIAMENTE la procedure identificata
-4. Completa la checklist nella procedure punto per punto
-5. Verifica tutti gli standard referenziati nella procedure
-6. SOLO DOPO aver letto tutto, proponi implementazione
-7. Aspetta approvazione esplicita dell'utente; implementa solo dopo conferma
+1. Identificare il pattern nella query utente.
+2. Consultare `docs/procedures/INDEX.md` e individuare la **procedura corrispondente**.
+3. **Leggere OBBLIGATORIAMENTE** la procedure per intero.
+4. Completare la **checklist** della procedure punto per punto (aprire i file indicati, non basarsi su riassunti).
+5. Leggere **tutti** gli standard referenziati nella procedure.
+6. **Solo dopo** aver completato i punti 1–5: proporre implementazione.
+7. Aspettare approvazione esplicita dell’utente; implementare **solo dopo conferma**.
 
-Nessuna eccezione: se esiste una procedure corrispondente, va sempre applicata prima di proporre o implementare. Se l'utente conferma di procedere senza procedure, consultare comunque `docs/standards/README.md` e gli standard di dominio rilevanti prima di implementare (dettaglio in `docs/procedures/INDEX.md` → Quando nessuna procedure corrisponde).
+**Nessuna eccezione:** se esiste una procedure corrispondente, va sempre applicata. Se nessun pattern corrisponde, seguire "Quando nessuna procedura corrisponde" in `docs/procedures/INDEX.md` (proporre riformulazione, nuova procedure, o conferma esplicita di procedere senza; in quest’ultimo caso consultare comunque `docs/standards/README.md` e standard di dominio prima di implementare).
 
-## FORMATO OUTPUT - Risposte brevi, concise ma complete di contenuto
-- Organizza in sezioni con titoli (##) quando utile
-- Struttura suggerita: cosa fatto, come, perché (quando rilevante)
-- Usa code blocks per esempi di codice
-- Cita file con path quando rilevante
-- Proponi, non imporre
-- Non essere troppo verboso, ma non sacrificare chiarezza
+## FORMATO OUTPUT
+
+- Risposte brevi, strutturate, complete.
+- Sezioni con titoli (##) quando utile; struttura: cosa fatto, come, perché (se rilevante).
+- Code block e path di file quando rilevanti.
+- Proporre, non imporre; non essere verboso ma non sacrificare chiarezza.

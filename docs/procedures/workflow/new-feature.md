@@ -4,11 +4,11 @@
 
 Definisce come pianificare e implementare una nuova funzionalità in PokeTracker, identificando i layer coinvolti (frontend, backend, entrambi) e applicando le procedure e gli standard pertinenti.
 
-## Quando Usare Questa Procedure
+## Quando Usare Questa Procedura
 
 - Query: "nuova feature", "aggiungi feature", "implementa feature", "nuova funzionalità", "aggiungi funzionalità", "implementa funzionalità", "nuova capacità", "aggiungi capacità"
 - Quando l’obiettivo è introdurre una nuova capacità utente (non un singolo file tipo “un componente” o “un comando”) che può toccare più parti dell’app
-- Se la query corrisponde, questa procedure è OBBLIGATORIA
+- Se la query corrisponde, questa procedura è OBBLIGATORIA
 
 ## Obbligatorietà
 
@@ -30,7 +30,7 @@ Completamento integrale della checklist obbligatorio prima di proporre implement
 
 1. [ ] Leggi `docs/project/project-structure.md:1-110` — Identifica quali layer tocca la feature (solo frontend, solo backend, entrambi)
 2. [ ] **Piano prima di proporre:** Scrivi un breve piano (pseudo-codice o elenco) delle modifiche previste a Rust, Svelte e file di config (tauri, capabilities, ecc.) prima di proporre il diff. Vedi [coding-best-practices](../../standards/coding-best-practices.md) § Workflow.
-3. [ ] Per ogni layer (procedure specifiche), individua la procedure specifica in `docs/procedures/INDEX.md`:
+3. [ ] Per ogni layer (procedure specifiche), individua la procedura specifica in `docs/procedures/INDEX.md`:
    - Nuovi componenti → `docs/procedures/svelte/component-creation.md`
    - Nuovi store → `docs/procedures/svelte/store-setup.md`
    - Nuove pagine/route → `docs/procedures/svelte/page-creation.md`
@@ -53,4 +53,4 @@ Completamento integrale della checklist obbligatorio prima di proporre implement
 ## Note
 
 - Questa procedure non sostituisce le procedure atomiche (component-creation, command-creation, ecc.): le richiama e le combina.
-- Se la richiesta è già molto specifica (“aggiungi un comando X”), usare direttamente `command-creation.md` (o la procedure corrispondente) invece di new-feature.
+- Se la richiesta è già molto specifica (“aggiungi un comando X”), usare direttamente `command-creation.md` (o la procedura corrispondente) invece di new-feature.

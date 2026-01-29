@@ -1,6 +1,6 @@
 {
   "name": "poketracker",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "PokeTracker - Pokedex personale e gestione salvataggi Pokemon",
   "type": "module",
   "scripts": {
@@ -9,11 +9,15 @@
     "preview": "vite preview",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
-    "tauri": "tauri",
-    "icon": "node scripts/generate-icon.mjs"
+    "tauri": "node scripts/run-tauri.mjs",
+    "check:rust": "node scripts/cargo-check.mjs check",
+    "build:rust": "node scripts/cargo-check.mjs build",
+    "icon": "node scripts/generate-icon.mjs",
+    "pokedex-sprites": "node scripts/download-pokedex-sprites.mjs"
   },
   "license": "MIT",
   "dependencies": {
+    "@tanstack/svelte-virtual": "^3.13.18",
     "@tauri-apps/api": "^2",
     "@tauri-apps/plugin-dialog": "^2.6.0",
     "@tauri-apps/plugin-opener": "^2"

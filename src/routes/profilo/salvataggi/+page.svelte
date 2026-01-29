@@ -1,10 +1,12 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { invoke } from "@tauri-apps/api/core";
   import { listen } from "@tauri-apps/api/event";
   import { open as openDialog } from "@tauri-apps/plugin-dialog";
   import { activeProfile } from "$lib/stores/profile";
   import { getSyncingPaths, addSyncing, removeSyncing, setWatchedCountFromSalvataggi } from "$lib/stores/sync.svelte";
+  import * as savService from "$lib/services/sav";
+  import * as pokedexService from "$lib/services/pokedex";
+  import { reportSystemError } from "$lib/stores/error-archive";
 
   import { Button } from "$lib/components/ui/button";
   import {
@@ -25,7 +27,7 @@
   import { EmptyState } from "$lib/components/ui/empty-state";
   import { Tooltip, TooltipContent, TooltipTrigger } from "$lib/components/ui/tooltip";
   import { toast } from "$lib/components/ui/sonner";
-  import { FolderPlus, FolderOpen, ChevronRight, Pencil, Trash2, CheckCircle, Loader2 } from "@lucide/svelte";
+  import { FolderPlus, FolderOpen, Pencil, Trash2, CheckCircle, Loader2 } from "@lucide/svelte";
 
   /** Voce in tabella: da get_sav_entries (path, game, version, generation, updated_at). */
   type SaveEntry = { path: string; game: string; version: string; generation?: number; updated_at: string };
@@ -57,19 +59,19 @@
   async function loadSaves() {
     try {
       const [list, watched] = await Promise.all([
-        invoke<SaveEntry[]>("get_sav_entries"),
-        invoke<string[]>("get_sav_watched_paths"),
+        savService.getSavEntries(),
+        pokedexService.getSavWatchedPaths(),
       ]);
       saves = list ?? [];
       watchedPaths = watched ?? [];
       setWatchedCountFromSalvataggi(watchedPaths.length);
-      // #region agent log
-      if (import.meta.env.DEV) fetch('http://127.0.0.1:7246/ingest/e155c680-47df-4a07-9855-14bedbe06598',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'salvataggi/+page.svelte:loadSaves',message:'Salvataggi setWatchedCountFromSalvataggi',data:{watchedCount:watchedPaths.length,watchedPaths:watched??[],fromBackend:true},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'A'})}).catch(()=>{});
-      // #endregion
-    } catch {
+    } catch (err) {
       saves = [];
       watchedPaths = [];
-      // Non azzerare watchedCount: evita di sovrascrivere con 0 in errore (es. get_sav_entries fallisce ma i watcher ci sono).
+      reportSystemError({
+        type: "Caricamento salvataggi fallito",
+        detail: err instanceof Error ? err.message : String(err),
+      });
     }
   }
 
@@ -78,26 +80,26 @@
     const watched = watchedPaths.includes(path);
     if (watched) {
       try {
-        await invoke("set_sav_watched", { path, watched: false });
+        await savService.setSavWatched(path, false);
         await loadSaves();
         toast.success("Osservazione disattivata.");
       } catch (e) {
         const msg = typeof e === "string" ? e : "Impossibile disattivare l'osservazione.";
         toast.error(msg);
-        console.error("set_sav_watched(false) failed:", e);
+        reportSystemError({ type: "Disattivazione osservazione fallita", detail: msg });
       }
       return;
     }
-    // Mostra spinner inline per questa riga (store globale per TopBar)
     addSyncing(path);
     try {
-      await invoke("sync_sav_now", { path });
-      await invoke("set_sav_watched", { path, watched: true });
+      await savService.syncSavNow(path);
+      await savService.setSavWatched(path, true);
       await loadSaves();
       toast.success("Osservazione attivata.");
     } catch (e) {
       const msg = typeof e === "string" ? e : "Sincronizzazione non riuscita. Verifica che il file sia accessibile.";
       toast.error(msg);
+      reportSystemError({ type: "Sincronizzazione salvataggio fallita", detail: msg });
       console.error("sync_sav_now/set_sav_watched failed:", e);
     } finally {
       removeSyncing(path);
@@ -117,14 +119,14 @@
         path,
         setTimeout(async () => {
           pendingSync.delete(path);
-          // Mostra spinner inline per questa riga (store globale per TopBar)
           addSyncing(path);
           try {
-            await invoke("sync_sav_now", { path });
+            await savService.touchSavEntryUpdatedAt(path);
+            await pokedexService.syncPokedexFromWatchedSavsNow();
             await loadSaves();
           } catch (e) {
             toast.error("Aggiornamento salvataggio fallito. Verifica che il file sia accessibile.");
-            console.error("sav-file-changed sync_sav_now failed:", path, e);
+            console.error("sav-file-changed failed:", path, e);
           } finally {
             removeSyncing(path);
           }
@@ -156,12 +158,7 @@
 
     detectingSave = true;
     try {
-      const detected = await invoke<{
-        game: string;
-        version: string;
-        generation?: number;
-        languageIdRaw?: number | null;
-      }>("detect_save_game_version", { path });
+      const detected = await savService.detectSaveGameVersion(path);
       summaryPath = path;
       summaryGame = detected.game ?? "";
       summaryVersion = detected.version ?? "";
@@ -172,23 +169,24 @@
     } catch (e) {
       const msg = typeof e === "string" ? e : "Impossibile riconoscere il file. Verifica che sia un salvataggio Pokémon valido.";
       toast.error(msg);
-      console.error("detect_save_game_version failed:", e);
+      reportSystemError({ type: "Riconoscimento salvataggio fallito", detail: msg });
     } finally {
       detectingSave = false;
     }
   }
 
-  /** Conferma aggiunta: add_sav_entry, chiudi dialog, ricarica lista. */
+  /** Conferma aggiunta: add_sav_entry, sync_sav_now (estrazione Pokedex), ricarica lista. */
   async function confirmAddSave() {
     if (!summaryPath) return;
     summaryAdding = true;
     try {
-      await invoke("add_sav_entry", {
+      await savService.addSavEntry({
         path: summaryPath,
         game: summaryGame,
         version: summaryVersion,
         generation: summaryGeneration > 0 ? summaryGeneration : undefined,
       });
+      await savService.syncSavNow(summaryPath);
       summaryOpen = false;
       summaryPath = "";
       summaryGame = "";
@@ -196,11 +194,11 @@
       summaryGeneration = 0;
       summaryLanguageIdRaw = null;
       await loadSaves();
-      toast.success("Salvataggio aggiunto.");
+      toast.success("Salvataggio aggiunto e Pokedex aggiornato.");
     } catch (e) {
       const msg = typeof e === "string" ? e : "Impossibile aggiungere il salvataggio.";
       toast.error(msg);
-      console.error("add_sav_entry failed:", e);
+      console.error("add_sav_entry / sync_sav_now failed:", e);
     } finally {
       summaryAdding = false;
     }
@@ -209,7 +207,7 @@
   /** Rimuove la voce e ricarica. */
   async function removeSave(path: string) {
     try {
-      await invoke("remove_sav_entry", { path });
+      await savService.removeSavEntry(path);
       await loadSaves();
       toast.success("Salvataggio rimosso.");
     } catch (e) {
@@ -238,17 +236,15 @@
   <div class="flex flex-col min-h-[calc(100vh-96px)] w-full">
     <Card
       role="region"
-      aria-labelledby="allenatore-salvataggi-title"
+      aria-labelledby="salvataggi-title"
       class="w-full min-w-0 flex flex-1 flex-col min-h-0"
     >
       <CardHeader>
         <CardTitle
-          id="allenatore-salvataggi-title"
-          class="text-xl font-semibold min-h-9 flex items-center gap-2"
+          id="salvataggi-title"
+          class="text-xl font-semibold min-h-9"
         >
-          <span class="text-muted-foreground">Allenatore</span>
-          <ChevronRight class="size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
-          <span>Salvataggi</span>
+          Salvataggi
         </CardTitle>
       </CardHeader>
       <CardContent class="flex flex-1 flex-col items-center justify-center min-h-0">
@@ -268,17 +264,15 @@
   <!-- Tabella salvataggi -->
   <Card
     role="region"
-    aria-labelledby="allenatore-salvataggi-title"
+    aria-labelledby="salvataggi-title"
     class="w-full min-w-0"
   >
     <CardHeader>
       <CardTitle
-        id="allenatore-salvataggi-title"
-        class="text-xl font-semibold min-h-9 flex items-center gap-2"
+        id="salvataggi-title"
+        class="text-xl font-semibold min-h-9"
       >
-        <span class="text-muted-foreground">Allenatore</span>
-        <ChevronRight class="size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
-        <span>Salvataggi</span>
+        Salvataggi
       </CardTitle>
       <CardAction>
         <Button

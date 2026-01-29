@@ -46,6 +46,14 @@ I token sotto sono quelli **adottati da Poketrack** (stile VS Code). Vivono in `
 
 Mappatura per Tailwind/shadcn: in `.dark` risultano `--background: var(--bg-primary)`, `--foreground: var(--text-primary)`; `--sidebar` e varianti per la sidebar.
 
+### Icone stato
+
+| Token | Valore | Uso |
+|-------|--------|-----|
+| `--icon-success` | `#4ade80` | Icone stato valido/successo (es. sync attivo, watcher attivo, toast successo) |
+| `--icon-edit` | `#7ec8ff` | Icone azioni modifica/primarie (più chiaro del focus-ring per leggibilità su dark) |
+| `--icon-destructive` | `#f87171` | Icone azioni distruttive (es. elimina); vivido e riconoscibile su dark |
+
 ### Transizioni
 
 - **Token:** `--transition-default: 200ms ease-out` in `src/app.css` (sezione `.dark`). Valore adottato da Poketrack.
@@ -58,6 +66,7 @@ Mappatura per Tailwind/shadcn: in `.dark` risultano `--background: var(--bg-prim
 | Elemento | Valore | Note |
 |----------|--------|------|
 | Top Bar | altezza **48px**, min-height 48px | Padding 0 16px (`--spacing-lg`), bordo sotto `--border-primary` |
+| Top Bar icon (toolbar) | **32×32 px**, gap **2 px** tra icone | Target ≥24×24 (WCAG 2.2 SC 2.5.8); nessun margin sui figli della toolbar |
 | Sidebar | larghezza **220px** in PokeTracker (espansa), **48px** (collassata); standard Poketrack 280px | bg `--bg-secondary`, bordo destro `--border-primary`; header min-height 40px, padding 8px |
 | Area contenuto | flex 1, overflow-y auto | bg `--bg-primary`; solo questa zona scrolla |
 | Scrollbar | nascosta | In tutta l'app (classe `.poketrack-layout` o equivalente) |
@@ -82,6 +91,7 @@ Top Bar e Sidebar **non** scrollano; lo scroll è solo nell'area contenuto.
 - **Stile**: lineari, minimali, stile "product icons" (VS Code / Material); evitare 3D, cartoon o decorative.
 - **Coerenza**: stesso peso (stroke), stessa dimensione base per voci dello stesso tipo.
 - **Riuso**: preferire set esistente o libreria coerente; evitare mix di stili.
+- **Colore stato**: per icone che indicano stato (successo, modifica, distruttivo) usare i token "Icone stato" sopra: `--icon-success`, `--icon-edit`, `--icon-destructive`.
 - **Stili su icone da libreria (es. Lucide)**: le classi sono applicate al **root del component child** (es. l'elemento SVG). Il **CSS scoped** del file che usa l'icona **non** si applica a quell'elemento (lo scope è solo sugli elementi del componente corrente). Per colore, dimensioni o varianti (es. `.status-active`): usare **`:global(.classe)`** nel foglio di stile del parent, oppure wrappare l'icona in un elemento (es. `<span class="...">`) definito nel parent così lo stile scoped si applica. In caso di bug "icona non cambia aspetto pur con stato corretto", verificare per prima cosa l'applicabilità del selettore (v. `docs/procedures/workflow/bug-fix.md` — Bug "UI non riflette lo stato").
 
 ## Responsive (layout adattivo)

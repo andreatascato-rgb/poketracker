@@ -46,4 +46,4 @@ Definisce quando mostrare errori all’utente (toast, inline, modal), come forma
 
 ## Note
 
-- Per “gestisci errore”, “aggiungi error boundary”, “messaggio errore utente” applicare questo standard e la procedure corrispondente.
+- Per “gestisci errore”, “aggiungi error boundary”, “messaggio errore utente” applicare questo standard e la procedura corrispondente.

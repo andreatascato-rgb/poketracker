@@ -10,175 +10,104 @@ Definisce l'organizzazione del codice per il progetto PokeTracker (Tauri + Rust 
 poketracker/
 ├── src-tauri/                 # Backend Rust (Tauri)
 │   ├── src/
-│   │   ├── main.rs           # Entry point Tauri
-│   │   ├── commands/          # Comandi IPC Tauri
-│   │   ├── services/          # Logica di business
-│   │   ├── models/            # Strutture dati
-│   │   ├── db/                # Database layer
-│   │   ├── parser/            # Integrazione sidecar parser
-│   │   ├── profiles/          # Gestione profili
-│   │   ├── monitoring/        # Monitoraggio file system
-│   │   └── utils/             # Utility
+│   │   ├── main.rs            # Entry point Tauri
+│   │   ├── lib.rs             # Setup app, registrazione command
+│   │   ├── commands/          # Comandi IPC Tauri (profile, save_detect, export_backup)
+│   │   ├── db/                # Database SQLite (connection, migrations)
+│   │   └── watcher.rs         # Monitoraggio file system (salvataggi)
+│   ├── binaries/              # Sidecar parser (parser-x86_64-pc-windows-msvc.exe)
 │   ├── Cargo.toml
 │   └── tauri.conf.json
 │
-├── src-sidecar/               # Parser C# (PKHeX)
-│   ├── Program.cs
-│   ├── Services/
-│   │   └── ParserService.cs
+├── src-sidecar/               # Parser C# (PKHeX.Core) — read-only
+│   ├── Program.cs             # Entry point; comandi detect, pokedex (API PKHeX tipata)
 │   └── PokeTracker.Parser.csproj
 │
 ├── src/                       # Frontend Svelte/SvelteKit
-│   ├── lib/                   # Codice condiviso (componenti, store, servizi)
-│   │   ├── components/        # Componenti Svelte
-│   │   ├── stores/            # Svelte stores
-│   │   ├── services/          # Servizi frontend (wrapper invoke)
-│   │   └── utils/             # Utility frontend
+│   ├── lib/                   # Codice condiviso
+│   │   ├── components/        # Componenti Svelte (ui, layout, profile, pokedex)
+│   │   ├── stores/            # Svelte stores (profile, error-archive, sync)
+│   │   ├── data/              # Dati statici (pokedex-types, pokedex-species)
+│   │   └── utils.ts           # Utility frontend
 │   ├── routes/                # Routing SvelteKit (+page.svelte, +layout.svelte)
 │   ├── app.html
 │   └── (entry SvelteKit)
 │
-├── docs/                      # Documentazione (già presente)
-├── resources/                 # Risorse app (icone, immagini)
+├── docs/                      # Documentazione
+├── static/                    # Asset (favicon, pokedex-sprites, profile-sprites)
 └── README.md
 ```
 
 ## Backend Rust (src-tauri/)
 
-### Struttura Dettagliata
+### Struttura Dettagliata (attuale)
 
 ```
 src-tauri/src/
-├── main.rs                    # Setup Tauri, registrazione comandi
+├── main.rs                    # Entry point Tauri
+├── lib.rs                     # Registrazione command, setup DB, watcher
 │
 ├── commands/                  # Comandi IPC esposti a frontend
 │   ├── mod.rs
-│   ├── profile.rs            # Comandi profili
-│   ├── save_file.rs          # Comandi file salvataggio
-│   ├── pokedex.rs            # Comandi Pokedex
-│   ├── wiki.rs               # Comandi Wiki
-│   ├── editor.rs             # Comandi editor salvataggi
-│   └── management.rs         # Comandi gestione app
+│   ├── profile.rs            # Profili, salvataggi, Pokedex state (DB + sidecar)
+│   ├── save_detect.rs        # Invoco sidecar: detect, pokedex (JSON → Result)
+│   └── export_backup.rs      # Export dati (cartella, path)
 │
-├── services/                  # Logica di business
+├── db/                        # Database SQLite
 │   ├── mod.rs
-│   ├── profile_service.rs    # Gestione profili
-│   ├── save_monitor.rs       # Monitoraggio file system
-│   ├── parser_service.rs     # Integrazione sidecar
-│   ├── database_service.rs   # Operazioni database
-│   └── sync_service.rs       # Sincronizzazione dati
+│   ├── connection.rs         # Connessione, init, migrazioni
+│   └── migrations.rs         # Schema (profiles, app_state, pokedex_state)
 │
-├── models/                    # Strutture dati
-│   ├── mod.rs
-│   ├── profile.rs            # Modello profilo
-│   ├── pokemon.rs            # Modello Pokemon
-│   ├── save_file.rs          # Modello salvataggio
-│   └── pokedex.rs            # Modello Pokedex
-│
-├── db/                        # Database layer
-│   ├── mod.rs
-│   ├── connection.rs         # Gestione connessione SQLite
-│   ├── migrations.rs         # Sistema migrazioni
-│   ├── repositories/          # Repository pattern
-│   │   ├── mod.rs
-│   │   ├── profile_repo.rs
-│   │   ├── pokemon_repo.rs
-│   │   └── pokedex_repo.rs
-│   └── schema.rs             # Schema database
-│
-├── parser/                    # Integrazione parser sidecar
-│   ├── mod.rs
-│   ├── sidecar.rs            # Gestione processo sidecar
-│   └── converter.rs          # Conversione JSON ↔ modelli Rust
-│
-├── profiles/                  # Gestione profili
-│   ├── mod.rs
-│   ├── manager.rs            # Manager profili
-│   └── storage.rs            # Storage profili
-│
-├── monitoring/                # Monitoraggio file system
-│   ├── mod.rs
-│   ├── watcher.rs            # File system watcher
-│   └── sync.rs               # Sincronizzazione automatica
-│
-└── utils/                     # Utility
-    ├── mod.rs
-    ├── error.rs              # Gestione errori
-    └── paths.rs              # Gestione path
+└── watcher.rs                 # Monitoraggio file system (salvataggi)
 ```
 
 ## Frontend Svelte (src/)
 
-### Struttura Dettagliata
+### Struttura Dettagliata (attuale)
 
 ```
 src/
 ├── lib/
 │   ├── components/            # Componenti Svelte
-│   │   ├── ui/                # Componenti shadcn-svelte (Button, Input, Card, …); aggiunti con npx shadcn-svelte@latest add <nome>
-│   │   ├── layout/
-│   │   │   ├── TopBar.svelte
-│   │   │   ├── Sidebar.svelte
-│   │   │   └── ContentArea.svelte
-│   │   ├── profile/
-│   │   │   ├── ProfileSelector.svelte
-│   │   │   └── ProfileManager.svelte
-│   │   ├── pokedex/
-│   │   │   ├── PokedexView.svelte
-│   │   │   └── PokemonCard.svelte
-│   │   ├── wiki/
-│   │   │   ├── WikiView.svelte
-│   │   │   └── WikiEntry.svelte
-│   │   ├── editor/
-│   │   │   └── SaveEditor.svelte
-│   │   └── management/
-│   │       └── AppManagement.svelte
-│   │
+│   │   ├── ui/                # shadcn-svelte (button, card, dialog, empty-state, breadcrumb, …)
+│   │   ├── layout/            # ContentArea, Sidebar, TopBar
+│   │   ├── profile/           # ProfileSelector
+│   │   └── pokedex/           # PokedexTile
 │   ├── stores/                # Svelte stores
-│   │   ├── profile.ts        # Store profilo attivo
-│   │   ├── pokedex.ts        # Store Pokedex
-│   │   ├── wiki.ts           # Store Wiki
-│   │   └── app.ts            # Store app state
-│   │
-│   ├── services/              # Servizi frontend (wrapper invoke)
-│   │   ├── tauri.ts          # Wrapper comandi Tauri
-│   │   ├── profile.ts        # Servizio profili
-│   │   ├── pokedex.ts        # Servizio Pokedex
-│   │   └── wiki.ts           # Servizio Wiki
-│   │
-│   └── utils/                 # Utility frontend
-│       ├── types.ts          # TypeScript types
-│       └── helpers.ts        # Helper functions
+│   │   ├── profile.ts         # Profilo attivo, loadProfiles
+│   │   ├── error-archive.ts   # reportSystemError, archivio errori
+│   │   └── sync.svelte.ts     # Stato sync
+│   ├── data/                  # Dati statici
+│   │   ├── pokedex-types.ts   # Tipi specie
+│   │   └── pokedex-species.ts # Lista specie (getSpeciesList)
+│   └── utils.ts               # Utility
 │
-├── routes/                    # Routing SvelteKit (vedi glossary: Route)
-│   ├── +layout.svelte        # Layout root (ssr = false per Tauri)
-│   ├── +layout.ts            # Load condiviso (opzionale)
-│   ├── +page.svelte          # Home / default
-│   ├── profilo/              # Route /profilo
-│   │   └── +page.svelte
-│   ├── editor/
-│   │   └── +page.svelte
-│   ├── wiki/
-│   │   └── +page.svelte
-│   └── impostazioni/
-│       └── +page.svelte
+├── routes/                    # Routing SvelteKit
+│   ├── +layout.svelte         # Layout root (TopBar, Sidebar, breadcrumb)
+│   ├── +layout.ts
+│   ├── +page.svelte           # Home
+│   ├── profilo/               # Profilo, salvataggi, pokedex, statistiche
+│   ├── impostazioni/          # Profili, backup-dati, errori
+│   ├── wiki/                  # Mosse, nature, pokemon
+│   └── editor/
 │
-└── app.html                   # Shell HTML (entry SvelteKit)
+└── app.html
 ```
+
+**Obiettivo struttura:** introdurre `lib/services/` (wrapper invoke tipati) e usare i servizi dalle pagine invece di `invoke` sparso; tipi condivisi in `lib/types/` o nei servizi.
 
 ## Sidecar C# (src-sidecar/)
 
-### Struttura Dettagliata
+### Struttura Dettagliata (attuale)
 
 ```
 src-sidecar/
-├── Program.cs                 # Entry point console app
-├── Services/
-│   └── ParserService.cs      # Servizio parsing PKHeX
-├── Models/
-│   └── SaveData.cs           # Modelli dati
-└── PokeTracker.Parser.csproj
+├── Program.cs                 # Entry point; comandi detect, pokedex (API PKHeX tipata, no reflection)
+└── PokeTracker.Parser.csproj  # PKHeX.Core, net8.0, PublishSingleFile → src-tauri/binaries/
 ```
+
+- **detect:** SaveUtil.GetVariantSAV, SaveDetectHelper (game, version, generation, language).
+- **pokedex:** PokedexHelper usa solo `SaveFile.GetSeen(speciesId)` e `SaveFile.GetCaught(speciesId)`; range specie da `SaveFile.Generation` (nessun 1–493 hardcoded).
 
 ## Principi Organizzativi
 

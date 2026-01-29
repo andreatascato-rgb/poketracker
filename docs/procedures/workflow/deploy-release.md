@@ -4,7 +4,7 @@
 
 Definisce come preparare build di release, bundle installer e pipeline di distribuzione per PokeTracker (Tauri 2).
 
-## Quando Usare Questa Procedure
+## Quando Usare Questa Procedura
 
 - Query: "build", "deploy", "release", "distribuisci", "pacchetto", "installer", "tauri build", "crea installer", "release build", "bundle"
 - Quando si deve generare una build di release, un installer o configurare/aggiornare la pipeline di release

@@ -4,7 +4,7 @@
 
 Definisce come introdurre o modificare la gestione errori user-facing (toast, inline, modal) e il logging in linea con [error-handling-standard](../../standards/error-handling-standard.md).
 
-## Quando Usare Questa Procedure
+## Quando Usare Questa Procedura
 
 - Query: "gestisci errore", "user-facing error", "toast errore", "error boundary", "messaggio di fallimento", "aggiungi toast", "notifica errore"
 - Quando si deve mostrare errori all’utente o cambiare come/ dove si loggano

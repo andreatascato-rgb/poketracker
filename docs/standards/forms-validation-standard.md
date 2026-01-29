@@ -38,4 +38,4 @@ Definisce come creare form e validazione in PokeTracker: schema condivisi, chi v
 
 ## Note
 
-- Per “aggiungi form”, “validazione form”, “form schema” usare questo standard e la procedure form-creation o validazione.
+- Per “aggiungi form”, “validazione form”, “form schema” usare questo standard e la procedura form-creation o validazione.

@@ -4,7 +4,7 @@
 
 Definisce come estrarre un blocco di markup/logica da un componente Svelte esistente in un nuovo file componente, rispettando runes, cartelle, catalog se diventa primitivo. Più specifica di [refactor](./refactor.md) per il caso “estrai componente”.
 
-## Quando Usare Questa Procedure
+## Quando Usare Questa Procedura
 
 - Query: "estrai componente", "estrai in nuovo file", "spezza componente", "estrai blocco in componente", "separa in componente", "estrai in .svelte"
 - Quando si deve spostare una parte di un componente Svelte in un nuovo file `.svelte` riutilizzabile

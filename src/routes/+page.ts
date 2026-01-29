@@ -1,6 +1,6 @@
 import { redirect } from "@sveltejs/kit";
 
-/** Reindirizza / alla dashboard Allenatore (prima sezione attiva). */
+/** Reindirizza / alla sezione Allenatore (landing quando si apre l'app). */
 export function load() {
-  redirect(302, "/profilo/dashboard");
+  redirect(302, "/profilo");
 }

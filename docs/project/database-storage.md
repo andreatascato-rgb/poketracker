@@ -47,8 +47,8 @@ Definisce come gestire database e storage locale per l'applicazione PokeTracker 
 
 **Struttura:**
 - Un database SQLite per app
-- Tabelle separate per ogni entità
-- Relazioni tra tabelle quando necessario
+- Tabelle separate per ogni entità: `profiles`, `app_state`, `pokedex_state` (stato visto/catturato per specie e profilo; vedi [pokedex-personal](./pokedex-personal.md)), salvataggi, ecc.
+- Relazioni tra tabelle quando necessario (es. `pokedex_state.profile_id` → `profiles.id` ON DELETE CASCADE)
 
 ### File JSON
 

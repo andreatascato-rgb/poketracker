@@ -4,7 +4,7 @@
 
 Definisce come aggiungere un form e la validazione (frontend + backend) in linea con [forms-validation-standard](../../standards/forms-validation-standard.md).
 
-## Quando Usare Questa Procedure
+## Quando Usare Questa Procedura
 
 - Query: "aggiungi form", "validazione form", "form schema", "validazione input", "crea form", "form validation"
 - Quando si deve introdurre un form che invia dati al backend (command Tauri) o modifica dati

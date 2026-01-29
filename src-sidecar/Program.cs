@@ -1,30 +1,38 @@
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
+using System.Linq;
 using PKHeX.Core;
 
 Console.OutputEncoding = Encoding.UTF8;
 
-if (args.Length < 2)
+if (args.Length < 1)
 {
-    WriteError("Usage: detect <path>");
+    WriteError("Usage: <command> [path]. Commands: detect <path>, pokedex <path>, pokedex_auto <path>, probe.");
     Environment.Exit(1);
     return;
 }
 
-string command = args[0];
-string path = args[1];
+string command = args[0].Trim().ToLowerInvariant();
+string? path = args.Length > 1 ? args[1] : null;
 
-if (command != "detect")
+if (command == "probe")
 {
-    WriteError("Unknown command. Use: detect <path>");
+    PkHexPokedexProbe.Run();
+    Environment.Exit(0);
+    return;
+}
+
+if (command != "detect" && command != "pokedex" && command != "pokedex_auto")
+{
+    WriteError("Unknown command. Use: detect <path>, pokedex <path>, or pokedex_auto <path>");
     Environment.Exit(1);
     return;
 }
 
-if (!File.Exists(path))
+if (string.IsNullOrEmpty(path) || !File.Exists(path))
 {
-    WriteError("File not found: " + path);
+    WriteError("File not found: " + (path ?? ""));
     Environment.Exit(1);
     return;
 }
@@ -41,21 +49,63 @@ try
         return;
     }
 
-    string gameName = SaveDetectHelper.GetGameNameItalian(sav);
-    int? langIdRaw = SaveDetectHelper.GetLanguageId(sav);
-    string languageLabel = SaveDetectHelper.GetLanguageLabel(sav, path);
-
-    var result = new
+    if (command == "detect")
     {
-        game = gameName,
-        version = languageLabel,
-        generation = SaveDetectHelper.GetGeneration(sav),
-        languageIdRaw = langIdRaw
-    };
+        string gameName = SaveDetectHelper.GetGameNameItalian(sav);
+        int? langIdRaw = SaveDetectHelper.GetLanguageId(sav);
+        string languageLabel = SaveDetectHelper.GetLanguageLabel(sav, path);
 
-    string json = JsonSerializer.Serialize(result);
-    Console.WriteLine(json);
-    Environment.Exit(0);
+        var result = new
+        {
+            game = gameName,
+            version = languageLabel,
+            generation = SaveDetectHelper.GetGeneration(sav),
+            languageIdRaw = langIdRaw
+        };
+
+        string json = JsonSerializer.Serialize(result);
+        Console.WriteLine(json);
+        Environment.Exit(0);
+        return;
+    }
+
+    if (command == "pokedex")
+    {
+        var entries = PokedexHelper.GetAllSpeciesStatus(sav);
+        int seen = 0, caught = 0;
+        foreach (var e in entries)
+        {
+            if (e.Status == "seen") seen++;
+            else if (e.Status == "caught") caught++;
+        }
+        Console.Error.WriteLine($"[parser] Pokedex extract: {entries.Count} species, seen={seen}, caught={caught}");
+        var result = new { entries };
+        string json = JsonSerializer.Serialize(result);
+        Console.WriteLine(json);
+        Environment.Exit(0);
+        return;
+    }
+
+    if (command == "pokedex_auto")
+    {
+        List<PokedexHelper.PokedexEntry> entries;
+        string typeName = sav.GetType().Name;
+        if (typeName == "SAV3FRLG" || typeName == "SAV3FR" || typeName == "SAV3LG")
+        {
+            Console.Error.WriteLine($"[parser] pokedex_auto: rilevato {typeName}, uso parser FRLG (Rosso Fuoco/Verde Foglia).");
+            entries = FrLgPokedexParser.Parse(data, path ?? "");
+        }
+        else
+        {
+            Console.Error.WriteLine($"[parser] pokedex_auto: save tipo {typeName}, nessun parser dedicato. Restituisco vuoto.");
+            entries = new List<PokedexHelper.PokedexEntry>();
+        }
+        var result = new { entries };
+        string json = JsonSerializer.Serialize(result);
+        Console.WriteLine(json);
+        Environment.Exit(0);
+        return;
+    }
 }
 catch (Exception ex)
 {
@@ -411,4 +461,231 @@ file static class SaveDetectHelper
         [9] = "CHS",
         [10] = "CHT",
     };
+}
+
+/// <summary>Parser Pokedex per Rosso Fuoco / Verde Foglia (FRLG). Legge i byte raw del .sav secondo Bulbapedia:
+/// Section 0: owned (caught) a 0x28 (49 byte), seen a 0x5C (49 byte). Blocchi A/B, sezioni ruotate, save index.</summary>
+file static class FrLgPokedexParser
+{
+    private const int BlockSize = 0xE000;       // 57344
+    private const int BlockAStart = 0;
+    private const int BlockBStart = 0xE000;
+    private const int SectionSize = 4096;
+    private const int SectionIdOffset = 0xFF4;  // 2 bytes LE
+    private const int SaveIndexOffset = 0xFFC;  // 4 bytes LE
+    private const int OwnedOffset = 0x28;
+    private const int SeenOffset = 0x5C;
+    private const int PokedexBytes = 49;        // 49 * 8 = 392 bit, specie 0..391
+    private const int MaxSpeciesGen3 = 386;
+
+    private static readonly (int Evolved, int Base)[] EvolvesFrom = new[]
+    {
+        (2, 1), (3, 2), (5, 4), (6, 5), (8, 7), (9, 8), (11, 10), (12, 11), (14, 13), (15, 14),
+        (17, 16), (18, 17), (20, 19), (21, 20), (22, 21), (24, 23), (25, 24), (26, 25), (28, 27), (29, 28),
+        (30, 29), (31, 30), (33, 32), (34, 33), (36, 35), (38, 37), (40, 39), (42, 41), (44, 43), (45, 44),
+        (47, 46), (49, 48), (51, 50), (53, 52), (55, 54), (57, 56), (59, 58), (61, 60), (62, 61), (64, 63),
+        (65, 64), (67, 66), (68, 67), (70, 69), (71, 70), (73, 72), (75, 74), (76, 75), (78, 77), (80, 79),
+        (82, 81), (85, 84), (87, 86), (89, 88), (91, 90), (94, 93), (97, 96), (99, 98), (101, 100),
+        (103, 102), (105, 104), (107, 106), (110, 109), (112, 111), (115, 114), (117, 116), (119, 118),
+        (121, 120), (124, 123), (126, 125), (128, 127), (131, 130), (134, 133), (136, 135), (139, 138),
+        (141, 140), (143, 142), (146, 145), (149, 148),
+    };
+
+    public static List<PokedexHelper.PokedexEntry> Parse(byte[] data, string pathForLog)
+    {
+        Console.Error.WriteLine($"[parser] FRLG: file size={data.Length} bytes, path={pathForLog}");
+        if (data.Length < BlockBStart + BlockSize)
+        {
+            Console.Error.WriteLine($"[parser] FRLG: file troppo piccolo per due blocchi, uso solo blocco A.");
+        }
+
+        (int section0Index, uint saveIndex) FindSection0(int blockStart)
+        {
+            for (int i = 0; i < 14; i++)
+            {
+                int sectionStart = blockStart + i * SectionSize;
+                if (sectionStart + SectionSize > data.Length) return (-1, 0);
+                int id = data[sectionStart + SectionIdOffset] | (data[sectionStart + SectionIdOffset + 1] << 8);
+                if (id == 0)
+                {
+                    uint saveIdx = (uint)(data[sectionStart + SaveIndexOffset] | (data[sectionStart + SaveIndexOffset + 1] << 8) |
+                        (data[sectionStart + SaveIndexOffset + 2] << 16) | (data[sectionStart + SaveIndexOffset + 3] << 24));
+                    return (sectionStart, saveIdx);
+                }
+            }
+            return (-1, 0);
+        }
+
+        var (secA, idxA) = FindSection0(BlockAStart);
+        var (secB, idxB) = FindSection0(BlockBStart);
+        int section0Start;
+        string blockUsed;
+        if (secA < 0 && secB < 0)
+        {
+            Console.Error.WriteLine("[parser] FRLG: Section 0 non trovata in nessun blocco. Restituisco vuoto.");
+            return new List<PokedexHelper.PokedexEntry>();
+        }
+        if (secB < 0 || (secA >= 0 && idxA >= idxB))
+        {
+            section0Start = secA;
+            blockUsed = "A";
+            Console.Error.WriteLine($"[parser] FRLG: blocco usato={blockUsed}, save_index={idxA}, section0_offset=0x{secA:X}");
+        }
+        else
+        {
+            section0Start = secB;
+            blockUsed = "B";
+            Console.Error.WriteLine($"[parser] FRLG: blocco usato={blockUsed}, save_index={idxB}, section0_offset=0x{secB:X}");
+        }
+
+        byte[] owned = new byte[PokedexBytes];
+        byte[] seen = new byte[PokedexBytes];
+        for (int i = 0; i < PokedexBytes; i++)
+        {
+            owned[i] = data[section0Start + OwnedOffset + i];
+            seen[i] = data[section0Start + SeenOffset + i];
+        }
+        string ownedHex = string.Join(" ", owned.Take(16).Select(b => b.ToString("X2")));
+        string seenHex = string.Join(" ", seen.Take(16).Select(b => b.ToString("X2")));
+        Console.Error.WriteLine($"[parser] FRLG: blocco {blockUsed} — owned (primi 16 byte) = {ownedHex}");
+        Console.Error.WriteLine($"[parser] FRLG: blocco {blockUsed} — seen  (primi 16 byte) = {seenHex}");
+
+        static bool GetBit(byte[] buf, int bitIndex)
+        {
+            if (bitIndex < 0 || (bitIndex >> 3) >= buf.Length) return false;
+            return (buf[bitIndex >> 3] & (1 << (bitIndex & 7))) != 0;
+        }
+
+        var statusBySpecies = new Dictionary<int, string>(MaxSpeciesGen3);
+        for (int sid = 1; sid <= MaxSpeciesGen3; sid++)
+        {
+            int idx = sid - 1;
+            bool caught = GetBit(owned, idx);
+            bool s = GetBit(seen, idx);
+            string status = caught ? "caught" : (s ? "seen" : "unseen");
+            statusBySpecies[sid] = status;
+        }
+
+        foreach (var (evolved, base_) in EvolvesFrom)
+        {
+            if (evolved > MaxSpeciesGen3) continue;
+            if (statusBySpecies[evolved] == "caught")
+            {
+                statusBySpecies[base_] = "caught";
+            }
+        }
+
+        var list = statusBySpecies.OrderBy(kv => kv.Key).Select(kv => new PokedexHelper.PokedexEntry(kv.Key, kv.Value)).ToList();
+        int seenCount = list.Count(e => e.Status == "seen");
+        int caughtCount = list.Count(e => e.Status == "caught");
+        Console.Error.WriteLine($"[parser] FRLG: estratte {list.Count} specie, seen={seenCount}, caught={caughtCount}");
+        var sample = list.Where(e => e.Status != "unseen").Take(10).Select(e => $"#{e.SpeciesId}={e.Status}");
+        Console.Error.WriteLine($"[parser] FRLG: campione (primi 10 non-unseen) = {string.Join(", ", sample)}");
+        return list;
+    }
+}
+
+/// <summary>Estrae stato Pokedex (unseen/seen/caught) dal save usando SOLO l'API tipata PKHeX:
+/// SaveFile.GetSeen e SaveFile.GetCaught. Alcuni giochi/save usano indice dex 0-based (0=Bulbasaur):
+/// se true, passiamo (speciesId - 1) all'API così species_id 1 in output = Bulbasaur. Vedi issue pre-evoluzioni.</summary>
+file static class PokedexHelper
+{
+    /// <summary>Se true, GetSeen/GetCaught vengono chiamati con (sid - 1) così National Dex #1 = indice 0 (Bulbasaur).</summary>
+    private const bool UseDexIndexZeroBased = true;
+
+    /// <summary>Coppie (evoluzione, base) Gen1: se l'evoluzione è caught, la base va almeno caught. Allineato a Rust EVOLVES_FROM.</summary>
+    private static readonly (int Evolved, int Base)[] EvolvesFrom = new[]
+    {
+        (2, 1), (3, 2), (5, 4), (6, 5), (8, 7), (9, 8), (11, 10), (12, 11), (14, 13), (15, 14),
+        (17, 16), (18, 17), (20, 19), (21, 20), (22, 21), (24, 23), (25, 24), (26, 25), (28, 27), (29, 28),
+        (30, 29), (31, 30), (33, 32), (34, 33), (36, 35), (38, 37), (40, 39), (42, 41), (44, 43), (45, 44),
+        (47, 46), (49, 48), (51, 50), (53, 52), (55, 54), (57, 56), (59, 58), (61, 60), (62, 61), (64, 63),
+        (65, 64), (67, 66), (68, 67), (70, 69), (71, 70), (73, 72), (75, 74), (76, 75), (78, 77), (80, 79),
+        (82, 81), (85, 84), (87, 86), (89, 88), (91, 90), (94, 93), (97, 96), (99, 98), (101, 100),
+        (103, 102), (105, 104), (107, 106), (110, 109), (112, 111), (115, 114), (117, 116), (119, 118),
+        (121, 120), (124, 123), (126, 125), (128, 127), (131, 130), (134, 133), (136, 135), (139, 138),
+        (141, 140), (143, 142), (146, 145), (149, 148),
+    };
+
+    static int? PrevEvolution(int speciesId)
+    {
+        foreach (var (evolved, base_) in EvolvesFrom)
+            if (evolved == speciesId) return base_;
+        return null;
+    }
+
+    /// <summary>Propaga "caught" alle pre-evoluzioni: se una specie è catturata, le forme base vanno almeno "caught".</summary>
+    private static void PropagateCaughtToPrevolutions(Dictionary<int, string> statusBySpecies)
+    {
+        var caughtIds = statusBySpecies.Where(kv => kv.Value == "caught").Select(kv => kv.Key).ToList();
+        foreach (var sid in caughtIds)
+        {
+            var current = sid;
+            int? prev;
+            while ((prev = PrevEvolution(current)) != null)
+            {
+                statusBySpecies[prev.Value] = "caught";
+                current = prev.Value;
+            }
+        }
+    }
+
+    /// <summary>Numero massimo di specie per generazione (National Dex fino a quella Gen). Fonte: PKHeX / dati ufficiali.</summary>
+    private static int GetMaxSpeciesIdForGeneration(int generation)
+    {
+        return generation switch
+        {
+            1 => 151,
+            2 => 251,
+            3 => 386,
+            4 => 493,
+            5 => 649,
+            6 => 721,
+            7 => 809,
+            8 => 905,
+            9 => 1025,
+            _ => 493,
+        };
+    }
+
+    /// <summary>Restituisce tutte le specie valide per la generazione del save con status (unseen/seen/caught).
+    /// Usa GetSeen/GetCaught; opzione 0-based per dex; propaga caught alle pre-evoluzioni.</summary>
+    public static List<PokedexEntry> GetAllSpeciesStatus(SaveFile sav)
+    {
+        int gen = sav.Generation;
+        int maxSpeciesId = GetMaxSpeciesIdForGeneration(gen);
+        var statusBySpecies = new Dictionary<int, string>(maxSpeciesId);
+
+        for (int sid = 1; sid <= maxSpeciesId; sid++)
+        {
+            ushort dexIndex = UseDexIndexZeroBased ? (ushort)(sid - 1) : (ushort)sid;
+            bool caught;
+            bool seen;
+            try
+            {
+                caught = sav.GetCaught(dexIndex);
+                seen = sav.GetSeen(dexIndex);
+            }
+            catch
+            {
+                caught = false;
+                seen = false;
+            }
+            string status = caught ? "caught" : (seen ? "seen" : "unseen");
+            statusBySpecies[sid] = status;
+        }
+
+        PropagateCaughtToPrevolutions(statusBySpecies);
+
+        var list = statusBySpecies.OrderBy(kv => kv.Key).Select(kv => new PokedexEntry(kv.Key, kv.Value)).ToList();
+        int seenCount = list.Count(e => e.Status == "seen");
+        int caughtCount = list.Count(e => e.Status == "caught");
+        Console.Error.WriteLine($"[parser] Pokedex: Gen{gen}, max={maxSpeciesId}, entries={list.Count}, seen={seenCount}, caught={caughtCount}, dexIndex0Based={UseDexIndexZeroBased}");
+        return list;
+    }
+
+    public record PokedexEntry(
+        [property: System.Text.Json.Serialization.JsonPropertyName("species_id")] int SpeciesId,
+        [property: System.Text.Json.Serialization.JsonPropertyName("status")] string Status
+    );
 }

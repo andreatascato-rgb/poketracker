@@ -8,7 +8,7 @@
   import { watchedCount, setWatchedCount, canLayoutSetWatchedCount } from "$lib/stores/sync.svelte";
   import OnboardingView from "$lib/components/onboarding/OnboardingView.svelte";
   import ProfileSelector from "$lib/components/profile/ProfileSelector.svelte";
-  import { User, Users, Pencil, BookOpen, Settings, ChevronLeft, ChevronRight, CheckCircle, FolderOpen, RefreshCw, LayoutDashboard, Archive, AlertCircle, PawPrint, Zap, Leaf } from "@lucide/svelte";
+  import { User, Users, Pencil, BookOpen, Settings, ChevronLeft, ChevronRight, CheckCircle, FolderOpen, RefreshCw, LayoutDashboard, AlertCircle, PawPrint, Zap, Leaf, BarChart3, Search } from "@lucide/svelte";
   import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "$lib/components/ui/tooltip";
   import { Toaster } from "$lib/components/ui/sonner";
   import { Breadcrumb } from "$lib/components/ui/breadcrumb";
@@ -17,16 +17,19 @@
 
   /** Titolo pagina derivato dal path (per top bar). */
   const ROUTE_TITLES: Record<string, string> = {
-    "/profilo/dashboard": "Allenatore · Dashboard",
-    "/profilo/salvataggi": "Allenatore · Salvataggi",
+    "/profilo": "Allenatore",
+    "/profilo/statistiche": "Statistiche",
+    "/profilo/pokedex": "Pokedex",
+    "/profilo/salvataggi": "Salvataggi",
     "/editor": "Editor",
     "/wiki": "Wiki",
     "/wiki/pokemon": "Wiki · Pokemon",
     "/wiki/mosse": "Wiki · Mosse",
     "/wiki/nature": "Wiki · Nature",
-    "/archivio/errori": "Archivio · Errori",
     "/impostazioni": "Impostazioni",
     "/impostazioni/profili": "Impostazioni · Profili",
+    "/impostazioni/errori": "Impostazioni · Errori",
+    "/impostazioni/backup-dati": "Impostazioni · Backup e dati",
   };
 
   function pageTitle(path: string): string {
@@ -43,39 +46,36 @@
   function getBreadcrumbItems(path: string, profileName: string): BreadcrumbItem[] {
     const root = { label: profileName };
     if (path === "/") return [root];
-    if (path === "/profilo/dashboard") return [root, { label: "Allenatore", href: "/profilo/dashboard" }, { label: "Dashboard" }];
-    if (path === "/profilo/salvataggi") return [root, { label: "Allenatore", href: "/profilo/dashboard" }, { label: "Salvataggi" }];
+    if (path === "/profilo") return [root, { label: "Allenatore" }];
+    if (path === "/profilo/statistiche") return [root, { label: "Statistiche" }];
+    if (path === "/profilo/pokedex") return [root, { label: "Pokedex" }];
+    if (path === "/profilo/salvataggi") return [root, { label: "Salvataggi" }];
     if (path === "/editor") return [root, { label: "Editor" }];
     if (path === "/wiki") return [root, { label: "Wiki" }];
     if (path === "/wiki/pokemon") return [root, { label: "Wiki", href: "/wiki" }, { label: "Pokemon" }];
     if (path === "/wiki/mosse") return [root, { label: "Wiki", href: "/wiki" }, { label: "Mosse" }];
     if (path === "/wiki/nature") return [root, { label: "Wiki", href: "/wiki" }, { label: "Nature" }];
-    if (path === "/archivio/errori") return [root, { label: "Archivio", href: "/archivio/errori" }, { label: "Errori" }];
     if (path === "/impostazioni") return [root, { label: "Impostazioni" }];
     if (path === "/impostazioni/profili") return [root, { label: "Impostazioni", href: "/impostazioni" }, { label: "Profili" }];
-    if (path.startsWith("/profilo/")) return [root, { label: "Allenatore", href: "/profilo/dashboard" }, { label: pageTitle(path) }];
+    if (path === "/impostazioni/errori") return [root, { label: "Impostazioni", href: "/impostazioni" }, { label: "Errori" }];
+    if (path === "/impostazioni/backup-dati") return [root, { label: "Impostazioni", href: "/impostazioni" }, { label: "Backup e dati" }];
+    if (path.startsWith("/profilo/")) return [root, { label: pageTitle(path) }];
     if (path.startsWith("/wiki/")) return [root, { label: "Wiki", href: "/wiki" }, { label: pageTitle(path) }];
-    if (path.startsWith("/archivio/")) return [root, { label: "Archivio", href: "/archivio/errori" }, { label: pageTitle(path) }];
     if (path.startsWith("/impostazioni/")) return [root, { label: "Impostazioni", href: "/impostazioni" }, { label: pageTitle(path) }];
     return [root, { label: pageTitle(path) }];
   }
 
 
-  type SidebarChild = { label: string; href: string; icon: typeof Users | typeof LayoutDashboard | typeof FolderOpen | typeof AlertCircle | typeof PawPrint | typeof Zap | typeof Leaf };
+  type SidebarChild = { label: string; href: string; icon: typeof Users | typeof LayoutDashboard | typeof BarChart3 | typeof Search | typeof FolderOpen | typeof AlertCircle | typeof PawPrint | typeof Zap | typeof Leaf };
   type SidebarItem =
-    | { label: string; href: string; icon: typeof Pencil; children?: undefined }
-    | { label: string; href: string; icon: typeof User | typeof BookOpen | typeof Settings | typeof Archive; children: SidebarChild[] };
+    | { label: string; href: string; icon: typeof User | typeof Pencil | typeof Search | typeof FolderOpen | typeof BarChart3; children?: undefined }
+    | { label: string; href: string; icon: typeof BookOpen; children: SidebarChild[] };
   const sidebarItems: SidebarItem[] = [
+    { label: "Allenatore", href: "/profilo", icon: User },
+    { label: "Statistiche", href: "/profilo/statistiche", icon: BarChart3 },
+    { label: "Pokedex", href: "/profilo/pokedex", icon: Search },
     { label: "Editor", href: "/editor", icon: Pencil },
-    {
-      label: "Allenatore",
-      href: "/profilo/dashboard",
-      icon: User,
-      children: [
-        { label: "Dashboard", href: "/profilo/dashboard", icon: LayoutDashboard },
-        { label: "Salvataggi", href: "/profilo/salvataggi", icon: FolderOpen },
-      ],
-    },
+    { label: "Salvataggi", href: "/profilo/salvataggi", icon: FolderOpen },
     {
       label: "Wiki",
       href: "/wiki",
@@ -85,18 +85,6 @@
         { label: "Mosse", href: "/wiki/mosse", icon: Zap },
         { label: "Nature", href: "/wiki/nature", icon: Leaf },
       ],
-    },
-    {
-      label: "Archivio",
-      href: "/archivio/errori",
-      icon: Archive,
-      children: [{ label: "Errori", href: "/archivio/errori", icon: AlertCircle }],
-    },
-    {
-      label: "Impostazioni",
-      href: "/impostazioni",
-      icon: Settings,
-      children: [{ label: "Profili", href: "/impostazioni/profili", icon: Users }],
     },
   ];
 
@@ -147,8 +135,10 @@
     }
   });
 
-  function isSidebarActive(href: string): boolean {
+  /** Voce attiva: per voci senza figli (flat) solo path === href; per sottovoci anche sotto-path. */
+  function isSidebarActive(href: string, exactOnly = false): boolean {
     const path = $page?.url?.pathname ?? "";
+    if (exactOnly) return path === href;
     return path === href || (path.startsWith(href + "/") && href !== "/");
   }
 
@@ -206,6 +196,18 @@
             ? ($watchedCount === 1 ? "1 watcher attivo" : `${$watchedCount} watcher attivi`)
             : "Nessun watcher attivo"}
         </TooltipContent>
+      </Tooltip>
+      <Tooltip>
+        <TooltipTrigger>
+          <a
+            href="/impostazioni"
+            class="top-bar-btn"
+            aria-label="Impostazioni"
+          >
+            <Settings class="top-bar-btn-icon" aria-hidden="true" />
+          </a>
+        </TooltipTrigger>
+        <TooltipContent side="bottom" sideOffset={6}>Impostazioni</TooltipContent>
       </Tooltip>
       <ProfileSelector />
       {#if dev}
@@ -285,7 +287,7 @@
         <nav class="sidebar-nav" aria-label="Navigazione principale">
           {#each sidebarItems as item}
             {@const Icon = item.icon}
-            {@const active = isSidebarActive(item.href)}
+            {@const active = isSidebarActive(item.href, !item.children)}
             {#if item.children}
               {@const inThisSection = isInSection($page?.url?.pathname ?? "", item)}
               {@const isExpanded = expandedSection === item.href || (expandedSection === null && inThisSection)}
@@ -423,14 +425,20 @@
     flex: 1;
   }
 
+  /* Top Bar toolbar: gap 2px tra icone (target 32×32 ≥ 24×24 WCAG). */
   .top-bar-right {
     display: flex;
     align-items: center;
-    gap: var(--spacing-xs, 4px);
+    gap: 2px;
     flex-shrink: 0;
   }
 
-  .top-bar-btn {
+  .top-bar-right > * {
+    margin: 0;
+  }
+
+  /* :global così gli stili si applicano anche al DropdownMenuTrigger (componente figlio) che usa class="top-bar-btn" */
+  :global(.top-bar-btn) {
     width: 32px;
     height: 32px;
     padding: 0;
@@ -446,16 +454,16 @@
     transition: background var(--transition-default, 200ms ease-out);
   }
 
-  .top-bar-btn:hover {
+  :global(.top-bar-btn:hover) {
     background: var(--hover-bg, #2a2d2e);
   }
 
-  .top-bar-btn:active {
+  :global(.top-bar-btn:active) {
     background: var(--pressed-bg, #1f2224);
     transition: none;
   }
 
-  .top-bar-btn:focus-visible {
+  :global(.top-bar-btn:focus-visible) {
     outline: 2px solid var(--focus-ring, #007acc);
     outline-offset: 0;
   }

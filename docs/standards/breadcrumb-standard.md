@@ -36,9 +36,7 @@ Esempio semantico (PokeTracker):
   <ol>
     <li>Default</li>
     <li><span aria-hidden="true">/</span></li>
-    <li><a href="/profilo/dashboard">Allenatore</a></li>
-    <li><span aria-hidden="true">/</span></li>
-    <li aria-current="page">Dashboard</li>
+    <li aria-current="page">Allenatore</li>
   </ol>
 </nav>
 ```

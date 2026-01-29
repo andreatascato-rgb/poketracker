@@ -37,14 +37,16 @@ Impostazioni e configurazioni modificabili:
 - Gestione risorse (icone, immagini)
 - Impostazioni validazione
 
-### Gestione Dati
+### Gestione Dati (Backup e dati)
 
-Operazioni sui dati:
-- Forzare sincronizzazione manuale
-- Pulizia dati obsoleti
-- Backup/ripristino dati
-- Esportazione dati
-- Reset dati profilo
+**Sezione:** Impostazioni → Backup e dati (`/impostazioni/backup-dati`).
+
+- **Cartella export:** Cartella dedicata dove l’app salva export e backup (default: `app_data_dir()/exports`). L’utente può aprirla (“Apri cartella export”), scegliere un’altra cartella (“Scegli cartella”) o ripristinare la predefinita (“Usa predefinita”). Vedi [analisi-import-export-cartelle.md](../temp/analisi-import-export-cartelle.md).
+- **Export Pokedex:** Esporta i dati Pokedex nella cartella export (in sviluppo).
+- **Backup ora:** Crea un backup del profilo/DB nella cartella export (in sviluppo).
+- **Ripristina:** Importa un backup precedentemente esportato (dialog “Apri file”; nessuna cartella dedicata per l’import).
+
+Import/Export legati al save (Editor): backup .sav, Salva, Export team → UI Editor. Import/Export dati app → Impostazioni → Backup e dati.
 
 ### Gestione Risorse
 

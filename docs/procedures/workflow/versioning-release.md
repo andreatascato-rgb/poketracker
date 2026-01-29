@@ -4,7 +4,7 @@
 
 Prima di ogni commit e push che si considera “rilascio versionato”, l’AI determina da sola la versione (ultima in VERSION-HISTORY + modifiche → SemVer), aggiorna lo storico, esegue commit e push. Conferma utente solo se bump MAJOR o tipo di cambio ambiguo.
 
-## Quando Usare Questa Procedure
+## Quando Usare Questa Procedura
 
 - Query: "commit e push", "push con versione", "rilascia versione", "versionamento", "decidere versione", "fare release", "scrivere nel commit la versione", "aggiorna changelog", "aggiungi a VERSION-HISTORY", "preparare push con versione"
 - Quando si sta per fare push e si vuole associare una versione al commit

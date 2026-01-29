@@ -2,7 +2,14 @@
 
 ## Obiettivo
 
-Mappa query dell'utente alle procedure corrispondenti. Consulta questa mappa per identificare quale procedure leggere. Il matching è per **sostanza** della richiesta: varianti in italiano/inglese, singolare/plurale e formulazioni equivalenti vanno considerate match.
+Mappa query dell'utente alle procedure corrispondenti. Consulta questa mappa per identificare **quale procedura** leggere. Il matching è per **sostanza** della richiesta: varianti in italiano/inglese, singolare/plurale e formulazioni equivalenti vanno considerate match.
+
+## Regole ferree (nessuna eccezione)
+
+- **Non approssimare:** usare solo ciò che è documentato in procedure e standard.
+- **Non indovinare:** non assumere path, nomi, strutture; verificare nei file indicati.
+- **Non inventare:** nessuna convenzione o implementazione non documentata.
+- Per ogni azione: 1) identificare la procedura da questa mappa, 2) leggere la procedura per intero, 3) completare la checklist, 4) leggere tutti gli standard referenziati, 5) solo dopo proporre e (se confermato) implementare.
 
 ## Pattern Matching
 
@@ -71,7 +78,13 @@ Mappa query dell'utente alle procedure corrispondenti. Consulta questa mappa per
 
 - Query: "fix bug", "correggi bug", "risolvi bug", "bug fix", "fix", "correggi", "risolvi", "non funziona", "errore", "fix error", "correggi errore", "risolvi errore"
 - Procedure: `docs/procedures/workflow/bug-fix.md`
-- **Se il bug è "UI non si aggiorna" / "elemento non cambia aspetto"** (es. icona che dovrebbe cambiare colore ma resta uguale): obbligatoria la sezione **"Bug UI non riflette lo stato"** nella procedure (catena stato → reattività → CSS; dopo 2–3 tentativi falliti: ipotesi + strumentazione, non iterare a caso).
+- **Se il bug è "UI non si aggiorna" / "elemento non cambia aspetto"** (es. icona che dovrebbe cambiare colore ma resta uguale): obbligatoria la sezione **"Bug UI non riflette lo stato"** nella procedura (catena stato → reattività → CSS; dopo 2–3 tentativi falliti: ipotesi + strumentazione, non iterare a caso).
+
+### Correzione errore 404 (route non trovata)
+
+- Query: "404", "errore 404", "get X non esiste", "route non trovata", "correggi 404", "fix 404", "continua ad apparire 404"
+- Procedure: `docs/procedures/workflow/error-404-correction.md`
+- Standard: `docs/standards/fix-without-workaround-standard.md` — fix causa radice, no workaround (redirect/route fantasma).
 
 ### Modifica Comportamento (Behavior Change)
 
@@ -196,12 +209,14 @@ Mappa query dell'utente alle procedure corrispondenti. Consulta questa mappa per
 
 ## Come Usare
 
-1. Identifica pattern nella query utente (anche in forma libera o parziale)
-2. Trova corrispondenza in questa mappa (il primo match per categoria conta)
-3. Consulta procedure corrispondente
-4. Segui checklist nella procedure
+1. Identifica pattern nella query utente (anche in forma libera o parziale).
+2. Trova corrispondenza in questa mappa (il primo match per categoria conta).
+3. **Leggi per intero** la procedura corrispondente (non riassunti).
+4. **Completa la checklist** della procedura punto per punto; apri i file indicati.
+5. Leggi tutti gli standard referenziati nella procedura.
+6. Solo dopo: proponi implementazione; implementa solo dopo conferma utente.
 
-## Quando nessuna procedure corrisponde
+## Quando nessuna procedura corrisponde
 
 Se nessun pattern corrisponde alla query:
 
@@ -215,4 +230,4 @@ Se nessun pattern corrisponde alla query:
 - Questa mappa deve essere aggiornata quando vengono aggiunte nuove procedure
 - Le cartelle `svelte/`, `rust/`, `workflow/` contengono le procedure rispettive
 - Per "crea componente" usare **Componenti Svelte** (`component-creation.md`)
-- In caso di overlap (es. "aggiungi feature X" può richiedere componenti + comandi), usare la procedure **più specifica** per l’azione principale; per feature ampie usare `new-feature.md` che richiama le altre
+- In caso di overlap (es. "aggiungi feature X" può richiedere componenti + comandi), usare la procedura **più specifica** per l’azione principale; per feature ampie usare `new-feature.md` che richiama le altre

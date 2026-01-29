@@ -9,7 +9,7 @@ Definisce i termini di dominio e tecnici usati in PokeTracker. Usare sempre ques
 | Termine | Significato |
 |---------|-------------|
 | **Top Bar** | Barra superiore fissa con controlli globali: aggiornamento app, icona notifiche (centro notifiche), selettore profilo. Vedi [notifications-and-error-archive](./notifications-and-error-archive.md) per notifiche. |
-| **Sidebar** | Navigazione principale collassabile; voci: Home, Allenatore (route /profilo), Editor, Wiki, Impostazioni. Pianificata: **Archivio** (sottosezione Errori). Max due livelli (voce → sottovoci). Etichetta «Allenatore» per la voce profilo. |
+| **Sidebar** | Navigazione principale collassabile; voci: Allenatore, Statistiche, Pokedex, Editor, Salvataggi, Wiki (in fondo, con sottosezioni); Impostazioni (Profili, Errori) dal dropdown Top Bar. Max due livelli (voce → sottovoci). Etichetta «Allenatore» per la voce profilo. |
 | **Area contenuto** | Zona centrale scrollabile dove compare il contenuto della sezione attiva. Unico contesto con scroll. |
 | **Layout** | Struttura a tre parti: Top Bar + Sidebar + Area contenuto. |
 | **Componente base** | Componente riutilizzabile di base (Button, Input, Card, Badge, …). Path: `lib/components/ui/`. |
@@ -54,12 +54,11 @@ Definisce i termini di dominio e tecnici usati in PokeTracker. Usare sempre ques
 
 | Termine | Significato |
 |---------|-------------|
-| **Impostazioni** | Voce sidebar: configurazione app e gestione interna (backup, risorse, log, updater). Vedi [self-management](./self-management.md). |
+| **Impostazioni** | Sezione accessibile dal dropdown Top Bar: sottosezioni Profili, Errori, Backup e dati. Configurazione app e gestione interna (backup, risorse, log, updater). Vedi [self-management](./self-management.md). |
 | **Self-management** | Gestione interna app: backup, risorse, log, aggiornamenti. Documentata in [self-management](./self-management.md). |
 | **Avvisi** | Messaggio transiente (toast/snackbar) per segnalare subito un problema o un risultato. |
-| **Notifiche** | Centro notifiche in-app: icona in Top Bar; clic apre componente dedicato con elenco notifiche (avvisi, errori, info). Le notifiche di tipo errore generano anche una voce in Archivio → Errori. Vedi [notifications-and-error-archive](./notifications-and-error-archive.md). |
-| **Archivio** | Sezione sidebar pianificata; sottosezione **Errori** con tabella (data, tipo errore, apri dettaglio, elimina). Scopo: log completo da copiare/incollare (es. per supporto o assistente AI). Vedi [notifications-and-error-archive](./notifications-and-error-archive.md). |
-| **Registro errori** | Insieme delle voci in Archivio → Errori; ogni voce ha data, tipo, dettaglio completo copiabile, azione elimina. Standard: quando una notifica riguarda un errore, si crea anche una voce nel registro. |
+| **Notifiche** | Centro notifiche in-app: icona in Top Bar; clic apre componente dedicato con elenco notifiche (avvisi, errori, info). Le notifiche di tipo errore generano anche una voce in Impostazioni → Errori. Vedi [notifications-and-error-archive](./notifications-and-error-archive.md). |
+| **Registro errori** | Insieme delle voci in Impostazioni → Errori; ogni voce ha data, tipo, dettaglio completo copiabile, azione elimina. Standard: quando una notifica riguarda un errore, si crea anche una voce nel registro. Vedi [notifications-and-error-archive](./notifications-and-error-archive.md). |
 | **Multi-profilo** | Gestione di più profili/allenatori separati sull’app. Vedi [multi-profile](./multi-profile.md). |
 
 ## Tecnico (architettura, codice)

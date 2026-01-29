@@ -4,7 +4,7 @@
 
 Definisce come introdurre o estendere i18n in PokeTracker in linea con [i18n-standard](../../standards/i18n-standard.md).
 
-## Quando Usare Questa Procedure
+## Quando Usare Questa Procedura
 
 - Query: "traduci", "aggiungi lingua", "i18n", "localizzazione", "stringhe tradotte", "nuova lingua", "internazionalizzazione"
 - Quando si deve aggiungere o modificare supporto multilingua o file di traduzione

@@ -17,7 +17,7 @@ Il file `.cursorrules` deve essere ottimizzato per massimizzare l'efficacia dell
 
 ## Struttura Consigliata
 
-Il file deve seguire questa struttura gerarchica:
+Il file deve seguire questa struttura gerarchica. La sezione STACK TECNOLOGICO è opzionale se le tecnologie sono già coperte da `docs/standards/` (es. `versioni-stack-standard.md`).
 
 ```
 # TITOLO PROGETTO
@@ -26,22 +26,30 @@ Il file deve seguire questa struttura gerarchica:
 [Definizione chiara di chi fa cosa]
 
 ## REGOLE OPERATIVE
-[Regole che non si infrangono mai, ordinate per priorità]
+[Regole che non si infrangono mai, ordinate per priorità; includere divieti assoluti]
 
 ## STANDARD APPLICATI
 [Riferimenti a docs/standards/ per dettagli]
 
-## STACK TECNOLOGICO
-[Specifiche tecnologiche del progetto]
-
-## WORKFLOW
-[Processi e procedure da seguire]
+## WORKFLOW OBBLIGATORIO
+[Processi e procedure da seguire PRIMA di implementare]
 
 ## FORMATO OUTPUT
 [Come l'AI deve rispondere e comunicare]
 ```
 
 ## Principi di Scrittura
+
+### 0. Regole ferree (priorità massima)
+
+Il file `.cursorrules` deve esplicitare **divieti assoluti** senza eccezioni:
+
+- **Non approssimare:** usare solo ciò che è documentato in procedure e standard; se un dettaglio non è documentato, non inventarlo.
+- **Non indovinare:** non assumere comportamenti, path, nomi, strutture; verificare sempre nei file indicati.
+- **Non inventare:** nessuna convenzione, pattern o implementazione non documentata.
+- **Procedure e standard prima di tutto:** per ogni azione, identificare la procedura da `docs/procedures/INDEX.md`, leggere la procedura per intero, completare checklist, leggere standard referenziati; solo dopo proporre e (se confermato) implementare.
+
+Queste regole devono essere presenti in `.cursorrules` (sezione REGOLE OPERATIVE o equivalente) e non ammettono eccezioni.
 
 ### 1. Linguaggio Imperativo
 - ✅ **Corretto**: "Non creare file senza permesso esplicito"
@@ -164,14 +172,14 @@ PRIMA di qualsiasi implementazione:
 
 1. Identifica pattern nella query utente
 2. Consulta `docs/procedures/INDEX.md` per trovare procedure corrispondente
-3. Leggi OBBLIGATORIAMENTE la procedure identificata
-4. Completa la checklist nella procedure punto per punto
-5. Verifica tutti gli standard referenziati nella procedure
+3. Leggi OBBLIGATORIAMENTE la procedura identificata
+4. Completa la checklist nella procedura punto per punto
+5. Verifica tutti gli standard referenziati nella procedura
 6. SOLO DOPO aver letto tutto, proponi implementazione
 7. Aspetta approvazione esplicita dell'utente
 8. Implementa solo dopo conferma
 
-Nessuna eccezione: se esiste una procedure corrispondente, va sempre applicata. Vedi `docs/procedures/INDEX.md` per "Quando nessuna procedure corrisponde".
+Nessuna eccezione: se esiste una procedura corrispondente, va sempre applicata. Vedi `docs/procedures/INDEX.md` per "Quando nessuna procedura corrisponde".
 
 ## FORMATO OUTPUT
 

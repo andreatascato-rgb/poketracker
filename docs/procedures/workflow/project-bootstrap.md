@@ -4,7 +4,7 @@
 
 Definisce come avviare da zero il progetto PokeTracker (Tauri 2 + SvelteKit + Rust) rispettando standard e struttura documentati.
 
-## Quando Usare Questa Procedure
+## Quando Usare Questa Procedura
 
 - Query: "bootstrap", "avvia progetto", "setup iniziale", "prima implementazione", "init progetto", "crea progetto da zero", "first implementation", "da zero", "inizializza progetto", "scaffold", "crea app tauri"
 - Quando il progetto non esiste ancora o si deve (re)inizializzare l’ambiente di sviluppo
@@ -40,7 +40,7 @@ Completamento integrale della checklist obbligatorio prima di proporre implement
 4. [ ] Verifica permessi Tauri 2 (`permissions`, non allowlist): `docs/standards/tauri2-standard.md:56-61`
 5. [ ] Allinea versioni `@tauri-apps/api` (npm) e crate `tauri` (Cargo): stessa minor; plugin stessa versione esatta (`tauri2-standard.md:16`)
 6. [ ] Verifica struttura cartelle rispetto a `docs/project/project-structure.md:9-45` — `src-tauri/`, `src/` (frontend), `docs/`
-7. [ ] **Verifica compilazione:** Dopo lo scaffold, esegui `cargo check` (o `pnpm tauri build`) e considera il bootstrap concluso solo se la build passa. Vedi [coding-best-practices](../../standards/coding-best-practices.md) § Workflow.
+7. [ ] **Verifica compilazione:** Dopo lo scaffold, esegui `npm run check:rust` (o `cargo check` in `src-tauri/` se Cargo è in PATH; oppure `npm run tauri build`). Se Rust è in `C:\_Main\_app`, usa `npm run check:rust` così lo script imposta PATH. Vedi [coding-best-practices](../../standards/coding-best-practices.md) § Workflow.
 8. [ ] Se esistono, tooling e lint come da `docs/standards/tooling-standard.md` (opzionale in bootstrap minimo)
 
 ## Riferimenti Standard
@@ -53,4 +53,4 @@ Completamento integrale della checklist obbligatorio prima di proporre implement
 ## Note
 
 - Se il progetto esiste già e si aggiungono solo parti (feature, comandi, componenti), usare le procedure specifiche (new-feature, command-creation, component-creation).
-- Per sidecar C# e parser, dopo il bootstrap usare la procedure `sidecar-setup.md`.
+- Per sidecar C# e parser, dopo il bootstrap usare la procedura `sidecar-setup.md`.

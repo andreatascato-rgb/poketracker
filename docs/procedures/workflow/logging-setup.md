@@ -4,7 +4,7 @@
 
 Definisce come aggiungere o configurare il logging in linea con [logging-standard](../../standards/logging-standard.md).
 
-## Quando Usare Questa Procedure
+## Quando Usare Questa Procedura
 
 - Query: "aggiungi logging", "logging", "log level", "configura log", "debug log", "log livello"
 - Quando si deve introdurre o modificare log in backend (Rust) o frontend

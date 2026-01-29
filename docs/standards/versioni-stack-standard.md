@@ -56,6 +56,7 @@ Range o minimi verificati alla data indicata. Per versioni **esatte** da usare i
 - **Edition:** in `Cargo.toml`, `edition = "2021"`. **Non** `"2024"` (bug con tauri-build).
 - **Command:** ritornare `Result<T, E>` con `E: Serialize`; **non** `panic!` nei command.
 - **Invoke lato Rust:** i command sono definiti con `#[tauri::command]` e registrati sul `Builder`; i nomi sono stringhe usate dal frontend in `invoke('nome_command', …)`.
+- **Percorso Rust/Cargo (cartella spostata):** se Rust non è in PATH o è in una cartella custom, copia `.env.example` in `.env` e imposta `RUST_ROOT` al percorso della cartella che contiene `.cargo` e `.rustup` (es. `RUST_ROOT=C:\_Main\_app`). Gli script `run-tauri.mjs` e `cargo-check.mjs` leggono `.env` e usano quel percorso per `npm run tauri` e `npm run check:rust`.
 
 ## Da NON usare (anti-pattern)
 

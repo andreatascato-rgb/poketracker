@@ -4,7 +4,7 @@
 
 Definisce come aggiungere un nuovo store (stato condiviso) nel frontend PokeTracker usando Svelte 5 runes o pattern compatibili.
 
-## Quando Usare Questa Procedure
+## Quando Usare Questa Procedura
 
 - Query: "crea store", "aggiungi store", "nuovo store", "svelte store", "stato globale", "shared state", "aggiungi stato condiviso"
 - Quando si deve introdurre stato condiviso tra componenti (es. stato app, preferenze, cache)

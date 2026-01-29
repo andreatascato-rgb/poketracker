@@ -1,5 +1,5 @@
 <script lang="ts">
-  /* Sezione Profilo — contenuto in fasi successive */
+  /* Allenatore — landing profilo; contenuto in fasi successive */
 </script>
 
-<!-- Area main vuota -->
+<!-- Area main: Allenatore (dashboard allenatore) -->

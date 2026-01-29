@@ -4,7 +4,7 @@
 
 Definisce come aggiungere o correggere l’accessibilità in linea con [accessibility-standard](../../standards/accessibility-standard.md).
 
-## Quando Usare Questa Procedure
+## Quando Usare Questa Procedura
 
 - Query: "accessibilità", "a11y", "aggiungi a11y", "fix a11y", "aria", "keyboard", "screen reader", "aggiungi label", "contrasto"
 - Quando si deve introdurre o correggere comportamenti e markup per utenti con disabilità

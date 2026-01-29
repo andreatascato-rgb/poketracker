@@ -66,8 +66,8 @@ Valutazioni, confronti, bozze e analisi di passaggio vanno in **[temp/](./temp/R
 ## Come Usare
 
 1. Consulta gli standard in `docs/standards/` per comprendere le convenzioni
-2. Usa `docs/procedures/INDEX.md` per trovare la procedure corrispondente alla tua query
-3. Segui la checklist nella procedure prima di implementare
+2. Usa `docs/procedures/INDEX.md` per trovare la procedura corrispondente alla tua query
+3. Segui la checklist nella procedura prima di implementare
 
 ## Note
 

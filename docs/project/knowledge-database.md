@@ -62,11 +62,11 @@ Definisce come gestire il database di conoscenza (Pokemon, giochi, mosse, nature
 - Giochi e versioni
 - **Dimensione**: ~10-15 MB compresso
 
-**File Assets Separati** per immagini:
-- Sprite Pokemon in cartella `resources/sprites/`
+**File Assets Separati** per immagini (tutti **offline**, nessun CDN a runtime):
+- Sprite Pokedex gen 1–4 in `static/pokedex-sprites/` (script `npm run pokedex-sprites`). Sprite Pokemon eventuali altri in `resources/sprites/`
 - Icone tipi in `resources/icons/`
 - Immagini opzionali in `resources/images/`
-- **Gestione**: Download opzionale, cache locale
+- **Gestione:** tutto offline; sprite Pokedex in bundle (`static/pokedex-sprites/`). Vedi [pokedex-sprites](./pokedex-sprites.md). Immagini HD opzionali salvate in locale.
 
 **Wiki Testuale** nel database:
 - Descrizioni Pokemon
@@ -76,15 +76,15 @@ Definisce come gestire il database di conoscenza (Pokemon, giochi, mosse, nature
 
 ### Strategia Download
 
-**Base (sempre incluso):**
+**Base (sempre incluso, tutto offline):**
 - Database SQLite con tutti i dati strutturati
-- Sprite base (32x32 o 64x64)
+- Sprite Pokedex gen 1–4 in `static/pokedex-sprites/` (bundle)
 - **Totale base**: ~60-100 MB
 
-**Opzionale (download on-demand):**
+**Opzionale (download on-demand, comunque salvato in locale):**
 - Immagini ad alta risoluzione
 - Wiki completa con immagini
-- Asset aggiuntivi
+- Asset aggiuntivi (gen 5+ sprite se necessario)
 
 ### Vantaggi
 

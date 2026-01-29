@@ -28,5 +28,16 @@ pub fn migrations() -> Migrations<'static> {
         M::up("ALTER TABLE profiles ADD COLUMN created_at TEXT NOT NULL DEFAULT '1970-01-01 00:00:00';"),
         M::up("ALTER TABLE profiles ADD COLUMN updated_at TEXT NOT NULL DEFAULT '1970-01-01 00:00:00';"),
         M::up("UPDATE profiles SET created_at = datetime('now'), updated_at = datetime('now') WHERE created_at = '1970-01-01 00:00:00';"),
+        M::up("ALTER TABLE profiles ADD COLUMN avatar_id TEXT;"),
+        // Pokedex personale: stato visto/catturato per specie e profilo (docs/project/pokedex-personal.md).
+        M::up(
+            "CREATE TABLE IF NOT EXISTS pokedex_state (
+                profile_id TEXT NOT NULL,
+                species_id INTEGER NOT NULL,
+                status TEXT NOT NULL CHECK (status IN ('unseen', 'seen', 'caught')),
+                PRIMARY KEY (profile_id, species_id),
+                FOREIGN KEY (profile_id) REFERENCES profiles(id) ON DELETE CASCADE
+            );",
+        ),
     ])
 }

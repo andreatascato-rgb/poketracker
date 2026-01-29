@@ -4,7 +4,7 @@
 
 Definisce come modificare i contratti tra frontend e backend (comandi Tauri, tipi condivisi) in modo controllato, in linea con [api-contract-standard](../../standards/api-contract-standard.md).
 
-## Quando Usare Questa Procedure
+## Quando Usare Questa Procedura
 
 - Query: "cambia contratto", "aggiungi campo", "breaking change API", "aggiungi parametro comando", "modifica tipo ritorno", "rimuovi comando"
 - Quando si deve cambiare signature, argomenti o strutture di ritorno dei command Tauri o i tipi condivisi

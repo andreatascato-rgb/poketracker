@@ -6,7 +6,7 @@
 		ref = $bindable(null),
 		class: className,
 		...restProps
-	}: import("bits-ui").AlertDialogTitleProps & { class?: string; ref?: import("svelte").HTMLAttributes<HTMLHeadingElement>["ref"] } = $props();
+	}: import("bits-ui").AlertDialogTitleProps & { class?: string; ref?: HTMLHeadingElement | null } = $props();
 </script>
 
 <AlertDialog.Title

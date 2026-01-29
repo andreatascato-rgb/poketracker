@@ -51,4 +51,4 @@ Definisce i requisiti minimi di accessibilità per PokeTracker (WCAG-oriented): 
 
 ## Note
 
-- Per “aggiungi accessibilità”, “a11y”, “fix a11y” usare questo standard e la procedure corrispondente.
+- Per “aggiungi accessibilità”, “a11y”, “fix a11y” usare questo standard e la procedura corrispondente.

@@ -4,7 +4,7 @@
 
 Definisce dove e come aggiungere una nuova dipendenza (npm, Cargo, .NET) in PokeTracker senza introdurre conflitti di versione o violare gli standard.
 
-## Quando Usare Questa Procedure
+## Quando Usare Questa Procedura
 
 - Query: "aggiungi dipendenza", "aggiungi pacchetto", "npm install", "cargo add", "dotnet add", "aggiungi libreria", "install package", "aggiungi crate", "aggiungi nuget"
 - Quando si deve aggiungere una dipendenza in package.json, Cargo.toml o .csproj
@@ -42,4 +42,4 @@ Completamento integrale della checklist obbligatorio prima di proporre implement
 ## Note
 
 - Non duplicare dipendenze già presenti (controllare package.json / Cargo.toml / .csproj prima).
-- Per dipendenze di tipo “nuova feature” (es. “aggiungi grafici”) considerare la procedure `new-feature.md` e poi dependency-add come step interno.
+- Per dipendenze di tipo “nuova feature” (es. “aggiungi grafici”) considerare la procedura `new-feature.md` e poi dependency-add come step interno.

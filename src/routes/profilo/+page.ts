@@ -1,6 +1,4 @@
-import { redirect } from "@sveltejs/kit";
-
-/** Reindirizza /profilo alla sottosezione Dashboard (default). */
+/** /profilo: pagina Allenatore (landing quando c’è un profilo). Nessun redirect. */
 export function load() {
-  redirect(302, "/profilo/dashboard");
+  return {};
 }

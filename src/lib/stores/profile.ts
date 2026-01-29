@@ -1,15 +1,10 @@
-import { invoke } from "@tauri-apps/api/core";
 import { writable } from "svelte/store";
 import { toast } from "$lib/components/ui/sonner";
+import { reportSystemError } from "$lib/stores/error-archive";
+import * as profileService from "$lib/services/profile";
+import type { Profile } from "$lib/types/api";
 
-export interface Profile {
-  id: string;
-  name: string;
-  /** Data primo caricamento (ISO 8601). */
-  created_at: string;
-  /** Data ultimo aggiornamento (ISO 8601). */
-  updated_at: string;
-}
+export type { Profile };
 
 export const profiles = writable<Profile[]>([]);
 export const activeProfile = writable<Profile | null>(null);
@@ -20,13 +15,17 @@ export const profilesLoaded = writable(false);
 export async function loadProfiles() {
   try {
     const [list, active] = await Promise.all([
-      invoke<Profile[]>("get_profiles"),
-      invoke<Profile | null>("get_active_profile"),
+      profileService.getProfiles(),
+      profileService.getActiveProfile(),
     ]);
     profiles.set(list);
     activeProfile.set(active ?? null);
   } catch (err) {
     console.error("Profile load failed:", err);
+    reportSystemError({
+      type: "Caricamento profili fallito",
+      detail: err instanceof Error ? err.message : String(err),
+    });
     profiles.set([]);
     activeProfile.set(null);
   } finally {
@@ -37,12 +36,15 @@ export async function loadProfiles() {
 /** Imposta il profilo attivo; aggiorna lo store dopo il successo del comando. */
 export async function setActiveProfile(id: string): Promise<void> {
   try {
-    await invoke("set_active_profile", { id });
+    await profileService.setActiveProfile(id);
     await loadProfiles();
     toast.success("Profilo attivo aggiornato.");
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     toast.error(msg);
-    console.error("set_active_profile failed:", err);
+    reportSystemError({
+      type: "Impostazione profilo attivo fallita",
+      detail: msg,
+    });
   }
 }

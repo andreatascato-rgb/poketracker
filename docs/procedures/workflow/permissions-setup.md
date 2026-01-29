@@ -4,7 +4,7 @@
 
 Definisce come aggiungere o modificare permissions e capabilities in Tauri 2 per PokeTracker (command, scope, sidecar).
 
-## Quando Usare Questa Procedure
+## Quando Usare Questa Procedura
 
 - Query: "aggiungi permesso", "configura permessi", "capability", "permissions", "tauri permissions", "configura capability", "scope", "allow command"
 - Quando si deve abilitare un nuovo command, restringere scope o aggiungere capability per una window

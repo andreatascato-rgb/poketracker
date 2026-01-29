@@ -4,11 +4,18 @@
 
 Questa cartella contiene tutti gli standard e le convenzioni stabilite per il progetto PokeTracker. Ogni standard definisce regole e best practice da seguire sempre.
 
+## Regole ferree
+
+- **Nessuna approssimazione:** usare solo ciò che è documentato qui e nelle procedure in `docs/procedures/`.
+- **Nessun indovinare:** non assumere comportamenti, path, nomi; verificare nei file indicati.
+- **Nessuna invenzione:** nessuna convenzione o implementazione non documentata.
+- Prima di implementare: identificare la procedura da `docs/procedures/INDEX.md`, leggere la procedura per intero, completare la checklist, leggere tutti gli standard referenziati; solo dopo proporre e (se confermato) implementare.
+
 ## Come funziona
 
-1. Ogni standard viene documentato in un file dedicato
-2. Gli standard vengono anche aggiunti a `.cursorrules` per applicazione automatica
-3. Quando viene presa una decisione, diventa uno standard da seguire sempre
+1. Ogni standard viene documentato in un file dedicato.
+2. Gli standard vengono anche aggiunti a `.cursorrules` per applicazione automatica.
+3. Quando viene presa una decisione, diventa uno standard da seguire sempre.
 
 **Allineamento:** gli standard sono orientati alle best practice 2026; è raccomandata una revisione periodica (annuale o a scadenza definita).
 
@@ -51,3 +58,4 @@ Tutti i file `.md` in questa cartella (escluso questo README) sono standard del 
 | [api-contract-standard.md](./api-contract-standard.md) | Evoluzione contratto API, semver, breaking vs non-breaking |
 | [versioning-standard.md](./versioning-standard.md) | Versionamento SemVer, commit con versione, VERSION-HISTORY |
 | [testing-standard.md](./testing-standard.md) | Testing, dove/naming, mock Tauri (mockIPC, clearMocks) |
+| [fix-without-workaround-standard.md](./fix-without-workaround-standard.md) | Fix sempre causa radice; no workaround (redirect/route fantasma) se non richiesto come prodotto |

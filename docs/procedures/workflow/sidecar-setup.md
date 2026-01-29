@@ -4,7 +4,7 @@
 
 Definisce come configurare e integrare un sidecar (eseguibile esterno, es. parser C#) in Tauri 2 per PokeTracker.
 
-## Quando Usare Questa Procedure
+## Quando Usare Questa Procedura
 
 - Query: "configura sidecar", "aggiungi sidecar", "sidecar C#", "sidecar parser", "configura parser C#", "aggiungi eseguibile esterno", "externalBin", "tauri sidecar"
 - Quando si deve aggiungere o modificare un binario esterno invocato da Rust (es. parser PKHeX)

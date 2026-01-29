@@ -32,7 +32,7 @@ Quindi: “sidebar e profilo mancanti” = o il layout non gira, o è presente m
 
 1. **Uso sicuro di `$page`** in `+layout.svelte` (`$page?.url?.pathname ?? ""`): **non ha risolto** il problema. La causa reale del layout non visibile resta da identificare; non va documentata come soluzione.
 
-2. **Checklist di verifica** nella procedure di layout: dopo ogni modifica, controllare che top bar, sidebar e area contenuto si vedano in dev e in Tauri. Utile per non dare per “fatto” un layout che in realtà non si vede.
+2. **Checklist di verifica** nella procedura di layout: dopo ogni modifica, controllare che top bar, sidebar e area contenuto si vedano in dev e in Tauri. Utile per non dare per “fatto” un layout che in realtà non si vede.
 
 ## Come non farlo risuccedere
 

@@ -26,6 +26,21 @@ Breve testo che riassume la release.
 
 ## Versioni
 
+### [0.2.0] - 2026-01-29
+
+#### Descrizione
+Pokedex, Wiki, Backup dati, Errori in Impostazioni, Statistiche profilo, export e script di sviluppo; refactor navigazione e documentazione.
+
+#### Change
+- Pokedex: componenti, route profilo/pokedex, sprites statici, dati e servizi; probe PKHeX e parser-inventory
+- Wiki: route wiki con mosse, nature, pokemon
+- Impostazioni: layout dedicato; pagine backup-dati e errori (archivio/errori spostato qui)
+- Profilo: statistiche, salvataggi; rimosso dashboard
+- Backend: comando export_backup; sidecar PkHexPokedexProbe
+- Script: run-tauri, cargo-check, download-pokedex-sprites, add-cargo-to-path, reinstall-rust-user; .env.example
+- UI: dropdown-menu, ProfileSelector e store aggiornati; alert-dialog
+- Docs: procedure e standard aggiornati; parser-inventory, pokedex-parser-strategy, fix-without-workaround; temp analyses
+
 ### [0.1.0] - 2026-01-28
 
 #### Descrizione

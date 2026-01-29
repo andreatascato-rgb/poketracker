@@ -4,7 +4,7 @@
 
 Definisce come integrare una nuova libreria dopo averla aggiunta: dove usarla, convenzioni di import/uso, eventuale wrapper. Estende [dependency-add](./dependency-add.md) con “primo utilizzo” nel codice.
 
-## Quando Usare Questa Procedure
+## Quando Usare Questa Procedura
 
 - Query: "integrazione libreria", "integrazione libreria X", "primo uso libreria", "setup libreria", "come usare libreria", "configura libreria", "integra pacchetto"
 - Quando si è aggiunta (o si sta per aggiungere) una dipendenza e si deve definire **dove e come** usarla nel progetto

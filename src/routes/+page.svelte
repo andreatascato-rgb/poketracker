@@ -1,5 +1,5 @@
 <script lang="ts">
-  /* Home — contenuto in fasi successive */
+  /* Home: / è reindirizzato a /profilo da +page.ts (landing Allenatore). */
 </script>
 
-<!-- Area main vuota -->
+<!-- Non mostrato: redirect a /profilo -->
