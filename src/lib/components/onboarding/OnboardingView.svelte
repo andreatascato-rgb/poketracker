@@ -40,7 +40,16 @@
 
   <div class="onboarding-inner">
     <header class="onboarding-brand">
-      <h1 class="onboarding-app-name">PokeTracker</h1>
+      <h1 class="onboarding-app-name">
+        <img
+          src="/poketracker_logo.png"
+          alt="PokeTracker"
+          class="onboarding-logo"
+          width="320"
+          height="80"
+          draggable="false"
+        />
+      </h1>
       <span class="onboarding-accent-line" aria-hidden="true"></span>
       <p class="onboarding-tagline">
         Crea il tuo primo allenatore per iniziare a tracciare i tuoi salvataggi.
@@ -148,26 +157,27 @@
 
   .onboarding-app-name {
     margin: 0;
-    font-size: clamp(2rem, 5.5vw, 2.75rem);
-    font-weight: 600;
-    letter-spacing: -0.04em;
-    line-height: 1.1;
-    color: var(--text-primary, #cccccc);
-    background: linear-gradient(180deg, #f0f0f0 0%, #b0b0b0 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
+    line-height: 1;
+  }
+
+  .onboarding-logo {
+    display: block;
+    width: clamp(200px, 50vw, 320px);
+    height: auto;
+    object-fit: contain;
+    user-select: none;
   }
 
   .onboarding-accent-line {
     display: block;
-    width: 3rem;
-    height: 3px;
+    width: 4rem;
+    height: 4px;
     border-radius: 2px;
     background: linear-gradient(
       90deg,
-      rgba(0, 122, 204, 0.9) 0%,
-      rgba(0, 122, 204, 0.2) 70%,
+      #3b82f6 0%,
+      #1e5aac 45%,
+      rgba(30, 90, 172, 0.3) 85%,
       transparent 100%
     );
   }

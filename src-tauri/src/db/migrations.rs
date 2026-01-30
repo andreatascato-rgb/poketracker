@@ -39,5 +39,14 @@ pub fn migrations() -> Migrations<'static> {
                 FOREIGN KEY (profile_id) REFERENCES profiles(id) ON DELETE CASCADE
             );",
         ),
+        // Archivio errori (Impostazioni → Errori): log persistente per supporto/assistente AI (notifications-and-error-archive).
+        M::up(
+            "CREATE TABLE IF NOT EXISTS error_archive (
+                id TEXT PRIMARY KEY,
+                at TEXT NOT NULL,
+                type TEXT NOT NULL,
+                detail TEXT NOT NULL
+            );",
+        ),
     ])
 }

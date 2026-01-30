@@ -180,7 +180,7 @@
 
 <!-- Empty state obbligatorio (ui-patterns-applied): lista profili può essere vuota. -->
 {#if $profiles.length === 0}
-  <div class="flex min-h-[calc(100vh-96px)] flex-col items-center justify-center" role="region" aria-label="Stato vuoto: nessun profilo">
+  <div class="flex min-h-[calc(100vh-96px)] flex-col items-center justify-center w-full" role="region" aria-label="Stato vuoto: nessun profilo">
     <EmptyState
       title="Crea il tuo primo allenatore"
       description="Aggiungi un profilo per iniziare a tracciare salvataggi e Pokedex. Potrai creare più profili (es. uno per gioco) e attivare quello in uso."
@@ -223,11 +223,11 @@
         >
           <thead class="border-b border-[var(--border-primary)] bg-[var(--bg-tertiary)]">
             <tr>
-              <th scope="col" class="min-w-[20ch] px-4 py-3 text-center text-muted-foreground text-xs font-semibold uppercase tracking-wider">
+              <th scope="col" class="min-w-[14ch] px-4 py-3 text-center text-muted-foreground text-xs font-semibold uppercase tracking-wider">
                 Nome
               </th>
-              <th scope="col" class="min-w-[2.5rem] px-4 py-3 text-center text-muted-foreground text-xs font-semibold uppercase tracking-wider">
-                Giochi
+              <th scope="col" class="min-w-[12ch] px-4 py-3 text-center text-muted-foreground text-xs font-semibold uppercase tracking-wider">
+                Salvataggi
               </th>
               <th scope="col" class="min-w-[12ch] px-4 py-3 text-center text-muted-foreground text-xs font-semibold uppercase tracking-wider">
                 Caricato
@@ -246,10 +246,10 @@
           <tbody>
             {#each $profiles as profile (profile.id)}
             <tr class="border-b border-border last:border-b-0 hover:bg-muted/30">
-              <td class="min-w-[20ch] px-4 py-3 text-center">
+              <td class="min-w-[14ch] px-4 py-3 text-center">
                 {profile.name}
               </td>
-              <td class="min-w-[2.5rem] px-4 py-3 text-center text-muted-foreground" aria-label={profile.id === $activeProfile?.id ? `${savCount} giochi` : "Giochi"}>
+              <td class="min-w-[12ch] px-4 py-3 text-center text-muted-foreground" aria-label={profile.id === $activeProfile?.id ? `${savCount} salvataggi` : "Salvataggi"}>
                 {profile.id === $activeProfile?.id ? savCount : "—"}
               </td>
               <td class="min-w-[12ch] px-4 py-3 text-center text-muted-foreground">

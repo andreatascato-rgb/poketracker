@@ -26,7 +26,7 @@ impl SavWatcher {
                     for p in ev.paths {
                         let s = p.to_string_lossy().into_owned();
                         if watched_cb.lock().map(|g| g.contains(&s)).unwrap_or(false) {
-                            eprintln!("[PokeTracker] sav-file-changed (watcher): {}", s);
+                            eprintln!("[PokeTracker] sav-file-changed: {:?}", s);
                             let _ = app_emit.emit("sav-file-changed", &s);
                         }
                     }

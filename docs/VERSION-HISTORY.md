@@ -26,6 +26,20 @@ Breve testo che riassume la release.
 
 ## Versioni
 
+### [0.2.2] - 2026-01-30
+
+#### Descrizione
+Dashboard allenatore: Last played da mtime, Sync sotto nome, avatar e UI; archivio errori; trainer data e parser; avatars e profilo.
+
+#### Change
+- Last played reale: `SavEntry.last_played_at` da mtime file .sav in `get_sav_entries`; dashboard "Last" usa last_played_at (fallback updated_at)
+- Allenatore: Sync sotto nome (icona CheckCircle, stessa logica topbar); rimosso "Profilo attivo"; box nero avatar solo per "Nessuno"
+- AvatarPicker: box interno rimosso per avatar con immagine; "Nessuno" invariato con box
+- Archivio errori: comando Rust `error_archive`, servizio e store, pagina Impostazioni > Errori
+- Trainer: parser sidecar `trainer`, dati denaro/tempo gioco in dashboard; contract e doc
+- Profili/salvataggi: watcher, sync, pokedex; componenti StatCard, PokedexStats, AvatarPicker, avatars e static/avatar
+- Doc: allenatore-dashboard, trainer-parser-contract; aggiornamenti parser-inventory, notifications, offline-data, ui-patterns
+
 ### [0.2.1] - 2026-01-29
 
 #### Descrizione

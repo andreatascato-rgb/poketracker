@@ -2,5 +2,8 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 fn main() {
-    poketracker_lib::run()
+    if let Err(e) = poketracker_lib::run() {
+        eprintln!("PokeTracker: {}", e);
+        std::process::exit(1);
+    }
 }

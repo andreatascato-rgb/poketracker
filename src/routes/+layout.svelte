@@ -3,8 +3,8 @@
   import "../app.css";
   import { page } from "$app/stores";
   import { dev } from "$app/environment";
-  import { invoke } from "@tauri-apps/api/core";
-  import { profiles, profilesLoaded, activeProfile, loadProfiles } from "$lib/stores/profile";
+  import * as pokedexService from "$lib/services/pokedex";
+  import { profiles, profilesLoaded, activeProfile, profileLoadError, loadProfiles } from "$lib/stores/profile";
   import { watchedCount, setWatchedCount, canLayoutSetWatchedCount } from "$lib/stores/sync.svelte";
   import OnboardingView from "$lib/components/onboarding/OnboardingView.svelte";
   import ProfileSelector from "$lib/components/profile/ProfileSelector.svelte";
@@ -152,7 +152,7 @@
   onMount(() => {
     showSidebar = true;
     loadProfiles();
-    invoke<string[]>("get_sav_watched_paths")
+    pokedexService.getSavWatchedPaths()
       .then((paths) => {
         const can = canLayoutSetWatchedCount();
         // #region agent log
@@ -170,7 +170,7 @@
   <title>PokeTracker</title>
 </svelte:head>
 
-{#if $profilesLoaded && $profiles.length === 0}
+{#if $profilesLoaded && $profiles.length === 0 && !$profileLoadError}
   <OnboardingView />
 {:else}
 <!-- Shell layout: TopBar + Sidebar + Main. Stile Poketrack (font/token); sidebar 220px compatta. -->
@@ -232,7 +232,25 @@
     <!-- Main first in DOM so content mounts before sidebar (sidebar render was blocking mount in Tauri webview) -->
     <main class="main-content" aria-label="Contenuto principale">
       <div class="main-content-inner">
-        {@render children()}
+        {#if $profileLoadError}
+          <div class="flex min-h-[calc(100vh-96px)] flex-col items-center justify-center gap-4 px-4" role="alert" aria-live="assertive">
+            <p class="text-center text-sm text-muted-foreground">
+              Impossibile caricare i profili.
+            </p>
+            <p class="text-center text-xs text-muted-foreground max-w-[66ch]">
+              {$profileLoadError}
+            </p>
+            <button
+              type="button"
+              class="rounded-md border border-[var(--border-primary)] bg-[var(--bg-tertiary)] px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-[var(--hover-bg)]"
+              onclick={() => loadProfiles()}
+            >
+              Riprova
+            </button>
+          </div>
+        {:else}
+          {@render children()}
+        {/if}
       </div>
     </main>
     {#if showSidebar}

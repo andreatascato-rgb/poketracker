@@ -29,7 +29,9 @@ if (process.env.RUST_ROOT) {
 
 let args = process.argv.slice(2);
 if (args.length === 0) args = ['dev'];
-const child = spawn('npx', ['tauri', ...args], {
+// Un solo comando stringa con shell: true evita DEP0190 e fa trovare npx su Windows
+const cmd = `npx tauri ${args.map((a) => `"${String(a).replace(/"/g, '\\"')}"`).join(' ')}`;
+const child = spawn(cmd, {
   stdio: 'inherit',
   shell: true,
   env,

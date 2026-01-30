@@ -8,7 +8,7 @@ Riassume la strategia di dati offline e persistenza per PokeTracker: tutto local
 
 - L'app funziona **solo** su dati locali; non dipende da rete per core e wiki.
 - Dati estratti dai save, knowledge DB, profili e Pokedex sono **sempre** su disco (SQLite, file, risorse bundle).
-- Nessun “sync con cloud” né conflitti multi-device per ora; strategia “local-only”.
+- Nessun "sync con cloud" né conflitti multi-device per ora; strategia "local-only".
 
 ## Dove Vivono i Dati
 
@@ -21,8 +21,8 @@ Riassume la strategia di dati offline e persistenza per PokeTracker: tutto local
 
 ## Cache-First (Implicito)
 
-- **Tutto è già “cache”:** non c’è distinzione “rete vs locale”; l’unica fonte è locale.
-- **Aggiornamento dati:** (a) all’avvio: controllo file `.sav` in cartella profilo, estrazione/aggiornamento; (b) con app aperta: monitoraggio cartella, rilevazione modifiche, aggiornamento incrementale. Vedi [core-functionality](./core-functionality.md) (Controllo automatico, Riconoscimento automatico).
+- **Tutto è già "cache":** non c'è distinzione "rete vs locale"; l'unica fonte è locale.
+- **Aggiornamento dati:** (a) all'avvio: controllo file `.sav` in cartella profilo, estrazione/aggiornamento; (b) con app aperta: monitoraggio cartella, rilevazione modifiche, aggiornamento incrementale. Vedi [core-functionality](./core-functionality.md) (Controllo automatico, Riconoscimento automatico).
 - **Persistenza:** dati estratti salvati in DB locale per restare disponibili anche senza accesso ai file `.sav` originali.
 
 ## Watcher e persistenza (nessuna perdita dati spegnendo)
@@ -30,12 +30,12 @@ Riassume la strategia di dati offline e persistenza per PokeTracker: tutto local
 - **Watcher:** serve a scansionare i save (prima volta) e ad aggiornare il DB quando i file cambiano. Puoi tenerlo acceso o spegnerlo quando vuoi.
 - **Spegnere il watcher** (disattivare il monitoraggio su un percorso) **non cancella** i dati già in DB: voci salvataggio (`sav_entries`), stato Pokedex (`pokedex_state`), ecc. restano in SQLite.
 - **Riaccendere il watcher:** alla prossima modifica del file (o a una sync manuale) i dati si aggiornano; il DB continua a conservare anche i dati precedenti fino a nuova scrittura.
-- **Rimuovere una voce salvataggio** (`remove_sav_entry`) toglie solo quel percorso dalla lista e dal watcher; **non** svuota `pokedex_state` (il Pokedex del profilo resta com’è).
-- In sintesi: il DB è la memoria persistente; il watcher è solo il “trigger” per aggiornare quella memoria. Nessuna falla: spegnere il watcher non fa perdere dati.
+- **Rimuovere una voce salvataggio** (`remove_sav_entry`) toglie quel percorso dalla lista e dal watcher. Il Pokedex viene poi ricalcolato dai salvataggi ancora presenti (sync da path watchati); se non ne restano, `pokedex_state` viene svuotato (tutte le specie a unseen). Il Pokédex riflette quindi sempre solo i save ancora configurati.
+- In sintesi: il DB è la memoria persistente; il watcher è solo il "trigger" per aggiornare quella memoria. Nessuna falla: spegnere il watcher non fa perdere dati.
 
 ## Sync Futuro (Opzionale)
 
-- Se in futuro si introducono sync o “cloud backup”, definire in un doc dedicato: conflitti, last-writer-wins, merge, risoluzione manuale.
+- Se in futuro si introducono sync o "cloud backup", definire in un doc dedicato: conflitti, last-writer-wins, merge, risoluzione manuale.
 - Per ora non è in scope; questo doc non descrive sync.
 
 ## Riferimenti

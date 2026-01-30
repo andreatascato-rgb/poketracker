@@ -48,6 +48,8 @@
   --text-primary: #cccccc;
   --text-secondary: #858585;
   --font-primary: 'Segoe UI', 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+  /** Font stile logo Pokémon; solo branding (es. onboarding). Non usare per UI generica. */
+  --font-pokemon: 'Pokemon Solid', sans-serif;
   --font-size-body: 13px;
   --spacing-xs: 4px;
   --spacing-sm: 8px;
@@ -111,6 +113,49 @@
   --sidebar-accent-foreground: oklch(0.97 0 0);
   --sidebar-border: var(--border-subtle);
   --sidebar-ring: oklch(0.55 0.18 260);
+
+  /* === Colori tipi Pokémon (badge Pokedex) — smorzati per contrasto con testo bianco === */
+  /* Sfondo più scuro/opaco: bianco leggibile, meno abbagliante. Fonte base: Bulbapedia/ColorDex. */
+  --type-normale-bg: #5c5c44;
+  --type-normale-fg: #f0f0f0;
+  --type-fuoco-bg: #8b4016;
+  --type-fuoco-fg: #fff;
+  --type-acqua-bg: #0a5a8a;
+  --type-acqua-fg: #fff;
+  --type-erba-bg: #1e7025;
+  --type-erba-fg: #fff;
+  --type-elettro-bg: #8a7516;
+  --type-elettro-fg: #e8e8e8;
+  --type-ghiaccio-bg: #4a8a8a;
+  --type-ghiaccio-fg: #1a1a1a;
+  --type-lotta-bg: #612118;
+  --type-lotta-fg: #fff;
+  --type-veleno-bg: #4c204c;
+  --type-veleno-fg: #fff;
+  --type-terra-bg: #826b2e;
+  --type-terra-fg: #e8e8e8;
+  --type-volante-bg: #554a8a;
+  --type-volante-fg: #fff;
+  --type-psico-bg: #96344a;
+  --type-psico-fg: #fff;
+  --type-coleottero-bg: #616b16;
+  --type-coleottero-fg: #fff;
+  --type-roccia-bg: #615520;
+  --type-roccia-fg: #fff;
+  --type-spettro-bg: #352a47;
+  --type-spettro-fg: #fff;
+  --type-drago-bg: #40068a;
+  --type-drago-fg: #fff;
+  --type-buio-bg: #352a22;
+  --type-buio-fg: #fff;
+  --type-acciaio-bg: #616270;
+  --type-acciaio-fg: #e8e8e8;
+
+  /* Badge tipi Pokedex: ombra contenitore, bordo, ombra testo per leggibilità */
+  --type-badge-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  --type-badge-border: rgba(0, 0, 0, 0.15);
+  /* Leggibilità: alone sottile sul testo (best practice contrasto su sfondo colorato) */
+  --type-badge-text-shadow: 0 0 1px rgba(0, 0, 0, 0.2);
 }
 
 /* Input: no suggerimenti browser e sfondo mai bianco (focus/autofill/suggerimenti) */
@@ -217,4 +262,11 @@
   width: max-content !important;
   min-width: max-content;
   max-width: min(420px, 92vw);
+}
+
+/* Badge tipi Pokedex: leggibilità (antialiasing, letter-spacing) senza perdere eleganza */
+.pokedex-type-badge {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  letter-spacing: 0.04em;
 }

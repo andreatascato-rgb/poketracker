@@ -1,55 +1,67 @@
 import { writable } from "svelte/store";
 import { toast } from "$lib/components/ui/sonner";
+import * as errorArchiveService from "$lib/services/error-archive";
+import type { ErrorArchiveEntry } from "$lib/services/error-archive";
 
-/** Voce nell'archivio errori: log completo per supporto / assistente AI. */
-export interface ErrorArchiveEntry {
-  id: string;
-  /** Data/ora ISO 8601. */
-  at: string;
-  /** Tipo breve (es. "Versione non determinata", "Sidecar timeout"). */
-  type: string;
-  /** Dettaglio completo copiabile (messaggio, contesto, path, stack, ecc.). */
-  detail: string;
-}
+export type { ErrorArchiveEntry };
 
-/** Archivio in memoria; in futuro si può persistere su file/DB. */
 const entries = writable<ErrorArchiveEntry[]>([]);
 
 export const errorArchiveEntries = { subscribe: entries.subscribe };
 
-/** Aggiunge una voce all'archivio. id deve essere unico (es. crypto.randomUUID()). */
-export function addErrorEntry(entry: Omit<ErrorArchiveEntry, "at"> & { at?: string }): void {
-  entries.update((list) => [
-    {
-      ...entry,
-      at: entry.at ?? new Date().toISOString(),
-    },
-    ...list,
-  ]);
+/** Carica le voci da backend (chiamare all'apertura Impostazioni → Errori). Lancia in caso di errore. */
+export async function loadErrorArchiveEntries(): Promise<void> {
+  const list = await errorArchiveService.getErrorArchiveEntries();
+  entries.set(list);
 }
 
-/** Rimuove una voce per id. */
-export function removeErrorEntry(id: string): void {
+/** Rimuove una voce (backend + aggiornamento store). Lancia in caso di errore. */
+export async function removeErrorEntry(id: string): Promise<void> {
+  await errorArchiveService.removeErrorArchiveEntry(id);
   entries.update((list) => list.filter((e) => e.id !== id));
 }
 
-/** Parametri per segnalare un errore di sistema (toast + archivio). Vedi docs/project/notifications-and-error-archive.md (Standard operativo). */
-export interface ReportSystemErrorOptions {
-  /** Etichetta breve user-facing (es. "Versione non determinata", "Sidecar timeout"). */
+/** Campi per detail strutturato (supporto / assistente AI). Vedi notifications-and-error-archive. */
+export interface FormatErrorDetailFields {
   type: string;
-  /** Log completo copiabile per supporto/assistente AI. */
+  message: string;
+  path?: string;
+  languageIdRaw?: number;
+  [key: string]: string | number | undefined;
+}
+
+/** Restituisce un blocco detail formattato per archivio (type, at, message, path, ecc.). */
+export function formatErrorDetail(fields: FormatErrorDetailFields): string {
+  const at = new Date().toISOString();
+  const lines: string[] = [
+    `type: ${fields.type}`,
+    `at: ${at}`,
+    `message: ${fields.message}`,
+  ];
+  if (fields.path != null) lines.push(`path: ${fields.path}`);
+  if (fields.languageIdRaw != null) lines.push(`languageIdRaw: ${fields.languageIdRaw}`);
+  for (const [k, v] of Object.entries(fields)) {
+    if (k === "type" || k === "at" || k === "message" || k === "path" || k === "languageIdRaw")
+      continue;
+    if (v !== undefined && v !== "") lines.push(`${k}: ${v}`);
+  }
+  return lines.join("\n");
+}
+
+export interface ReportSystemErrorOptions {
+  type: string;
   detail: string;
-  /** Messaggio toast; se assente si usa type. */
   toastMessage?: string;
 }
 
-/** Segnala un errore di sistema: toast + voce in Archivio → Errori. Usare per tutti i casi reali (invoke fallito, sidecar timeout, ecc.). */
+/** Segnala un errore di sistema: toast + persistenza in Archivio → Errori. Se la pagina Errori è aperta, lo store si aggiorna subito. */
 export function reportSystemError(options: ReportSystemErrorOptions): void {
   const { type, detail, toastMessage } = options;
   toast.error(toastMessage ?? type);
-  addErrorEntry({
-    id: crypto.randomUUID(),
-    type,
-    detail,
-  });
+  void errorArchiveService
+    .addErrorArchiveEntry({ type, detail })
+    .then((entry) => {
+      entries.update((list) => [entry, ...list]);
+    })
+    .catch((e) => console.error("add_error_archive_entry failed:", e));
 }

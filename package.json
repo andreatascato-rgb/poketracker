@@ -1,6 +1,6 @@
 {
   "name": "poketracker",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "PokeTracker - Pokedex personale e gestione salvataggi Pokemon",
   "type": "module",
   "scripts": {
@@ -17,6 +17,7 @@
   },
   "license": "MIT",
   "dependencies": {
+    "@number-flow/svelte": "^0.3.10",
     "@tanstack/svelte-virtual": "^3.13.18",
     "@tauri-apps/api": "^2",
     "@tauri-apps/plugin-dialog": "^2.6.0",

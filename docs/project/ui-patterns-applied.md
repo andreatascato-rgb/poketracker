@@ -30,6 +30,8 @@ Pattern usato quando una sezione è vuota (es. nessun profilo) e si vuole guidar
 
 Riferimento implementativo: `src/routes/profilo/salvataggi/+page.svelte`, `src/routes/impostazioni/profili/+page.svelte`.
 
+**Allineamento a un riferimento (obbligatorio per AI):** quando si allinea una pagina/empty state a un’altra (es. "come Salvataggi", "stesso design"), (1) aprire il file di riferimento e **elencare** i componenti e la struttura (wrapper, Card di sezione, CardHeader, CardTitle, CardContent, EmptyState); (2) **replicare** quella struttura sulla pagina da modificare; (3) **solo dopo** applicare eventuali eccezioni ("niente card", "senza CTA") **solo** sull’elemento indicato (es. "niente card" = nessuna card **interna** di EmptyState, non rimuovere la Card di sezione). Non interpretare "rimuovi X" in modo assoluto: confrontare con il riferimento.
+
 ### Layout e centratura
 
 - **Wrapper:** `flex min-h-[calc(100vh-96px)] flex-col items-center justify-center`.
@@ -42,6 +44,8 @@ Riferimento implementativo: `src/routes/profilo/salvataggi/+page.svelte`, `src/r
 1. **Card** shadcn (`Card`, `CardHeader`, `CardTitle`, `CardDescription`, `CardFooter`).
 2. **Larghezza:** `max-w-md` sulla Card; `w-full` per adattarsi al wrapper.
 3. **Allineamento testo:** `text-center` sulla Card quando il messaggio è centrato.
+
+**Variante senza Card interna (Impostazioni · Errori):** la **Card di sezione** (titolo "Errori" in header, CardContent) va sempre presente come in Salvataggi; quando l’empty state è solo informativo (nessun CTA), usare **`noCard`** su EmptyState così **dentro** il CardContent non c’è una seconda card (icona + titolo + descrizione direttamente nel corpo della card di sezione). Riferimento: `src/routes/impostazioni/errori/+page.svelte`; stesso layout di `src/routes/profilo/salvataggi/+page.svelte` (Card di sezione → CardContent → EmptyState).
 
 ### Contenuto
 

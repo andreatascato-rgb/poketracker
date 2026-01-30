@@ -1,12 +1,15 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { listen } from "@tauri-apps/api/event";
+  import { listen, emit } from "@tauri-apps/api/event";
   import { open as openDialog } from "@tauri-apps/plugin-dialog";
   import { activeProfile } from "$lib/stores/profile";
   import { getSyncingPaths, addSyncing, removeSyncing, setWatchedCountFromSalvataggi } from "$lib/stores/sync.svelte";
   import * as savService from "$lib/services/sav";
   import * as pokedexService from "$lib/services/pokedex";
-  import { reportSystemError } from "$lib/stores/error-archive";
+  import {
+    formatErrorDetail,
+    reportSystemError,
+  } from "$lib/stores/error-archive";
 
   import { Button } from "$lib/components/ui/button";
   import {
@@ -24,6 +27,7 @@
     DialogFooter,
     DialogDescription,
   } from "$lib/components/ui/dialog";
+  import * as AlertDialog from "$lib/components/ui/alert-dialog";
   import { EmptyState } from "$lib/components/ui/empty-state";
   import { Tooltip, TooltipContent, TooltipTrigger } from "$lib/components/ui/tooltip";
   import { toast } from "$lib/components/ui/sonner";
@@ -44,12 +48,27 @@
   let summaryGame = $state("");
   let summaryVersion = $state("");
   let summaryGeneration = $state(0);
-  /** LanguageID raw dal save (solo debug); mostrato quando version è "—". */
+  /** LanguageID raw dal save; usato per Archivio errori quando versione non determinata. */
   let summaryLanguageIdRaw = $state<number | null>(null);
   let summaryAdding = $state(false);
 
   /** True mentre il sidecar analizza il file (invoke detect_save_game_version). */
   let detectingSave = $state(false);
+
+  /** Dialog modifica salvataggio: path attuale (da sostituire), nuovo path e metadati da detect. */
+  let editOpen = $state(false);
+  let editPath = $state("");
+  let editPathNew = $state("");
+  let editGame = $state("");
+  let editVersion = $state("");
+  let editGeneration = $state(0);
+  let editAdding = $state(false);
+  let editDetecting = $state(false);
+
+  /** Dialog rimozione salvataggio: avviso + conferma prima di removeSave (anche offline). */
+  let removeDialogOpen = $state(false);
+  let removePath = $state("");
+  let removeSubmitting = $state(false);
 
   /** Debounce per sav-file-changed: evita sync ripetute per lo stesso path in breve tempo. */
   const pendingSync = new Map<string, ReturnType<typeof setTimeout>>();
@@ -68,9 +87,11 @@
     } catch (err) {
       saves = [];
       watchedPaths = [];
+      const msg = err instanceof Error ? err.message : String(err);
       reportSystemError({
         type: "Caricamento salvataggi fallito",
-        detail: err instanceof Error ? err.message : String(err),
+        detail: formatErrorDetail({ type: "Caricamento salvataggi fallito", message: msg }),
+        toastMessage: msg,
       });
     }
   }
@@ -85,8 +106,11 @@
         toast.success("Osservazione disattivata.");
       } catch (e) {
         const msg = typeof e === "string" ? e : "Impossibile disattivare l'osservazione.";
-        toast.error(msg);
-        reportSystemError({ type: "Disattivazione osservazione fallita", detail: msg });
+        reportSystemError({
+          type: "Disattivazione osservazione fallita",
+          detail: formatErrorDetail({ type: "Disattivazione osservazione fallita", message: msg, path }),
+          toastMessage: msg,
+        });
       }
       return;
     }
@@ -95,11 +119,15 @@
       await savService.syncSavNow(path);
       await savService.setSavWatched(path, true);
       await loadSaves();
+      await emit("sav-entries-changed");
       toast.success("Osservazione attivata.");
     } catch (e) {
       const msg = typeof e === "string" ? e : "Sincronizzazione non riuscita. Verifica che il file sia accessibile.";
-      toast.error(msg);
-      reportSystemError({ type: "Sincronizzazione salvataggio fallita", detail: msg });
+      reportSystemError({
+        type: "Sincronizzazione salvataggio fallita",
+        detail: formatErrorDetail({ type: "Sincronizzazione salvataggio fallita", message: msg, path }),
+        toastMessage: msg,
+      });
       console.error("sync_sav_now/set_sav_watched failed:", e);
     } finally {
       removeSyncing(path);
@@ -125,7 +153,16 @@
             await pokedexService.syncPokedexFromWatchedSavsNow();
             await loadSaves();
           } catch (e) {
-            toast.error("Aggiornamento salvataggio fallito. Verifica che il file sia accessibile.");
+            const msg = e instanceof Error ? e.message : String(e);
+            reportSystemError({
+              type: "Aggiornamento salvataggio fallito",
+              detail: formatErrorDetail({
+                type: "Aggiornamento salvataggio fallito",
+                message: msg,
+                path,
+              }),
+              toastMessage: "Aggiornamento salvataggio fallito. Verifica che il file sia accessibile.",
+            });
             console.error("sav-file-changed failed:", path, e);
           } finally {
             removeSyncing(path);
@@ -165,17 +202,33 @@
       summaryGeneration = typeof detected.generation === "number" ? detected.generation : 0;
       summaryLanguageIdRaw =
         typeof detected.languageIdRaw === "number" ? detected.languageIdRaw : null;
+      const versionEmpty = !summaryVersion || summaryVersion === "—";
+      if (versionEmpty && summaryLanguageIdRaw !== null) {
+        reportSystemError({
+          type: "Versione non determinata",
+          detail: formatErrorDetail({
+            type: "Versione non determinata",
+            message: "Impossibile determinare la versione del salvataggio.",
+            path: summaryPath,
+            languageIdRaw: summaryLanguageIdRaw,
+          }),
+          toastMessage: "Versione non determinata per questo salvataggio. Controlla Impostazioni → Errori.",
+        });
+      }
       summaryOpen = true;
     } catch (e) {
       const msg = typeof e === "string" ? e : "Impossibile riconoscere il file. Verifica che sia un salvataggio Pokémon valido.";
-      toast.error(msg);
-      reportSystemError({ type: "Riconoscimento salvataggio fallito", detail: msg });
+      reportSystemError({
+        type: "Riconoscimento salvataggio fallito",
+        detail: formatErrorDetail({ type: "Riconoscimento salvataggio fallito", message: msg, path }),
+        toastMessage: msg,
+      });
     } finally {
       detectingSave = false;
     }
   }
 
-  /** Conferma aggiunta: add_sav_entry, sync_sav_now (estrazione Pokedex), ricarica lista. */
+  /** Conferma aggiunta: add_sav_entry, ricarica lista. Il Pokédex si aggiorna solo quando attivi l’osservazione (watcher). */
   async function confirmAddSave() {
     if (!summaryPath) return;
     summaryAdding = true;
@@ -186,7 +239,6 @@
         version: summaryVersion,
         generation: summaryGeneration > 0 ? summaryGeneration : undefined,
       });
-      await savService.syncSavNow(summaryPath);
       summaryOpen = false;
       summaryPath = "";
       summaryGame = "";
@@ -194,26 +246,150 @@
       summaryGeneration = 0;
       summaryLanguageIdRaw = null;
       await loadSaves();
-      toast.success("Salvataggio aggiunto e Pokedex aggiornato.");
+      toast.success("Salvataggio aggiunto. Attiva l’osservazione per aggiornare il Pokédex.");
     } catch (e) {
       const msg = typeof e === "string" ? e : "Impossibile aggiungere il salvataggio.";
-      toast.error(msg);
-      console.error("add_sav_entry / sync_sav_now failed:", e);
+      reportSystemError({
+        type: "Aggiunta salvataggio fallita",
+        detail: formatErrorDetail({
+          type: "Aggiunta salvataggio fallita",
+          message: msg,
+          path: summaryPath,
+        }),
+        toastMessage: msg,
+      });
+      console.error("add_sav_entry failed:", e);
     } finally {
       summaryAdding = false;
     }
   }
 
-  /** Rimuove la voce e ricarica. */
+  /** Apre il dialog di conferma rimozione per il path indicato. */
+  function openRemoveDialog(path: string) {
+    removePath = path;
+    removeDialogOpen = true;
+  }
+
+  function closeRemoveDialog() {
+    if (!removeSubmitting) {
+      removeDialogOpen = false;
+      removePath = "";
+    }
+  }
+
+  /** Rimuove la voce, ricalcola Pokedex dai sav rimanenti (o svuota se ultimo) e notifica gli altri componenti. */
   async function removeSave(path: string) {
     try {
       await savService.removeSavEntry(path);
+      await pokedexService.syncPokedexFromWatchedSavsNow();
       await loadSaves();
+      await emit("sav-entries-changed");
       toast.success("Salvataggio rimosso.");
     } catch (e) {
       const msg = typeof e === "string" ? e : "Impossibile rimuovere il salvataggio.";
-      toast.error(msg);
+      reportSystemError({
+        type: "Rimozione salvataggio fallita",
+        detail: formatErrorDetail({
+          type: "Rimozione salvataggio fallita",
+          message: msg,
+          path,
+        }),
+        toastMessage: msg,
+      });
       console.error("remove_sav_entry failed:", e);
+    }
+  }
+
+  /** Conferma rimozione: removeSave(removePath) e chiude il dialog. */
+  async function confirmRemoveSave() {
+    if (!removePath) return;
+    removeSubmitting = true;
+    try {
+      await removeSave(removePath);
+      removeDialogOpen = false;
+      removePath = "";
+    } finally {
+      removeSubmitting = false;
+    }
+  }
+
+  /** Apre file picker per scegliere un nuovo file e avvia il flusso modifica (detect → dialog → update_sav_entry). */
+  async function startEditSave(save: SaveEntry) {
+    const selected = await openDialog({
+      directory: false,
+      multiple: false,
+      filters: [
+        { name: "Salvataggio Pokémon", extensions: ["sav", "dsv"] },
+      ],
+    });
+    const path =
+      selected == null ? null : Array.isArray(selected) ? selected[0] ?? null : selected;
+    if (path == null) return;
+    editPath = save.path;
+    editDetecting = true;
+    try {
+      const detected = await savService.detectSaveGameVersion(path);
+      editPathNew = path;
+      editGame = detected.game ?? "";
+      editVersion = detected.version ?? "";
+      editGeneration = typeof detected.generation === "number" ? detected.generation : 0;
+      editOpen = true;
+    } catch (e) {
+      const msg = typeof e === "string" ? e : "Impossibile riconoscere il file. Verifica che sia un salvataggio Pokémon valido.";
+      reportSystemError({
+        type: "Riconoscimento salvataggio fallito",
+        detail: formatErrorDetail({ type: "Riconoscimento salvataggio fallito", message: msg, path }),
+        toastMessage: msg,
+      });
+    } finally {
+      editDetecting = false;
+    }
+  }
+
+  /** Conferma modifica: update_sav_entry, eventuale sync se era osservato, ricarica lista. */
+  async function confirmEditSave() {
+    if (!editPath || !editPathNew) return;
+    editAdding = true;
+    const wasWatched = watchedPaths.includes(editPath);
+    try {
+      await savService.updateSavEntry({
+        oldPath: editPath,
+        newPath: editPathNew,
+        game: editGame,
+        version: editVersion,
+        generation: editGeneration > 0 ? editGeneration : undefined,
+      });
+      if (wasWatched) {
+        addSyncing(editPathNew);
+        try {
+          await savService.syncSavNow(editPathNew);
+        } finally {
+          removeSyncing(editPathNew);
+        }
+      }
+      editOpen = false;
+      editPath = "";
+      editPathNew = "";
+      editGame = "";
+      editVersion = "";
+      editGeneration = 0;
+      await loadSaves();
+      await emit("sav-entries-changed");
+      toast.success("Salvataggio aggiornato.");
+    } catch (e) {
+      const msg = typeof e === "string" ? e : "Impossibile aggiornare il salvataggio.";
+      reportSystemError({
+        type: "Aggiornamento salvataggio fallito",
+        detail: formatErrorDetail({
+          type: "Aggiornamento salvataggio fallito",
+          message: msg,
+          path: editPathNew,
+        }),
+        toastMessage: msg,
+      });
+      console.error("update_sav_entry failed:", e);
+    } finally {
+      editAdding = false;
     }
   }
 
@@ -377,6 +553,7 @@
                           variant="ghost-muted"
                           size="icon-sm"
                           aria-label="Modifica salvataggio"
+                          onclick={() => startEditSave(save)}
                         >
                           <Pencil class="size-4 text-[var(--text-secondary)]" aria-hidden="true" />
                         </Button>
@@ -390,7 +567,7 @@
                           variant="ghost-muted"
                           size="icon-sm"
                           aria-label="Rimuovi salvataggio"
-                          onclick={() => removeSave(save.path)}
+                          onclick={() => openRemoveDialog(save.path)}
                         >
                           <Trash2 class="size-4 text-[var(--icon-destructive)]" aria-hidden="true" />
                         </Button>
@@ -408,8 +585,8 @@
   </Card>
 {/if}
 
-{#if detectingSave}
-  <!-- Overlay solo per analisi file (detect_save_game_version) -->
+{#if detectingSave || editDetecting}
+  <!-- Overlay per analisi file (detect_save_game_version) in aggiunta o modifica -->
   <div
     class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
     aria-live="polite"
@@ -458,16 +635,6 @@
         <dt class="text-muted-foreground text-xs font-medium uppercase tracking-wider">Percorso</dt>
         <dd class="mt-0.5 font-mono text-xs break-all" title={summaryPath}>{summaryPath}</dd>
       </div>
-      {#if (summaryVersion === "—" || !summaryVersion) && summaryLanguageIdRaw !== null}
-        <div class="pt-1 border-t border-[var(--border-primary)]">
-          <span
-            class="text-xs text-muted-foreground font-mono"
-            title="LanguageID raw dal save (solo debug)"
-          >
-            L? {summaryLanguageIdRaw}
-          </span>
-        </div>
-      {/if}
     </dl>
     <DialogFooter class="mt-6">
       <Button type="button" variant="outline" onclick={() => (summaryOpen = false)}>
@@ -483,3 +650,75 @@
     </DialogFooter>
   </DialogContent>
 </Dialog>
+
+<!-- Dialog modifica salvataggio: nuovo path e metadati → Modifica / Annulla -->
+<Dialog bind:open={editOpen}>
+  <DialogContent class="sm:max-w-md" aria-describedby="edit-desc">
+    <DialogHeader>
+      <DialogTitle>Modifica salvataggio</DialogTitle>
+      <DialogDescription id="edit-desc">
+        Sostituisci il file con un altro. Il nuovo file verrà associato a questo profilo.
+      </DialogDescription>
+    </DialogHeader>
+    <dl class="mt-4 text-sm space-y-3 min-w-0 overflow-hidden">
+      <div class="grid grid-cols-2 gap-x-6 gap-y-3" role="presentation">
+        <div>
+          <dt class="text-muted-foreground text-xs font-medium uppercase tracking-wider">Gioco</dt>
+          <dd class="mt-0.5">{editGame || "—"}</dd>
+        </div>
+        <div>
+          <dt class="text-muted-foreground text-xs font-medium uppercase tracking-wider">Versione</dt>
+          <dd class="mt-0.5">{editVersion || "—"}</dd>
+        </div>
+        <div>
+          <dt class="text-muted-foreground text-xs font-medium uppercase tracking-wider">Generazione</dt>
+          <dd class="mt-0.5">{editGeneration > 0 ? editGeneration : "—"}</dd>
+        </div>
+      </div>
+      <div class="min-w-0 overflow-hidden">
+        <dt class="text-muted-foreground text-xs font-medium uppercase tracking-wider">Nuovo percorso</dt>
+        <dd class="mt-0.5 font-mono text-xs break-all" title={editPathNew}>{editPathNew}</dd>
+      </div>
+    </dl>
+    <DialogFooter class="mt-6">
+      <Button type="button" variant="outline" onclick={() => (editOpen = false)}>
+        Annulla
+      </Button>
+      <Button
+        type="button"
+        onclick={confirmEditSave}
+        disabled={editAdding}
+      >
+        {editAdding ? "Aggiornamento…" : "Modifica"}
+      </Button>
+    </DialogFooter>
+  </DialogContent>
+</Dialog>
+
+<!-- AlertDialog Rimuovi salvataggio: avviso + conferma (anche offline); Pokedex aggiornato o svuotato. -->
+<AlertDialog.Root bind:open={removeDialogOpen}>
+  <AlertDialog.Content aria-labelledby="remove-dialog-title" aria-describedby="remove-dialog-desc">
+    <AlertDialog.Title id="remove-dialog-title">Rimuovi salvataggio?</AlertDialog.Title>
+    <AlertDialog.Description id="remove-dialog-desc">
+      Il salvataggio verrà rimosso dalla lista. Il Pokédex sarà aggiornato in base ai salvataggi rimanenti oppure svuotato se è l'ultimo. Questa azione non è reversibile.
+    </AlertDialog.Description>
+    <AlertDialog.Footer>
+      <Button
+        type="button"
+        variant="outline"
+        onclick={closeRemoveDialog}
+        disabled={removeSubmitting}
+      >
+        Annulla
+      </Button>
+      <Button
+        type="button"
+        variant="destructive"
+        disabled={removeSubmitting}
+        onclick={confirmRemoveSave}
+      >
+        {removeSubmitting ? "Rimozione…" : "Rimuovi"}
+      </Button>
+    </AlertDialog.Footer>
+  </AlertDialog.Content>
+</AlertDialog.Root>

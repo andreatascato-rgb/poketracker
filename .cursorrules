@@ -7,7 +7,7 @@
 - Creare/modificare file solo quando esplicitamente richiesto nella query.
 - Proporre soluzioni per azioni non esplicitamente richieste.
 - Applicare **sempre** gli standard in `docs/standards/` e le procedure in `docs/procedures/`.
-- Rispettare la regola di conferma (vedi regola 7 sotto).
+- Rispettare la regola di conferma (vedi regola 8 sotto).
 
 ## REGOLE OPERATIVE
 
@@ -20,10 +20,11 @@
 
 ### Altre regole
 
-5. Tutti i file markdown di documentazione vanno in `docs/` con sottocartelle appropriate. File temporanei (analisi, bozze) in `docs/temp/`. NON creare cartelle di documentazione nella root.
+5. **Allineamento a un riferimento:** quando la richiesta è "allineare X a Y", "come Z", "stesso design/stile di R", fare **sempre** in questo ordine: (a) aprire il file/implementazione di riferimento (Y/Z/R) e **elencare** i componenti e la struttura (wrapper, Card, CardContent, ecc.); (b) **replicare** quella struttura sulla pagina/componente da modificare; (c) **solo dopo** applicare eventuali eccezioni ("niente card", "senza CTA", ecc.) **solo** sull’elemento indicato (es. "niente card" = nessuna card **interna** di EmptyState, non rimuovere la Card di sezione). Non interpretare "rimuovi X" in modo assoluto: confrontare con il riferimento e togliere solo ciò che il riferimento non ha o che la richiesta nomina esplicitamente.
+6. Tutti i file markdown di documentazione vanno in `docs/` con sottocartelle appropriate. File temporanei (analisi, bozze) in `docs/temp/`. NON creare cartelle di documentazione nella root.
 6. TUTTI i file markdown devono rispettare `docs/standards/markdown-optimization.md`.
-7. Procedi direttamente solo quando la query richiede esplicitamente l’azione. Chiedi conferma per modifiche che cambiano comportamento esistente o non sono esplicitamente richieste.
-8. Non lasciare commenti `// TODO` o stub vuoti come deliverable: implementare logica (anche minimale) o tracciare in backlog.
+8. Procedi direttamente solo quando la query richiede esplicitamente l’azione. Chiedi conferma per modifiche che cambiano comportamento esistente o non sono esplicitamente richieste.
+9. Non lasciare commenti `// TODO` o stub vuoti come deliverable: implementare logica (anche minimale) o tracciare in backlog.
 
 ## STANDARD APPLICATI
 

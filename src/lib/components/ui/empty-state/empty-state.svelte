@@ -16,12 +16,12 @@
     description: string;
     /** Icona sopra il titolo (Lucide o simile), size-12, muted. */
     icon: Component;
-    /** Etichetta del pulsante CTA principale. */
-    ctaLabel: string;
+    /** Etichetta del pulsante CTA principale; se assente, nessun CTA (es. empty state solo informativo). */
+    ctaLabel?: string;
     /** Icona opzionale nel pulsante principale (stessa size del Button). */
     ctaIcon?: Component;
     /** Callback al click del CTA principale. */
-    onCtaClick: () => void;
+    onCtaClick?: () => void;
     /** Etichetta del secondo CTA; se presente, mostra due pulsanti. */
     secondaryCtaLabel?: string;
     /** Icona opzionale nel secondo pulsante. */
@@ -30,6 +30,8 @@
     onSecondaryCtaClick?: () => void;
     /** Etichetta regione per accessibilità (default derivato da title). */
     ariaLabel?: string;
+    /** Se true, nessun wrapper Card (solo icona + titolo + descrizione su sfondo pagina); per empty state informativi in Impostazioni. */
+    noCard?: boolean;
   }
 
   let {
@@ -43,6 +45,7 @@
     secondaryCtaIcon: SecondaryCtaIcon,
     onSecondaryCtaClick,
     ariaLabel = `Stato vuoto: ${title}`,
+    noCard = false,
   }: Props = $props();
 </script>
 
@@ -56,40 +59,85 @@
     strokeWidth={1.5}
     aria-hidden="true"
   />
-  <Card class="w-full max-w-md border border-[var(--border-primary)]">
-    <CardHeader class="flex flex-col items-center gap-2 text-center [.border-b]:pb-6">
-      <CardTitle class="text-lg font-semibold">{title}</CardTitle>
-      <CardDescription class="max-w-[66ch] leading-relaxed">
+  {#if noCard}
+    <div class="w-full max-w-md flex flex-col items-center gap-2 text-center">
+      <h2 class="text-lg font-semibold">{title}</h2>
+      <p class="text-sm text-muted-foreground max-w-[66ch] leading-relaxed">
         {description}
-      </CardDescription>
-    </CardHeader>
-    <CardFooter class="flex justify-center gap-3 [.border-t]:pt-6">
-      <Button
-        type="button"
-        variant="outline"
-        size="default"
-        onclick={onCtaClick}
-        aria-label={ctaLabel}
-      >
-        {#if CtaIcon}
-          <CtaIcon class="size-4" aria-hidden="true" />
-        {/if}
-        {ctaLabel}
-      </Button>
-      {#if secondaryCtaLabel && onSecondaryCtaClick}
-        <Button
-          type="button"
-          variant="outline"
-          size="default"
-          onclick={onSecondaryCtaClick}
-          aria-label={secondaryCtaLabel}
-        >
-          {#if SecondaryCtaIcon}
-            <SecondaryCtaIcon class="size-4" aria-hidden="true" />
+      </p>
+      {#if (ctaLabel && onCtaClick) || (secondaryCtaLabel && onSecondaryCtaClick)}
+        <div class="flex justify-center gap-3 pt-2">
+          {#if ctaLabel && onCtaClick}
+            <Button
+              type="button"
+              variant="outline"
+              size="default"
+              onclick={onCtaClick}
+              aria-label={ctaLabel}
+            >
+              {#if CtaIcon}
+                <CtaIcon class="size-4" aria-hidden="true" />
+              {/if}
+              {ctaLabel}
+            </Button>
           {/if}
-          {secondaryCtaLabel}
-        </Button>
+          {#if secondaryCtaLabel && onSecondaryCtaClick}
+            <Button
+              type="button"
+              variant="outline"
+              size="default"
+              onclick={onSecondaryCtaClick}
+              aria-label={secondaryCtaLabel}
+            >
+              {#if SecondaryCtaIcon}
+                <SecondaryCtaIcon class="size-4" aria-hidden="true" />
+              {/if}
+              {secondaryCtaLabel}
+            </Button>
+          {/if}
+        </div>
       {/if}
-    </CardFooter>
-  </Card>
+    </div>
+  {:else}
+    <Card class="w-full max-w-md border border-[var(--border-primary)]">
+      <CardHeader class="flex flex-col items-center gap-2 text-center [.border-b]:pb-6">
+        <CardTitle class="text-lg font-semibold">{title}</CardTitle>
+        <CardDescription class="max-w-[66ch] leading-relaxed">
+          {description}
+        </CardDescription>
+      </CardHeader>
+      {#if (ctaLabel && onCtaClick) || (secondaryCtaLabel && onSecondaryCtaClick)}
+        <CardFooter class="flex justify-center gap-3 [.border-t]:pt-6">
+          {#if ctaLabel && onCtaClick}
+            <Button
+              type="button"
+              variant="outline"
+              size="default"
+              onclick={onCtaClick}
+              aria-label={ctaLabel}
+            >
+              {#if CtaIcon}
+                <CtaIcon class="size-4" aria-hidden="true" />
+              {/if}
+              {ctaLabel}
+            </Button>
+          {/if}
+          {#if secondaryCtaLabel && onSecondaryCtaClick}
+            <Button
+              type="button"
+              variant="outline"
+              size="default"
+              onclick={onSecondaryCtaClick}
+              aria-label={secondaryCtaLabel}
+            >
+              {#if SecondaryCtaIcon}
+                <SecondaryCtaIcon class="size-4" aria-hidden="true" />
+              {/if}
+              {secondaryCtaLabel}
+            </Button>
+          {/if}
+        </CardFooter>
+      {/if}
+    </Card>
+  {/if}
 </div>

@@ -1,5 +1,28 @@
 //! Comandi profilo: lettura/scrittura su SQLite. Vedi command-with-db, database-migrations-standard.
 
+use std::io::Write;
+use std::path::Path;
+use std::time::UNIX_EPOCH;
+
+fn dbg_log(location: &str, message: &str, data: &str, hypothesis_id: &str) {
+    let log_path = r"c:\_Main\_projects\poketracker\.cursor\debug.log";
+    if let Some(parent) = Path::new(log_path).parent() {
+        let _ = std::fs::create_dir_all(parent);
+    }
+    if let Ok(mut f) = std::fs::OpenOptions::new().create(true).append(true).open(log_path) {
+        let ts = std::time::SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .map(|d| d.as_millis())
+            .unwrap_or(0);
+        let line = format!(
+            r#"{{"location":"{}","message":"{}","data":{},"timestamp":{},"sessionId":"debug-session","hypothesisId":"{}"}}"#,
+            location, message.replace('"', "\\\""), data, ts, hypothesis_id
+        );
+        let _ = writeln!(f, "{}", line);
+    }
+}
+
+use chrono::TimeZone;
 use rusqlite::OptionalExtension;
 use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, State};
@@ -54,6 +77,25 @@ fn propagate_caught_to_prevolutions(merged: &mut std::collections::HashMap<i32, 
 fn fill_pokedex_display_range(merged: &mut std::collections::HashMap<i32, String>) {
     for sid in 1..=POKEDEX_DISPLAY_SPECIES_MAX {
         merged.entry(sid).or_insert_with(|| "unseen".to_string());
+    }
+}
+
+/// Normalizza status Pokedex (trim + lowercase); restituisce Some solo se unseen/seen/caught.
+fn pokedex_normalize_status(s: &str) -> Option<String> {
+    let s = s.trim().to_lowercase();
+    if s == "unseen" || s == "seen" || s == "caught" {
+        Some(s)
+    } else {
+        None
+    }
+}
+
+/// Ordine di priorità per merge: caught > seen > unseen.
+fn pokedex_status_rank(s: &str) -> u8 {
+    match s {
+        "caught" => 3,
+        "seen" => 2,
+        _ => 1,
     }
 }
 
@@ -244,6 +286,72 @@ pub fn rename_profile(state: State<'_, DbState>, id: String, new_name: String) -
     profile_by_id(&conn, &id)
 }
 
+/// Aggiorna solo l'avatar di un profilo. Restituisce errore se l'id non esiste.
+/// Parametri: id, avatarId (Tauri converte camelCase -> snake_case).
+#[tauri::command]
+pub fn update_profile_avatar(
+    state: State<'_, DbState>,
+    id: String,
+    avatar_id: Option<String>,
+) -> Result<Profile, String> {
+    let data_entered = format!(
+        r#"{{"id":"{}","avatar_id":{}}}"#,
+        id.replace('"', "\\\""),
+        avatar_id
+            .as_ref()
+            .map(|s| format!("\"{}\"", s.replace('"', "\\\"")))
+            .unwrap_or_else(|| "null".to_string())
+    );
+    dbg_log("profile.rs:update_profile_avatar", "entry", &data_entered, "H2");
+    let id = id.trim();
+    if id.is_empty() {
+        dbg_log("profile.rs:update_profile_avatar", "id_empty", "{}", "H4");
+        return Err("Id profilo non valido.".into());
+    }
+    let conn = state.0.lock().map_err(|e| e.to_string())?;
+    let update_res = conn.execute(
+        "UPDATE profiles SET avatar_id = ?1, updated_at = datetime('now') WHERE id = ?2",
+        rusqlite::params![avatar_id, &id],
+    );
+    let updated = match update_res {
+        Ok(n) => {
+            dbg_log(
+                "profile.rs:update_profile_avatar",
+                "execute_ok",
+                &format!(r#"{{"rows":{}}}"#, n),
+                "H3",
+            );
+            n
+        }
+        Err(e) => {
+            let err_msg = e.to_string();
+            dbg_log(
+                "profile.rs:update_profile_avatar",
+                "execute_err",
+                &format!(r#"{{"err":"{}"}}"#, err_msg.replace('"', "\\\"")),
+                "H3",
+            );
+            return Err(err_msg);
+        }
+    };
+    if updated == 0 {
+        dbg_log("profile.rs:update_profile_avatar", "updated_zero", "{}", "H3");
+        return Err("Profilo non trovato.".into());
+    }
+    match profile_by_id(&conn, &id) {
+        Ok(p) => Ok(p),
+        Err(e) => {
+            dbg_log(
+                "profile.rs:update_profile_avatar",
+                "profile_by_id_err",
+                &format!(r#"{{"err":"{}"}}"#, e.replace('"', "\\\"")),
+                "H3",
+            );
+            Err(e)
+        }
+    }
+}
+
 /// Aggiorna nome e/o avatar di un profilo. Restituisce errore se l'id non esiste o il nome è vuoto.
 #[tauri::command]
 pub fn update_profile(
@@ -314,7 +422,8 @@ pub fn delete_profile(state: State<'_, DbState>, watcher: State<'_, SavWatcher>,
             .map_err(|e| e.to_string())?;
         let watched_paths: Vec<String> = watched_json
             .as_ref()
-            .and_then(|s| serde_json::from_str(s).ok())
+            .map(|s| serde_json::from_str(s).map_err(|e| e.to_string()))
+            .transpose()?
             .unwrap_or_default();
         // Elimina salvataggi e path del profilo (dati di essi)
         conn.execute("DELETE FROM app_state WHERE key = ?1", [&sav_entries_key(id)])
@@ -415,8 +524,20 @@ pub struct SavEntry {
     /// Generazione (1–9). 0 se non impostata (entry vecchie).
     #[serde(default)]
     pub generation: i32,
-    /// Data ultimo aggiornamento (ISO 8601).
+    /// Data ultimo aggiornamento in app (ISO 8601): sync/add/touch.
     pub updated_at: String,
+    /// Data ultima modifica file .sav (ISO 8601), riempita in get_sav_entries da mtime. Usata per "ultimo gioco giocato".
+    #[serde(default)]
+    pub last_played_at: Option<String>,
+}
+
+/// Legge la data di ultima modifica del file al path e la restituisce in ISO 8601, o None se non disponibile.
+fn path_mtime_iso(path: &str) -> Option<String> {
+    let meta = std::fs::metadata(Path::new(path)).ok()?;
+    let modified = meta.modified().ok()?;
+    let dur = modified.duration_since(UNIX_EPOCH).ok()?;
+    let dt = chrono::Utc.timestamp_opt(dur.as_secs() as i64, dur.subsec_nanos()).single()?;
+    Some(dt.format("%Y-%m-%dT%H:%M:%S").to_string())
 }
 
 /// Restituisce le voci salvataggio del profilo attivo (path, game, version, updated_at). Salvate in app_state come JSON array per profilo.
@@ -442,7 +563,7 @@ pub fn get_sav_entries(state: State<'_, DbState>) -> Result<Vec<SavEntry>, Strin
         .optional()
         .map_err(|e| e.to_string())?;
     let mut entries: Vec<SavEntry> = match value {
-        Some(ref s) => serde_json::from_str(s).unwrap_or_default(),
+        Some(ref s) => serde_json::from_str(s).map_err(|e| e.to_string())?,
         None => {
             // Migrazione: chiave legacy globale → per profilo
             let legacy: Option<String> = conn
@@ -455,7 +576,8 @@ pub fn get_sav_entries(state: State<'_, DbState>) -> Result<Vec<SavEntry>, Strin
                 .map_err(|e| e.to_string())?;
             let migrated: Vec<SavEntry> = legacy
                 .as_ref()
-                .and_then(|s| serde_json::from_str(s).ok())
+                .map(|s| serde_json::from_str(s).map_err(|e| e.to_string()))
+                .transpose()?
                 .unwrap_or_default();
             if !migrated.is_empty() {
                 let json = serde_json::to_string(&migrated).map_err(|e| e.to_string())?;
@@ -480,7 +602,7 @@ pub fn get_sav_entries(state: State<'_, DbState>) -> Result<Vec<SavEntry>, Strin
             .optional()
             .map_err(|e| e.to_string())?;
         if let Some(ref s) = legacy {
-            let paths: Vec<String> = serde_json::from_str(s).unwrap_or_default();
+            let paths: Vec<String> = serde_json::from_str(s).map_err(|e| e.to_string())?;
             let now = chrono::Utc::now().format("%Y-%m-%dT%H:%M:%S").to_string();
             entries = paths
                 .into_iter()
@@ -490,6 +612,7 @@ pub fn get_sav_entries(state: State<'_, DbState>) -> Result<Vec<SavEntry>, Strin
                     version: String::new(),
                     generation: 0,
                     updated_at: now.clone(),
+                    last_played_at: None,
                 })
                 .collect();
             let json = serde_json::to_string(&entries).map_err(|e| e.to_string())?;
@@ -499,6 +622,10 @@ pub fn get_sav_entries(state: State<'_, DbState>) -> Result<Vec<SavEntry>, Strin
             )
             .map_err(|e| e.to_string())?;
         }
+    }
+    // Riempie last_played_at da mtime del file (ultimo salvataggio in-game ≈ ultimo giocato).
+    for e in entries.iter_mut() {
+        e.last_played_at = path_mtime_iso(&e.path);
     }
     Ok(entries)
 }
@@ -532,7 +659,7 @@ pub fn add_sav_entry(
         .optional()
         .map_err(|e| e.to_string())?;
     let mut entries: Vec<SavEntry> = match value {
-        Some(ref s) => serde_json::from_str(s).unwrap_or_default(),
+        Some(ref s) => serde_json::from_str(s).map_err(|e| e.to_string())?,
         None => Vec::new(),
     };
     if entries.iter().any(|e| e.path == path) {
@@ -546,6 +673,7 @@ pub fn add_sav_entry(
         version: version.trim().to_string(),
         generation: gen,
         updated_at,
+        last_played_at: None,
     });
     let json = serde_json::to_string(&entries).map_err(|e| e.to_string())?;
     conn.execute(
@@ -558,98 +686,88 @@ pub fn add_sav_entry(
 
 /// Sincronizza ora: valida il file con il sidecar e aggiorna updated_at della voce salvataggio.
 /// Usato quando l’utente attiva il watcher (presa dati) o quando il watcher rileva modifica al file.
+/// Lock DB ridotto: lettura + aggiornamento entries e lettura pokedex sotto lock; merge in memoria senza lock; scrittura pokedex sotto lock.
 #[tauri::command]
 pub async fn sync_sav_now(state: State<'_, DbState>, app: AppHandle, path: String) -> Result<(), String> {
     let path = path.trim().to_string();
     if path.is_empty() {
         return Err("Percorso non valido.".into());
     }
-    eprintln!("[PokeTracker] sync_sav_now avviato: {}", path);
+    eprintln!("[PokeTracker] sync_sav_now: avvio per {:?}", path);
     save_detect::detect_save_game_version(app.clone(), path.clone()).await?;
     let pokedex_entries = save_detect::extract_pokedex_from_save(app, path.clone()).await?;
-    let conn = state.0.lock().map_err(|e| e.to_string())?;
-    let active_id: Option<String> = conn
-        .query_row(
-            "SELECT value FROM app_state WHERE key = 'active_profile_id'",
-            [],
-            |row| row.get::<_, String>(0),
-        )
-        .optional()
-        .map_err(|e| e.to_string())?;
-    let active_id = active_id.ok_or("Nessun profilo attivo.")?;
-    let key = sav_entries_key(&active_id);
-    let value: Option<String> = conn
-        .query_row("SELECT value FROM app_state WHERE key = ?1", [&key], |row| row.get::<_, String>(0))
-        .optional()
-        .map_err(|e| e.to_string())?;
-    let mut entries: Vec<SavEntry> = match value {
-        Some(ref s) => serde_json::from_str(s).unwrap_or_default(),
-        None => return Err("Nessun salvataggio configurato per questo percorso.".into()),
-    };
-    let updated_at = chrono::Utc::now().format("%Y-%m-%dT%H:%M:%S").to_string();
-    let mut found = false;
-    for e in entries.iter_mut() {
-        if e.path == path {
-            e.updated_at = updated_at.clone();
-            found = true;
-            break;
-        }
-    }
-    if !found {
-        return Err("Salvataggio non trovato.".into());
-    }
-    let json = serde_json::to_string(&entries).map_err(|e| e.to_string())?;
-    conn.execute(
-        "INSERT INTO app_state (key, value) VALUES (?1, ?2) ON CONFLICT(key) DO UPDATE SET value = ?2",
-        rusqlite::params![&key, &json],
-    )
-    .map_err(|e| e.to_string())?;
+    eprintln!("[PokeTracker] sync_sav_now: {:?} → {} entries Pokedex, merge e scrittura DB...", path, pokedex_entries.len());
 
-    // Carica stato attuale pokedex (per merge multi-save).
-    let mut current: std::collections::HashMap<i32, String> = std::collections::HashMap::new();
-    let mut stmt = conn
-        .prepare("SELECT species_id, status FROM pokedex_state WHERE profile_id = ?1")
-        .map_err(|e| e.to_string())?;
-    let rows = stmt
-        .query_map([&active_id], |row| Ok((row.get::<_, i32>(0)?, row.get::<_, String>(1)?)))
-        .map_err(|e| e.to_string())?;
-    for row in rows {
-        let (sid, raw) = row.map_err(|e| e.to_string())?;
-        let s = raw.trim().to_lowercase();
-        let status = if s == "caught" || s == "seen" || s == "unseen" {
-            s
-        } else {
-            "unseen".to_string()
+    // Lock: legge active_id, entries; aggiorna updated_at e scrive app_state; legge pokedex corrente; poi rilascia.
+    let (active_id, current): (String, std::collections::HashMap<i32, String>) = {
+        let conn = state.0.lock().map_err(|e| e.to_string())?;
+        let active_id: Option<String> = conn
+            .query_row(
+                "SELECT value FROM app_state WHERE key = 'active_profile_id'",
+                [],
+                |row| row.get::<_, String>(0),
+            )
+            .optional()
+            .map_err(|e| e.to_string())?;
+        let active_id = active_id.ok_or("Nessun profilo attivo.")?;
+        let key = sav_entries_key(&active_id);
+        let value: Option<String> = conn
+            .query_row("SELECT value FROM app_state WHERE key = ?1", [&key], |row| row.get::<_, String>(0))
+            .optional()
+            .map_err(|e| e.to_string())?;
+        let mut entries: Vec<SavEntry> = match value {
+            Some(ref s) => serde_json::from_str(s).map_err(|e| e.to_string())?,
+            None => return Err("Nessun salvataggio configurato per questo percorso.".into()),
         };
-        current.insert(sid, status);
-    }
+        let updated_at = chrono::Utc::now().format("%Y-%m-%dT%H:%M:%S").to_string();
+        let mut found = false;
+        for e in entries.iter_mut() {
+            if e.path == path {
+                e.updated_at = updated_at.clone();
+                found = true;
+                break;
+            }
+        }
+        if !found {
+            return Err("Salvataggio non trovato.".into());
+        }
+        let json = serde_json::to_string(&entries).map_err(|e| e.to_string())?;
+        conn.execute(
+            "INSERT INTO app_state (key, value) VALUES (?1, ?2) ON CONFLICT(key) DO UPDATE SET value = ?2",
+            rusqlite::params![&key, &json],
+        )
+        .map_err(|e| e.to_string())?;
 
-    // Merge: per ogni specie best(current, new) con caught > seen > unseen.
-    // Normalizza status (trim + lowercase) così "Seen"/" seen " non vengono scartati.
-    fn normalize_status(s: &str) -> Option<String> {
-        let s = s.trim().to_lowercase();
-        if s == "unseen" || s == "seen" || s == "caught" {
-            Some(s)
-        } else {
-            None
+        let mut current: std::collections::HashMap<i32, String> = std::collections::HashMap::new();
+        let mut stmt = conn
+            .prepare("SELECT species_id, status FROM pokedex_state WHERE profile_id = ?1")
+            .map_err(|e| e.to_string())?;
+        let rows = stmt
+            .query_map([&active_id], |row| Ok((row.get::<_, i32>(0)?, row.get::<_, String>(1)?)))
+            .map_err(|e| e.to_string())?;
+        for row in rows {
+            let (sid, raw) = row.map_err(|e| e.to_string())?;
+            let s = raw.trim().to_lowercase();
+            let status = if s == "caught" || s == "seen" || s == "unseen" {
+                s
+            } else {
+                "unseen".to_string()
+            };
+            current.insert(sid, status);
         }
-    }
-    fn rank(s: &str) -> u8 {
-        match s {
-            "caught" => 3,
-            "seen" => 2,
-            _ => 1,
-        }
-    }
+        (active_id, current)
+    };
+
+    // Merge in memoria (senza lock): best(current, new), propagazione pre-evoluzioni, fill range.
     let mut merged: std::collections::HashMap<i32, String> = std::collections::HashMap::new();
     for e in &pokedex_entries {
-        let Some(s) = normalize_status(&e.status) else { continue };
+        let Some(s) = pokedex_normalize_status(&e.status) else { continue };
         if e.species_id < 1 || e.species_id > MAX_SPECIES_ID {
             continue;
         }
         let best = current
             .get(&e.species_id)
-            .map(|c| if rank(c) >= rank(&s) { c.as_str() } else { s.as_str() })
+            .map(|c| if pokedex_status_rank(c) >= pokedex_status_rank(&s) { c.as_str() } else { s.as_str() })
             .unwrap_or(s.as_str());
         merged.insert(e.species_id, best.to_string());
     }
@@ -662,18 +780,22 @@ pub async fn sync_sav_now(state: State<'_, DbState>, app: AppHandle, path: Strin
     propagate_caught_to_prevolutions(&mut merged);
     fill_pokedex_display_range(&mut merged);
 
-    conn.execute("DELETE FROM pokedex_state WHERE profile_id = ?1", [&active_id])
-        .map_err(|e| e.to_string())?;
-    for sid in 1..=POKEDEX_DISPLAY_SPECIES_MAX {
-        let status = merged.get(&sid).map(|s| s.as_str()).unwrap_or("unseen");
-        conn.execute(
-            "INSERT INTO pokedex_state (profile_id, species_id, status) VALUES (?1, ?2, ?3)",
-            rusqlite::params![&active_id, sid, status],
-        )
-        .map_err(|e| e.to_string())?;
+    // Lock solo per scrittura pokedex_state.
+    {
+        let conn = state.0.lock().map_err(|e| e.to_string())?;
+        conn.execute("DELETE FROM pokedex_state WHERE profile_id = ?1", [&active_id])
+            .map_err(|e| e.to_string())?;
+        for sid in 1..=POKEDEX_DISPLAY_SPECIES_MAX {
+            let status = merged.get(&sid).map(|s| s.as_str()).unwrap_or("unseen");
+            conn.execute(
+                "INSERT INTO pokedex_state (profile_id, species_id, status) VALUES (?1, ?2, ?3)",
+                rusqlite::params![&active_id, sid, status],
+            )
+            .map_err(|e| e.to_string())?;
+        }
     }
+    eprintln!("[PokeTracker] sync_sav_now: ok, {} righe pokedex_state per profilo", merged.len());
 
-    eprintln!("[PokeTracker] sync_sav_now completato: {}", path);
     Ok(())
 }
 
@@ -699,7 +821,8 @@ pub async fn sync_all_sav_now(state: State<'_, DbState>, app: AppHandle) -> Resu
             .map_err(|e| e.to_string())?;
         let entries: Vec<SavEntry> = value
             .as_ref()
-            .and_then(|s| serde_json::from_str(s).ok())
+            .map(|s| serde_json::from_str(s).map_err(|e| e.to_string()))
+            .transpose()?
             .unwrap_or_default();
         let paths: Vec<String> = entries.into_iter().map(|e| e.path).collect();
         (active_id, paths)
@@ -707,24 +830,6 @@ pub async fn sync_all_sav_now(state: State<'_, DbState>, app: AppHandle) -> Resu
 
     if paths.is_empty() {
         return Err("Nessun salvataggio configurato. Aggiungi almeno un file .sav da Salvataggi.".into());
-    }
-
-    eprintln!("[PokeTracker] sync_all_sav_now: {} path", paths.len());
-
-    fn normalize_status(s: &str) -> Option<String> {
-        let s = s.trim().to_lowercase();
-        if s == "unseen" || s == "seen" || s == "caught" {
-            Some(s)
-        } else {
-            None
-        }
-    }
-    fn rank(s: &str) -> u8 {
-        match s {
-            "caught" => 3,
-            "seen" => 2,
-            _ => 1,
-        }
     }
 
     let mut merged: std::collections::HashMap<i32, String> = std::collections::HashMap::new();
@@ -736,17 +841,17 @@ pub async fn sync_all_sav_now(state: State<'_, DbState>, app: AppHandle) -> Resu
         match save_detect::extract_pokedex_from_save(app.clone(), path.clone()).await {
             Ok(entries) => {
                 for e in entries {
-                    let Some(s) = normalize_status(&e.status) else { continue };
+                    let Some(s) = pokedex_normalize_status(&e.status) else { continue };
                     if e.species_id < 1 || e.species_id > MAX_SPECIES_ID {
                         continue;
                     }
                     let cur = merged.get(&e.species_id).map(|c| c.as_str()).unwrap_or("unseen");
-                    let best = if rank(&s) >= rank(cur) { s.as_str() } else { cur };
+                    let best = if pokedex_status_rank(&s) >= pokedex_status_rank(cur) { s.as_str() } else { cur };
                     merged.insert(e.species_id, best.to_string());
                 }
             }
             Err(e) => {
-                eprintln!("[PokeTracker] sync_all_sav_now skip {}: {}", path, e);
+                eprintln!("[PokeTracker] extract_pokedex fallito per {:?}: {}", path, e);
             }
         }
     }
@@ -766,7 +871,7 @@ pub async fn sync_all_sav_now(state: State<'_, DbState>, app: AppHandle) -> Resu
         } else {
             "unseen".to_string()
         };
-        if merged.get(&sid).map(|m| rank(m) < rank(&status)).unwrap_or(true) {
+        if merged.get(&sid).map(|m| pokedex_status_rank(m) < pokedex_status_rank(&status)).unwrap_or(true) {
             merged.insert(sid, status);
         }
     }
@@ -784,7 +889,6 @@ pub async fn sync_all_sav_now(state: State<'_, DbState>, app: AppHandle) -> Resu
         .map_err(|e| e.to_string())?;
     }
 
-    eprintln!("[PokeTracker] sync_all_sav_now completato.");
     Ok(())
 }
 
@@ -812,7 +916,7 @@ pub fn touch_sav_entry_updated_at(state: State<'_, DbState>, path: String) -> Re
         .optional()
         .map_err(|e| e.to_string())?;
     let mut entries: Vec<SavEntry> = match value {
-        Some(ref s) => serde_json::from_str(s).unwrap_or_default(),
+        Some(ref s) => serde_json::from_str(s).map_err(|e| e.to_string())?,
         None => return Ok(()),
     };
     let updated_at = chrono::Utc::now().format("%Y-%m-%dT%H:%M:%S").to_string();
@@ -861,35 +965,27 @@ pub async fn sync_pokedex_from_watched_savs_now(
             .map_err(|e| e.to_string())?;
         let paths: Vec<String> = value
             .as_ref()
-            .and_then(|s| serde_json::from_str(s).ok())
+            .map(|s| serde_json::from_str(s).map_err(|e| e.to_string()))
+            .transpose()?
             .unwrap_or_default();
         (active_id, paths)
     };
 
     if paths.is_empty() {
+        eprintln!("[PokeTracker] sync_pokedex_from_watched_savs_now: nessun path con watcher attivo → svuoto pokedex_state");
+        let conn = state.0.lock().map_err(|e| e.to_string())?;
+        conn.execute("DELETE FROM pokedex_state WHERE profile_id = ?1", [&active_id])
+            .map_err(|e| e.to_string())?;
+        for sid in 1..=POKEDEX_DISPLAY_SPECIES_MAX {
+            conn.execute(
+                "INSERT INTO pokedex_state (profile_id, species_id, status) VALUES (?1, ?2, ?3)",
+                rusqlite::params![&active_id, sid, "unseen"],
+            )
+            .map_err(|e| e.to_string())?;
+        }
         return Ok(());
     }
-
-    eprintln!(
-        "[PokeTracker] sync_pokedex_from_watched_savs_now: {} path",
-        paths.len()
-    );
-
-    fn normalize_status(s: &str) -> Option<String> {
-        let s = s.trim().to_lowercase();
-        if s == "unseen" || s == "seen" || s == "caught" {
-            Some(s)
-        } else {
-            None
-        }
-    }
-    fn rank(s: &str) -> u8 {
-        match s {
-            "caught" => 3,
-            "seen" => 2,
-            _ => 1,
-        }
-    }
+    eprintln!("[PokeTracker] sync_pokedex_from_watched_savs_now: {} path watchati", paths.len());
 
     let mut merged: std::collections::HashMap<i32, String> = std::collections::HashMap::new();
     for path in &paths {
@@ -899,21 +995,19 @@ pub async fn sync_pokedex_from_watched_savs_now(
         }
         match save_detect::extract_pokedex_from_save(app.clone(), path.clone()).await {
             Ok(entries) => {
+                eprintln!("[PokeTracker] sync_pokedex: {:?} → {} entries", path, entries.len());
                 for e in entries {
-                    let Some(s) = normalize_status(&e.status) else { continue };
+                    let Some(s) = pokedex_normalize_status(&e.status) else { continue };
                     if e.species_id < 1 || e.species_id > MAX_SPECIES_ID {
                         continue;
                     }
                     let cur = merged.get(&e.species_id).map(|c| c.as_str()).unwrap_or("unseen");
-                    let best = if rank(&s) >= rank(cur) { s.as_str() } else { cur };
+                    let best = if pokedex_status_rank(&s) >= pokedex_status_rank(cur) { s.as_str() } else { cur };
                     merged.insert(e.species_id, best.to_string());
                 }
             }
             Err(e) => {
-                eprintln!(
-                    "[PokeTracker] sync_pokedex_from_watched_savs_now skip {}: {}",
-                    path, e
-                );
+                eprintln!("[PokeTracker] sync_pokedex: {:?} → FALLITO: {}", path, e);
             }
         }
     }
@@ -935,7 +1029,7 @@ pub async fn sync_pokedex_from_watched_savs_now(
         };
         if merged
             .get(&sid)
-            .map(|m| rank(m) < rank(&status))
+            .map(|m| pokedex_status_rank(m) < pokedex_status_rank(&status))
             .unwrap_or(true)
         {
             merged.insert(sid, status);
@@ -954,8 +1048,8 @@ pub async fn sync_pokedex_from_watched_savs_now(
         )
         .map_err(|e| e.to_string())?;
     }
+    eprintln!("[PokeTracker] sync_pokedex_from_watched_savs_now: ok, {} righe pokedex_state", merged.len());
 
-    eprintln!("[PokeTracker] sync_pokedex_from_watched_savs_now completato.");
     Ok(())
 }
 
@@ -981,7 +1075,7 @@ pub fn get_sav_watched_paths(state: State<'_, DbState>) -> Result<Vec<String>, S
         .optional()
         .map_err(|e| e.to_string())?;
     let paths: Vec<String> = match value {
-        Some(ref s) => serde_json::from_str(s).unwrap_or_default(),
+        Some(ref s) => serde_json::from_str(s).map_err(|e| e.to_string())?,
         None => {
             // Migrazione: chiave legacy globale → per profilo
             let legacy: Option<String> = conn
@@ -994,7 +1088,8 @@ pub fn get_sav_watched_paths(state: State<'_, DbState>) -> Result<Vec<String>, S
                 .map_err(|e| e.to_string())?;
             let migrated: Vec<String> = legacy
                 .as_ref()
-                .and_then(|s| serde_json::from_str(s).ok())
+                .map(|s| serde_json::from_str(s).map_err(|e| e.to_string()))
+                .transpose()?
                 .unwrap_or_default();
             if !migrated.is_empty() {
                 let json = serde_json::to_string(&migrated).map_err(|e| e.to_string())?;
@@ -1041,7 +1136,7 @@ pub fn set_sav_watched(
         .optional()
         .map_err(|e| e.to_string())?;
     let entries: Vec<SavEntry> = match entries_value {
-        Some(ref s) => serde_json::from_str(s).unwrap_or_default(),
+        Some(ref s) => serde_json::from_str(s).map_err(|e| e.to_string())?,
         None => Vec::new(),
     };
     if !entries.iter().any(|e| e.path == path) {
@@ -1052,7 +1147,7 @@ pub fn set_sav_watched(
         .optional()
         .map_err(|e| e.to_string())?;
     let mut paths: Vec<String> = match watched_value {
-        Some(ref s) => serde_json::from_str(s).unwrap_or_default(),
+        Some(ref s) => serde_json::from_str(s).map_err(|e| e.to_string())?,
         None => Vec::new(),
     };
     if watched {
@@ -1070,17 +1165,21 @@ pub fn set_sav_watched(
     .map_err(|e| e.to_string())?;
     if watched {
         watcher.add(&path).map_err(|e| e.to_string())?;
-        eprintln!("[PokeTracker] watcher attivato: {}", path);
+        eprintln!("[PokeTracker] watcher ATTIVATO: {:?}", path);
     } else {
         watcher.remove(&path).map_err(|e| e.to_string())?;
-        eprintln!("[PokeTracker] watcher disattivato: {}", path);
+        eprintln!("[PokeTracker] watcher DISATTIVATO: {:?}", path);
     }
     Ok(())
 }
 
-/// Rimuove la voce salvataggio del profilo attivo con il path indicato. Rimuove anche il path da sav_watched_paths se presente.
+/// Rimuove la voce salvataggio del profilo attivo con il path indicato. Rimuove anche il path da sav_watched_paths e dal watcher se presente.
 #[tauri::command]
-pub fn remove_sav_entry(state: State<'_, DbState>, path: String) -> Result<(), String> {
+pub fn remove_sav_entry(
+    state: State<'_, DbState>,
+    watcher: State<'_, SavWatcher>,
+    path: String,
+) -> Result<(), String> {
     let path = path.trim().to_string();
     if path.is_empty() {
         return Ok(());
@@ -1105,7 +1204,7 @@ pub fn remove_sav_entry(state: State<'_, DbState>, path: String) -> Result<(), S
         .optional()
         .map_err(|e| e.to_string())?;
     let mut entries: Vec<SavEntry> = match value {
-        Some(ref s) => serde_json::from_str(s).unwrap_or_default(),
+        Some(ref s) => serde_json::from_str(s).map_err(|e| e.to_string())?,
         None => return Ok(()),
     };
     let before = entries.len();
@@ -1119,20 +1218,125 @@ pub fn remove_sav_entry(state: State<'_, DbState>, path: String) -> Result<(), S
         rusqlite::params![&entries_key, &json],
     )
     .map_err(|e| e.to_string())?;
-    // Rimuovi path da sav_watched_paths del profilo
     let watched_value: Option<String> = conn
         .query_row("SELECT value FROM app_state WHERE key = ?1", [&watched_key], |row| row.get::<_, String>(0))
         .optional()
         .map_err(|e| e.to_string())?;
-    if let Some(ref s) = watched_value {
-        let mut paths: Vec<String> = serde_json::from_str(s).unwrap_or_default();
-        paths.retain(|p| p != &path);
-        let watched_json = serde_json::to_string(&paths).map_err(|e| e.to_string())?;
-        conn.execute(
-            "INSERT INTO app_state (key, value) VALUES (?1, ?2) ON CONFLICT(key) DO UPDATE SET value = ?2",
-            rusqlite::params![&watched_key, &watched_json],
+    let mut paths: Vec<String> = match watched_value {
+        Some(ref s) => serde_json::from_str(s).map_err(|e| e.to_string())?,
+        None => Vec::new(),
+    };
+    let was_watched = paths.contains(&path);
+    paths.retain(|p| p != &path);
+    let watched_json = serde_json::to_string(&paths).map_err(|e| e.to_string())?;
+    conn.execute(
+        "INSERT INTO app_state (key, value) VALUES (?1, ?2) ON CONFLICT(key) DO UPDATE SET value = ?2",
+        rusqlite::params![&watched_key, &watched_json],
+    )
+    .map_err(|e| e.to_string())?;
+
+    // Se non restano salvataggi, svuota subito pokedex_state (così la UI riflette subito lo stato vuoto).
+    if entries.is_empty() {
+        conn.execute("DELETE FROM pokedex_state WHERE profile_id = ?1", [&active_id])
+            .map_err(|e| e.to_string())?;
+        for sid in 1..=POKEDEX_DISPLAY_SPECIES_MAX {
+            conn.execute(
+                "INSERT INTO pokedex_state (profile_id, species_id, status) VALUES (?1, ?2, ?3)",
+                rusqlite::params![&active_id, sid, "unseen"],
+            )
+            .map_err(|e| e.to_string())?;
+        }
+        eprintln!("[PokeTracker] remove_sav_entry: nessun salvataggio rimasto → pokedex_state svuotato");
+    }
+
+    drop(conn);
+    if was_watched {
+        watcher.remove(&path).map_err(|e| e.to_string())?;
+    }
+    Ok(())
+}
+
+/// Aggiorna il path (e metadati) di una voce salvataggio. Se il path era osservato, aggiorna watcher e sav_watched_paths con il nuovo path.
+#[tauri::command]
+pub fn update_sav_entry(
+    state: State<'_, DbState>,
+    watcher: State<'_, SavWatcher>,
+    old_path: String,
+    new_path: String,
+    game: String,
+    version: String,
+    generation: Option<i32>,
+) -> Result<(), String> {
+    let old_path = old_path.trim().to_string();
+    let new_path = new_path.trim().to_string();
+    if old_path.is_empty() || new_path.is_empty() {
+        return Err("Percorso non valido.".into());
+    }
+    if old_path == new_path {
+        return Ok(());
+    }
+    let conn = state.0.lock().map_err(|e| e.to_string())?;
+    let active_id: Option<String> = conn
+        .query_row(
+            "SELECT value FROM app_state WHERE key = 'active_profile_id'",
+            [],
+            |row| row.get::<_, String>(0),
         )
+        .optional()
         .map_err(|e| e.to_string())?;
+    let active_id = active_id.ok_or("Nessun profilo attivo.")?;
+    let entries_key = sav_entries_key(&active_id);
+    let watched_key = sav_watched_paths_key(&active_id);
+    let value: Option<String> = conn
+        .query_row("SELECT value FROM app_state WHERE key = ?1", [&entries_key], |row| row.get::<_, String>(0))
+        .optional()
+        .map_err(|e| e.to_string())?;
+    let mut entries: Vec<SavEntry> = match value {
+        Some(ref s) => serde_json::from_str(s).map_err(|e| e.to_string())?,
+        None => return Err("Salvataggio non trovato.".into()),
+    };
+    let idx = entries.iter().position(|e| e.path == old_path).ok_or("Salvataggio non trovato.")?;
+    let watched_value: Option<String> = conn
+        .query_row("SELECT value FROM app_state WHERE key = ?1", [&watched_key], |row| row.get::<_, String>(0))
+        .optional()
+        .map_err(|e| e.to_string())?;
+    let mut watched_paths: Vec<String> = match watched_value {
+        Some(ref s) => serde_json::from_str(s).map_err(|e| e.to_string())?,
+        None => Vec::new(),
+    };
+    let was_watched = watched_paths.contains(&old_path);
+    let updated_at = chrono::Utc::now().format("%Y-%m-%dT%H:%M:%S").to_string();
+    let gen = generation.unwrap_or(0);
+    entries[idx] = SavEntry {
+        path: new_path.clone(),
+        game: game.trim().to_string(),
+        version: version.trim().to_string(),
+        generation: gen,
+        updated_at,
+        last_played_at: None,
+    };
+    if watched_paths.iter().any(|p| p == &old_path) {
+        watched_paths.retain(|p| p != &old_path);
+        if !watched_paths.contains(&new_path) {
+            watched_paths.push(new_path.clone());
+        }
+    }
+    let json = serde_json::to_string(&entries).map_err(|e| e.to_string())?;
+    conn.execute(
+        "INSERT INTO app_state (key, value) VALUES (?1, ?2) ON CONFLICT(key) DO UPDATE SET value = ?2",
+        rusqlite::params![&entries_key, &json],
+    )
+    .map_err(|e| e.to_string())?;
+    let watched_json = serde_json::to_string(&watched_paths).map_err(|e| e.to_string())?;
+    conn.execute(
+        "INSERT INTO app_state (key, value) VALUES (?1, ?2) ON CONFLICT(key) DO UPDATE SET value = ?2",
+        rusqlite::params![&watched_key, &watched_json],
+    )
+    .map_err(|e| e.to_string())?;
+    drop(conn);
+    if was_watched {
+        watcher.remove(&old_path).map_err(|e| e.to_string())?;
+        watcher.add(&new_path).map_err(|e| e.to_string())?;
     }
     Ok(())
 }

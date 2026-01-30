@@ -12,7 +12,11 @@ export const activeProfile = writable<Profile | null>(null);
 /** true dopo il primo loadProfiles() completato (successo o errore). Usato per evitare di mostrare "Nessun profilo" prima del caricamento. */
 export const profilesLoaded = writable(false);
 
+/** Messaggio di errore se l'ultimo loadProfiles() è fallito (es. backend non pronto). Così il layout non mostra onboarding ma "Riprova". */
+export const profileLoadError = writable<string | null>(null);
+
 export async function loadProfiles() {
+  profileLoadError.set(null);
   try {
     const [list, active] = await Promise.all([
       profileService.getProfiles(),
@@ -22,9 +26,11 @@ export async function loadProfiles() {
     activeProfile.set(active ?? null);
   } catch (err) {
     console.error("Profile load failed:", err);
+    const msg = err instanceof Error ? err.message : String(err);
+    profileLoadError.set(msg);
     reportSystemError({
       type: "Caricamento profili fallito",
-      detail: err instanceof Error ? err.message : String(err),
+      detail: msg,
     });
     profiles.set([]);
     activeProfile.set(null);

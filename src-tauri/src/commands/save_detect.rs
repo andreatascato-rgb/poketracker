@@ -29,6 +29,15 @@ pub struct SaveGameVersion {
     pub language_id_raw: Option<i32>,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TrainerData {
+    pub money: Option<u32>,
+    #[serde(rename = "playedHours")]
+    pub played_hours: Option<i32>,
+    #[serde(rename = "playedMinutes")]
+    pub played_minutes: Option<i32>,
+}
+
 /// Invoca il sidecar parser con "detect <path>", legge JSON da stdout, restituisce game e version.
 /// Valida path (non vuoto, file esistente) prima di spawnare il sidecar.
 #[tauri::command]
@@ -60,12 +69,57 @@ pub async fn detect_save_game_version(app: AppHandle, path: String) -> Result<Sa
     }
 
     let trimmed = stdout.trim();
+    if trimmed.is_empty() {
+        return Err("Sidecar non ha restituito dati (errore sul processo, controllare stderr)".into());
+    }
     let value: serde_json::Value =
         serde_json::from_str(trimmed).map_err(|e| format!("parse sidecar output: {}", e))?;
     if let Some(msg) = value.get("error").and_then(|v| v.as_str()) {
         return Err(msg.to_string());
     }
     let result: SaveGameVersion =
+        serde_json::from_value(value).map_err(|e| format!("sidecar result: {}", e))?;
+    Ok(result)
+}
+
+/// Estrae dati allenatore (denaro, tempo di gioco) da un file .sav tramite sidecar "trainer <path>".
+/// Restituisce TrainerData con campi nullable (null se non disponibili per quella generazione/save).
+#[tauri::command]
+pub async fn get_trainer_data(app: AppHandle, path: String) -> Result<TrainerData, String> {
+    let path = path.trim();
+    if path.is_empty() {
+        return Err("Path salvataggio non può essere vuoto.".into());
+    }
+    if !Path::new(path).is_file() {
+        return Err(format!("File non trovato o non è un file: {}", path));
+    }
+    let sidecar = app
+        .shell()
+        .sidecar("parser")
+        .map_err(|e| e.to_string())?;
+
+    let (mut rx, _child) = sidecar
+        .args(["trainer", &path])
+        .spawn()
+        .map_err(|e| e.to_string())?;
+
+    let mut stdout = String::new();
+    while let Some(event) = rx.recv().await {
+        if let tauri_plugin_shell::process::CommandEvent::Stdout(line) = event {
+            stdout.push_str(&String::from_utf8_lossy(&line));
+        }
+    }
+
+    let trimmed = stdout.trim();
+    if trimmed.is_empty() {
+        return Err("Sidecar non ha restituito dati (errore sul processo, controllare stderr)".into());
+    }
+    let value: serde_json::Value =
+        serde_json::from_str(trimmed).map_err(|e| format!("parse sidecar output: {}", e))?;
+    if let Some(msg) = value.get("error").and_then(|v| v.as_str()) {
+        return Err(msg.to_string());
+    }
+    let result: TrainerData =
         serde_json::from_value(value).map_err(|e| format!("sidecar result: {}", e))?;
     Ok(result)
 }
@@ -81,8 +135,6 @@ pub async fn extract_pokedex_from_save(app: AppHandle, path: String) -> Result<V
     if !Path::new(path).is_file() {
         return Err(format!("File non trovato o non è un file: {}", path));
     }
-
-    eprintln!("[PokeTracker] extract_pokedex_from_save: invoco sidecar pokedex_auto, path={}", path);
 
     let sidecar = app
         .shell()
@@ -106,13 +158,19 @@ pub async fn extract_pokedex_from_save(app: AppHandle, path: String) -> Result<V
             CommandEvent::Stderr(line) => {
                 let s = String::from_utf8_lossy(&line);
                 stderr.push_str(&s);
-                eprintln!("[parser stderr] {}", s.trim());
             }
             _ => {}
         }
     }
 
+    if !stderr.is_empty() {
+        eprintln!("[PokeTracker] parser stderr:\n{}", stderr.trim());
+    }
+
     let trimmed = stdout.trim();
+    if trimmed.is_empty() {
+        return Err("Sidecar non ha restituito dati (errore sul processo, controllare stderr)".into());
+    }
     let value: serde_json::Value =
         serde_json::from_str(trimmed).map_err(|e| format!("parse sidecar output: {}", e))?;
     if let Some(msg) = value.get("error").and_then(|v| v.as_str()) {
@@ -122,14 +180,10 @@ pub async fn extract_pokedex_from_save(app: AppHandle, path: String) -> Result<V
         serde_json::from_value(value).map_err(|e| format!("sidecar result: {}", e))?;
 
     let entries = response.entries;
-    let seen = entries.iter().filter(|e| e.status.eq_ignore_ascii_case("seen")).count();
-    let caught = entries.iter().filter(|e| e.status.eq_ignore_ascii_case("caught")).count();
-    eprintln!(
-        "[PokeTracker] extract_pokedex_from_save: ricevute {} entries (seen={}, caught={})",
-        entries.len(),
-        seen,
-        caught
-    );
-
+    if entries.is_empty() {
+        eprintln!("[PokeTracker] extract_pokedex_from_save: 0 entries per {:?} (vedi parser stderr sopra per type/lang)", path);
+    } else {
+        eprintln!("[PokeTracker] extract_pokedex_from_save: ricevute {} entries", entries.len());
+    }
     Ok(entries)
 }

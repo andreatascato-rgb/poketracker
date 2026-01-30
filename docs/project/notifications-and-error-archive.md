@@ -4,7 +4,31 @@
 
 Definisce le scelte UX e di prodotto per: (1) dove e come mostrare avvisi/notifiche invece di dati di debug in schermata; (2) standard per errori → notifica + registro in Archivio; (3) Top Bar con icona notifiche e componente dedicato; (4) **Impostazioni → Errori** per log completo da incollare (nessuna voce sidebar «Archivio») (es. ad assistente AI).
 
-**Stato:** scelte definite; implementazione da pianificare.
+**Stato:** scelte definite; implementazione base completata. **Utilità piena** (vedi sotto) estende persistenza, formato detail e caso “Versione non determinata”.
+
+---
+
+## Utilità piena (checklist implementativa)
+
+Definizione operativa per considerare Archivio Errori **completo e utile** come da doc:
+
+1. **Persistenza archivio**
+   - Voci persistite in SQLite (tabella `error_archive`); backend source of truth.
+   - Comandi: `get_error_archive_entries`, `add_error_archive_entry`, `remove_error_archive_entry`.
+   - Pagina Impostazioni → Errori: fetch all’apertura; add/remove tramite invoke.
+
+2. **Caso “Versione non determinata” + languageIdRaw**
+   - Nessun “L?” in schermata (dialog Riepilogo salvataggio).
+   - Quando il detect va a buon fine ma versione “—” (o vuota) e c’è `languageIdRaw`: toast + voce in Archivio con `detail` strutturato (path, languageIdRaw, message, ecc.) come da “Formato della voce in archivio”.
+
+3. **Detail strutturato**
+   - Uso sistematico del formato doc (`type`, `at`, `message`, `path`, campi aggiuntivi) per le voci in archivio.
+   - Helper `formatErrorDetail` (o equivalente) e refactor dei `reportSystemError` esistenti dove si hanno dati strutturati (path, languageIdRaw, stderr, ecc.).
+
+4. **Centro notifiche (Top Bar)**
+   - Fuori scope per Utilità piena; doc: “quando il componente esiste”.
+
+Riferimento implementativo: store/service `error-archive`, pagina `impostazioni/errori`, procedure `error-handling.md` e `db-migration.md`.
 
 ---
 
@@ -114,7 +138,7 @@ Questa sezione è il **riferimento unico** per tutte le operazioni di collegamen
 Per ogni errore di sistema fare **sempre** nell’ordine:
 
 1. **Toast** — messaggio breve user-facing (es. “Versione non determinata. Controlla le notifiche.”). Usare `toast.error(...)` dal componente sonner.
-2. **Archivio** — creare una voce in Archivio → Errori tramite **`reportSystemError({ type, detail, toastMessage? })`** (helper in `$lib/stores/error-archive.ts`). Lo helper fa toast + addErrorEntry; se si passa `toastMessage` quello viene usato per il toast, altrimenti `type`.
+2. **Archivio** — creare una voce in Archivio → Errori tramite **`reportSystemError({ type, detail, toastMessage? })`** (helper in `$lib/stores/error-archive.ts`). Lo helper fa toast + persistenza via `add_error_archive_entry`; se si passa `toastMessage` quello viene usato per il toast, altrimenti `type`. Per `detail` usare **`formatErrorDetail`** quando si hanno dati strutturati (path, languageIdRaw, ecc.).
 3. **Notifica** — quando il centro notifiche (Top Bar) sarà implementato, aggiungere una voce con titolo/riepilogo e azione “Vedi in Archivio errori” (link a `/impostazioni/errori` o alla voce se esiste id).
 
 Oggi: obbligatori **toast + archivio**; notifica quando il componente esiste.
@@ -150,8 +174,9 @@ Oggi: obbligatori **toast + archivio**; notifica quando il componente esiste.
 
 ### Riferimento implementativo
 
-- Store e helper: `src/lib/stores/error-archive.ts` — `reportSystemError`, `addErrorEntry`, `errorArchiveEntries`.
-- Pagina Impostazioni · Errori: `src/routes/impostazioni/errori/+page.svelte`.
+- Store e helper: `src/lib/stores/error-archive.ts` — `reportSystemError`, `formatErrorDetail`, `loadErrorArchiveEntries`, `removeErrorEntry`, `errorArchiveEntries`. Persistenza via servizio `$lib/services/error-archive` (invoke `get_error_archive_entries`, `add_error_archive_entry`, `remove_error_archive_entry`).
+- Pagina Impostazioni · Errori: `src/routes/impostazioni/errori/+page.svelte` (fetch su mount, remove via command).
+- Backend: tabella `error_archive`, comandi in `src-tauri/src/commands/error_archive.rs`.
 - Procedure per “aggiungi gestione errore”: `docs/procedures/workflow/error-handling.md` (rimanda qui per errori che vanno in Archivio).
 
 ---

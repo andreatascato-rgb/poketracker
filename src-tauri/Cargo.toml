@@ -1,6 +1,6 @@
 [package]
 name = "poketracker"
-version = "0.2.1"
+version = "0.2.2"
 description = "PokeTracker - Pokedex personale e gestione salvataggi Pokemon"
 edition = "2021"
 
@@ -14,6 +14,7 @@ tauri-build = { version = "2", features = [] }
 [dependencies]
 chrono = { version = "0.4", features = ["serde"] }
 tauri = { version = "2", features = [] }
+uuid = { version = "1", features = ["v4"] }
 tauri-plugin-dialog = "2"
 tauri-plugin-opener = "2"
 tauri-plugin-shell = "2"

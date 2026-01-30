@@ -2,7 +2,7 @@
  * Servizio salvataggi: wrapper tipati per command Tauri (get_sav_entries, add_sav_entry, detect, ecc.).
  */
 import { invoke } from "$lib/services/tauri";
-import type { SavEntry, SaveGameVersion } from "$lib/types/api";
+import type { SavEntry, SaveGameVersion, TrainerData } from "$lib/types/api";
 
 export async function getSavEntries(): Promise<SavEntry[]> {
   return invoke<SavEntry[]>("get_sav_entries");
@@ -15,6 +15,22 @@ export async function addSavEntry(payload: {
   generation?: number;
 }): Promise<void> {
   return invoke("add_sav_entry", payload);
+}
+
+export async function updateSavEntry(payload: {
+  oldPath: string;
+  newPath: string;
+  game: string;
+  version: string;
+  generation?: number;
+}): Promise<void> {
+  return invoke("update_sav_entry", {
+    oldPath: payload.oldPath,
+    newPath: payload.newPath,
+    game: payload.game,
+    version: payload.version,
+    generation: payload.generation,
+  });
 }
 
 export async function removeSavEntry(path: string): Promise<void> {
@@ -39,4 +55,8 @@ export async function detectSaveGameVersion(path: string): Promise<SaveGameVersi
 
 export async function syncAllSavNow(): Promise<void> {
   return invoke("sync_all_sav_now");
+}
+
+export async function getTrainerData(path: string): Promise<TrainerData> {
+  return invoke<TrainerData>("get_trainer_data", { path });
 }

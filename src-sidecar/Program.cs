@@ -6,15 +6,29 @@ using PKHeX.Core;
 
 Console.OutputEncoding = Encoding.UTF8;
 
-if (args.Length < 1)
+// Normalizza argomenti: Tauri su Windows può passare (exePath, command, path) quindi args[0]
+// può essere il path dell'eseguibile. Prova prima (args[0], args[1]), poi (args[1], args[2]).
+static bool IsValidCommand(string? c) =>
+    c == "detect" || c == "pokedex" || c == "pokedex_auto" || c == "probe" || c == "trainer";
+
+string command;
+string? path;
+if (args.Length >= 1 && IsValidCommand(args[0].Trim().ToLowerInvariant()))
 {
-    WriteError("Usage: <command> [path]. Commands: detect <path>, pokedex <path>, pokedex_auto <path>, probe.");
+    command = args[0].Trim().ToLowerInvariant();
+    path = args.Length > 1 ? args[1] : null;
+}
+else if (args.Length >= 2 && IsValidCommand(args[1].Trim().ToLowerInvariant()))
+{
+    command = args[1].Trim().ToLowerInvariant();
+    path = args.Length > 2 ? args[2] : null;
+}
+else
+{
+    WriteError("Usage: <command> [path]. Commands: detect <path>, pokedex <path>, pokedex_auto <path>, trainer <path>, probe.");
     Environment.Exit(1);
     return;
 }
-
-string command = args[0].Trim().ToLowerInvariant();
-string? path = args.Length > 1 ? args[1] : null;
 
 if (command == "probe")
 {
@@ -23,9 +37,9 @@ if (command == "probe")
     return;
 }
 
-if (command != "detect" && command != "pokedex" && command != "pokedex_auto")
+if (command != "detect" && command != "pokedex" && command != "pokedex_auto" && command != "trainer")
 {
-    WriteError("Unknown command. Use: detect <path>, pokedex <path>, or pokedex_auto <path>");
+    WriteError("Unknown command. Use: detect <path>, pokedex <path>, pokedex_auto <path>, or trainer <path>");
     Environment.Exit(1);
     return;
 }
@@ -39,15 +53,38 @@ if (string.IsNullOrEmpty(path) || !File.Exists(path))
 
 try
 {
-    byte[] data = await File.ReadAllBytesAsync(path);
-    SaveFile? sav = SaveUtil.GetVariantSAV(data);
+    byte[] data = File.ReadAllBytes(path);
+    int fileLength = data.Length;
+    const int Gen4ExpectedSize = 524288; // 512KB
 
+    // Trim a 512KB se più grande (Gen4 e .dsv DeSmuME hanno footer che rompe il riconoscimento).
+    bool isFooterPresent = data.Length > Gen4ExpectedSize;
+    if (isFooterPresent)
+    {
+        byte[] trimmedData = new byte[Gen4ExpectedSize];
+        Array.Copy(data, 0, trimmedData, 0, Gen4ExpectedSize);
+        data = trimmedData;
+        Console.Error.WriteLine($"[parser] load: trimmato a {data.Length} (0x{data.Length:X}) byte");
+    }
+
+    SaveFile? sav = SaveUtil.GetVariantSAV(data);
     if (sav == null)
     {
-        WriteError("Unrecognized save format");
-        Environment.Exit(1);
-        return;
+        try
+        {
+            sav = new SAV4HGSS(data);
+            Console.Error.WriteLine("[parser] load: GetVariantSAV null, caricato forzato come SAV4HGSS");
+        }
+        catch (Exception ex)
+        {
+            WriteError("Unrecognized save format: " + ex.Message);
+            Environment.Exit(1);
+            return;
+        }
     }
+
+    LogSaveGameAndVersion(sav);
+    LogDebugSaveInfo(fileLength, isFooterPresent, sav, data, entriesCount: null);
 
     if (command == "detect")
     {
@@ -69,16 +106,17 @@ try
         return;
     }
 
+    if (command == "trainer")
+    {
+        var trainerData = TrainerHelper.ExtractTrainerData(sav);
+        Console.WriteLine(JsonSerializer.Serialize(trainerData));
+        Environment.Exit(0);
+        return;
+    }
+
     if (command == "pokedex")
     {
         var entries = PokedexHelper.GetAllSpeciesStatus(sav);
-        int seen = 0, caught = 0;
-        foreach (var e in entries)
-        {
-            if (e.Status == "seen") seen++;
-            else if (e.Status == "caught") caught++;
-        }
-        Console.Error.WriteLine($"[parser] Pokedex extract: {entries.Count} species, seen={seen}, caught={caught}");
         var result = new { entries };
         string json = JsonSerializer.Serialize(result);
         Console.WriteLine(json);
@@ -90,16 +128,103 @@ try
     {
         List<PokedexHelper.PokedexEntry> entries;
         string typeName = sav.GetType().Name;
-        if (typeName == "SAV3FRLG" || typeName == "SAV3FR" || typeName == "SAV3LG")
+        string languageLabel = SaveDetectHelper.GetLanguageLabel(sav, path);
+        bool isFrLg = typeName == "SAV3FRLG" || typeName == "SAV3FR" || typeName == "SAV3LG";
+        bool isEmerald = typeName == "SAV3E" || typeName == "SAV3Emerald" || typeName.IndexOf("Emerald", StringComparison.OrdinalIgnoreCase) >= 0;
+        bool isSAV4 = typeName.StartsWith("SAV4", StringComparison.OrdinalIgnoreCase) || sav.Generation == 4;
+        bool isHgSs = typeName.IndexOf("HGSS", StringComparison.OrdinalIgnoreCase) >= 0;
+        string parserName = isFrLg ? "FRLG" : isEmerald ? "Emerald" : isSAV4 ? "SAV4" : "nessuno";
+        Console.Error.WriteLine($"[parser] pokedex_auto: type={typeName} lang={languageLabel} → {parserName}");
+
+        // Gen4 (HGSS, D/P/Pt): un solo percorso, reflection su sav.Pokedex.
+        if (isSAV4)
         {
-            Console.Error.WriteLine($"[parser] pokedex_auto: rilevato {typeName}, uso parser FRLG (Rosso Fuoco/Verde Foglia).");
-            entries = FrLgPokedexParser.Parse(data, path ?? "");
+            try
+            {
+                entries = PokedexHelper.GetAllSpeciesStatusSAV4Pokedex(sav);
+                Console.Error.WriteLine($"[parser] pokedex_auto SAV4.Pokedex: {entries.Count} entries");
+                if (entries.Count == 0)
+                {
+                    try
+                    {
+                        sav = new SAV4HGSS(data);
+                        entries = PokedexHelper.GetAllSpeciesStatusSAV4Pokedex(sav);
+                        Console.Error.WriteLine($"[parser] pokedex_auto: Pokedex vuoto → forzato SAV4HGSS, entries = {entries.Count}");
+                    }
+                    catch (Exception ex2)
+                    {
+                        Console.Error.WriteLine($"[parser] pokedex_auto SAV4HGSS fallback: {ex2.Message}");
+                    }
+                }
+                LogDebugSaveInfo(fileLength, isFooterPresent, sav, data, entries.Count);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"[parser] pokedex_auto SAV4.Pokedex failed: {ex.Message}");
+                entries = new List<PokedexHelper.PokedexEntry>();
+                LogDebugSaveInfo(fileLength, isFooterPresent, sav, data, 0);
+            }
+        }
+        else if (isFrLg)
+        {
+            switch (languageLabel)
+            {
+                case "ITA":
+                    entries = FrLgPokedexParser.Parse(data, path ?? "", "ITA");
+                    break;
+                case "USA":
+                    entries = FrLgPokedexParser.Parse(data, path ?? "", "USA");
+                    break;
+                case "JPN":
+                    entries = FrLgPokedexParser.Parse(data, path ?? "", "JPN");
+                    break;
+                case "FRA":
+                    entries = FrLgPokedexParser.Parse(data, path ?? "", "FRA");
+                    break;
+                case "GER":
+                    entries = FrLgPokedexParser.Parse(data, path ?? "", "GER");
+                    break;
+                case "SPA":
+                    entries = FrLgPokedexParser.Parse(data, path ?? "", "SPA");
+                    break;
+                default:
+                    entries = FrLgPokedexParser.Parse(data, path ?? "", languageLabel.Length > 0 ? languageLabel : "—");
+                    break;
+            }
+        }
+        else if (isEmerald)
+        {
+            switch (languageLabel)
+            {
+                case "ITA":
+                    entries = EmeraldPokedexParser.Parse(data, path ?? "", "ITA");
+                    break;
+                case "USA":
+                    entries = EmeraldPokedexParser.Parse(data, path ?? "", "USA");
+                    break;
+                case "JPN":
+                    entries = EmeraldPokedexParser.Parse(data, path ?? "", "JPN");
+                    break;
+                case "FRA":
+                    entries = EmeraldPokedexParser.Parse(data, path ?? "", "FRA");
+                    break;
+                case "GER":
+                    entries = EmeraldPokedexParser.Parse(data, path ?? "", "GER");
+                    break;
+                case "SPA":
+                    entries = EmeraldPokedexParser.Parse(data, path ?? "", "SPA");
+                    break;
+                default:
+                    entries = EmeraldPokedexParser.Parse(data, path ?? "", languageLabel.Length > 0 ? languageLabel : "—");
+                    break;
+            }
         }
         else
         {
-            Console.Error.WriteLine($"[parser] pokedex_auto: save tipo {typeName}, nessun parser dedicato. Restituisco vuoto.");
             entries = new List<PokedexHelper.PokedexEntry>();
+            Console.Error.WriteLine($"[parser] pokedex_auto: nessun parser per type={typeName}, 0 entries");
         }
+        Console.Error.WriteLine($"[parser] pokedex_auto: {entries.Count} entries");
         var result = new { entries };
         string json = JsonSerializer.Serialize(result);
         Console.WriteLine(json);
@@ -113,11 +238,73 @@ catch (Exception ex)
     Environment.Exit(1);
 }
 
+/// Scrive l'errore solo su stderr. Stdout resta riservato al JSON di successo così Rust non riceve righe spurie.
 static void WriteError(string message)
 {
     var err = JsonSerializer.Serialize(new { error = message });
     Console.Error.WriteLine(err);
-    Console.WriteLine(err);
+}
+
+static void LogSaveGameAndVersion(SaveFile sav)
+{
+    try
+    {
+        var t = sav.GetType();
+        string? game = null, version = null;
+        foreach (var p in t.GetProperties(BindingFlags.Public | BindingFlags.Instance))
+        {
+            if (string.Equals(p.Name, "Game", StringComparison.OrdinalIgnoreCase) && p.PropertyType == typeof(GameVersion))
+                game = p.GetValue(sav)?.ToString();
+            if (string.Equals(p.Name, "Version", StringComparison.OrdinalIgnoreCase))
+                version = p.GetValue(sav)?.ToString();
+        }
+        if (game == null)
+        {
+            var gv = t.GetProperty("GameVersion", BindingFlags.Public | BindingFlags.Instance);
+            if (gv != null) game = gv.GetValue(sav)?.ToString();
+        }
+        Console.Error.WriteLine($"[parser] load: sav.Game = {game ?? "—"}, sav.Version = {version ?? "—"}");
+    }
+    catch (Exception ex)
+    {
+        Console.Error.WriteLine($"[parser] load: LogSaveGameAndVersion: {ex.Message}");
+    }
+}
+
+/// <summary>Debug log: FileLength, IsFooterPresent, SaveCount, CheckSumStatus.</summary>
+static void LogDebugSaveInfo(int fileLength, bool isFooterPresent, SaveFile sav, byte[] data, int? entriesCount)
+{
+    try
+    {
+        Console.Error.WriteLine($"[parser] debug: FileLength = {fileLength}");
+        Console.Error.WriteLine($"[parser] debug: IsFooterPresent = {isFooterPresent}");
+
+        object? footer = null;
+        for (var t = sav.GetType(); t != null; t = t.BaseType)
+        {
+            var p = t.GetProperty("Footer", BindingFlags.Public | BindingFlags.Instance);
+            if (p != null) { try { footer = p.GetValue(sav); break; } catch { } }
+        }
+        if (footer != null)
+        {
+            var fc = footer.GetType().GetProperty("SaveCount", BindingFlags.Public | BindingFlags.Instance);
+            if (fc != null) Console.Error.WriteLine($"[parser] debug: SaveCount = {fc.GetValue(footer) ?? "—"}");
+        }
+        else
+            Console.Error.WriteLine("[parser] debug: SaveCount = (Footer non trovato)");
+
+        object? checksumValid = null;
+        for (var t = sav.GetType(); t != null; t = t.BaseType)
+        {
+            var p = t.GetProperty("ChecksumValid", BindingFlags.Public | BindingFlags.Instance);
+            if (p != null) { try { checksumValid = p.GetValue(sav); break; } catch { } }
+        }
+        Console.Error.WriteLine($"[parser] debug: CheckSumStatus = {(checksumValid != null ? checksumValid.ToString() : "(proprietà non trovata)")}");
+    }
+    catch (Exception ex)
+    {
+        Console.Error.WriteLine($"[parser] debug: LogDebugSaveInfo: {ex.Message}");
+    }
 }
 
 /// <summary>Helper per detect: mappe GameVersion/tipo → italiano, LanguageID → ITA/USA, ecc.</summary>
@@ -463,8 +650,8 @@ file static class SaveDetectHelper
     };
 }
 
-/// <summary>Parser Pokedex per Rosso Fuoco / Verde Foglia (FRLG). Legge i byte raw del .sav secondo Bulbapedia:
-/// Section 0: owned (caught) a 0x28 (49 byte), seen a 0x5C (49 byte). Blocchi A/B, sezioni ruotate, save index.</summary>
+/// <summary>Parser Pokedex per Rosso Fuoco / Verde Foglia (FRLG), differenziati per lingua (ITA, USA, JPN, FRA, GER, SPA).
+/// Stessa struttura save per tutte le lingue; il parametro language serve per log e per estensioni future.</summary>
 file static class FrLgPokedexParser
 {
     private const int BlockSize = 0xE000;       // 57344
@@ -491,12 +678,12 @@ file static class FrLgPokedexParser
         (141, 140), (143, 142), (146, 145), (149, 148),
     };
 
-    public static List<PokedexHelper.PokedexEntry> Parse(byte[] data, string pathForLog)
+    /// <summary>Parse con lingua esplicita (ITA, USA, JPN, FRA, GER, SPA, o "—" per generico). Stessa logica byte per tutte le lingue.</summary>
+    public static List<PokedexHelper.PokedexEntry> Parse(byte[] data, string pathForLog, string language = "—")
     {
-        Console.Error.WriteLine($"[parser] FRLG: file size={data.Length} bytes, path={pathForLog}");
         if (data.Length < BlockBStart + BlockSize)
         {
-            Console.Error.WriteLine($"[parser] FRLG: file troppo piccolo per due blocchi, uso solo blocco A.");
+            // File troppo piccolo per due blocchi, uso solo blocco A
         }
 
         (int section0Index, uint saveIndex) FindSection0(int blockStart)
@@ -519,23 +706,17 @@ file static class FrLgPokedexParser
         var (secA, idxA) = FindSection0(BlockAStart);
         var (secB, idxB) = FindSection0(BlockBStart);
         int section0Start;
-        string blockUsed;
         if (secA < 0 && secB < 0)
         {
-            Console.Error.WriteLine("[parser] FRLG: Section 0 non trovata in nessun blocco. Restituisco vuoto.");
             return new List<PokedexHelper.PokedexEntry>();
         }
         if (secB < 0 || (secA >= 0 && idxA >= idxB))
         {
             section0Start = secA;
-            blockUsed = "A";
-            Console.Error.WriteLine($"[parser] FRLG: blocco usato={blockUsed}, save_index={idxA}, section0_offset=0x{secA:X}");
         }
         else
         {
             section0Start = secB;
-            blockUsed = "B";
-            Console.Error.WriteLine($"[parser] FRLG: blocco usato={blockUsed}, save_index={idxB}, section0_offset=0x{secB:X}");
         }
 
         byte[] owned = new byte[PokedexBytes];
@@ -545,11 +726,6 @@ file static class FrLgPokedexParser
             owned[i] = data[section0Start + OwnedOffset + i];
             seen[i] = data[section0Start + SeenOffset + i];
         }
-        string ownedHex = string.Join(" ", owned.Take(16).Select(b => b.ToString("X2")));
-        string seenHex = string.Join(" ", seen.Take(16).Select(b => b.ToString("X2")));
-        Console.Error.WriteLine($"[parser] FRLG: blocco {blockUsed} — owned (primi 16 byte) = {ownedHex}");
-        Console.Error.WriteLine($"[parser] FRLG: blocco {blockUsed} — seen  (primi 16 byte) = {seenHex}");
-
         static bool GetBit(byte[] buf, int bitIndex)
         {
             if (bitIndex < 0 || (bitIndex >> 3) >= buf.Length) return false;
@@ -576,24 +752,25 @@ file static class FrLgPokedexParser
         }
 
         var list = statusBySpecies.OrderBy(kv => kv.Key).Select(kv => new PokedexHelper.PokedexEntry(kv.Key, kv.Value)).ToList();
-        int seenCount = list.Count(e => e.Status == "seen");
-        int caughtCount = list.Count(e => e.Status == "caught");
-        Console.Error.WriteLine($"[parser] FRLG: estratte {list.Count} specie, seen={seenCount}, caught={caughtCount}");
-        var sample = list.Where(e => e.Status != "unseen").Take(10).Select(e => $"#{e.SpeciesId}={e.Status}");
-        Console.Error.WriteLine($"[parser] FRLG: campione (primi 10 non-unseen) = {string.Join(", ", sample)}");
         return list;
     }
 }
 
-/// <summary>Estrae stato Pokedex (unseen/seen/caught) dal save usando SOLO l'API tipata PKHeX:
-/// SaveFile.GetSeen e SaveFile.GetCaught. Alcuni giochi/save usano indice dex 0-based (0=Bulbasaur):
-/// se true, passiamo (speciesId - 1) all'API così species_id 1 in output = Bulbasaur. Vedi issue pre-evoluzioni.</summary>
-file static class PokedexHelper
+/// <summary>Parser Pokedex per Smeraldo (Emerald), differenziato per lingua (ITA, USA, JPN, FRA, GER, SPA).
+/// Stessa struttura save Section 0 di FRLG: blocco A/B, owned 0x28, seen 0x5C, 49 byte, 386 specie Gen3. Fonte: Bulbapedia Save data structure (Generation III).</summary>
+file static class EmeraldPokedexParser
 {
-    /// <summary>Se true, GetSeen/GetCaught vengono chiamati con (sid - 1) così National Dex #1 = indice 0 (Bulbasaur).</summary>
-    private const bool UseDexIndexZeroBased = true;
+    private const int BlockSize = 0xE000;
+    private const int BlockAStart = 0;
+    private const int BlockBStart = 0xE000;
+    private const int SectionSize = 4096;
+    private const int SectionIdOffset = 0xFF4;
+    private const int SaveIndexOffset = 0xFFC;
+    private const int OwnedOffset = 0x28;
+    private const int SeenOffset = 0x5C;
+    private const int PokedexBytes = 49;
+    private const int MaxSpeciesGen3 = 386;
 
-    /// <summary>Coppie (evoluzione, base) Gen1: se l'evoluzione è caught, la base va almeno caught. Allineato a Rust EVOLVES_FROM.</summary>
     private static readonly (int Evolved, int Base)[] EvolvesFrom = new[]
     {
         (2, 1), (3, 2), (5, 4), (6, 5), (8, 7), (9, 8), (11, 10), (12, 11), (14, 13), (15, 14),
@@ -605,6 +782,119 @@ file static class PokedexHelper
         (103, 102), (105, 104), (107, 106), (110, 109), (112, 111), (115, 114), (117, 116), (119, 118),
         (121, 120), (124, 123), (126, 125), (128, 127), (131, 130), (134, 133), (136, 135), (139, 138),
         (141, 140), (143, 142), (146, 145), (149, 148),
+    };
+
+    /// <summary>Parse con lingua esplicita (ITA, USA, JPN, FRA, GER, SPA, o "—" per generico). Stessa logica byte per tutte le lingue.</summary>
+    public static List<PokedexHelper.PokedexEntry> Parse(byte[] data, string pathForLog, string language = "—")
+    {
+        (int section0Index, uint saveIndex) FindSection0(int blockStart)
+        {
+            for (int i = 0; i < 14; i++)
+            {
+                int sectionStart = blockStart + i * SectionSize;
+                if (sectionStart + SectionSize > data.Length) return (-1, 0);
+                int id = data[sectionStart + SectionIdOffset] | (data[sectionStart + SectionIdOffset + 1] << 8);
+                if (id == 0)
+                {
+                    uint saveIdx = (uint)(data[sectionStart + SaveIndexOffset] | (data[sectionStart + SaveIndexOffset + 1] << 8) |
+                        (data[sectionStart + SaveIndexOffset + 2] << 16) | (data[sectionStart + SaveIndexOffset + 3] << 24));
+                    return (sectionStart, saveIdx);
+                }
+            }
+            return (-1, 0);
+        }
+
+        var (secA, idxA) = FindSection0(BlockAStart);
+        var (secB, idxB) = FindSection0(BlockBStart);
+        int section0Start;
+        if (secA < 0 && secB < 0)
+            return new List<PokedexHelper.PokedexEntry>();
+        if (secB < 0 || (secA >= 0 && idxA >= idxB))
+            section0Start = secA;
+        else
+            section0Start = secB;
+
+        byte[] owned = new byte[PokedexBytes];
+        byte[] seen = new byte[PokedexBytes];
+        for (int i = 0; i < PokedexBytes; i++)
+        {
+            owned[i] = data[section0Start + OwnedOffset + i];
+            seen[i] = data[section0Start + SeenOffset + i];
+        }
+        static bool GetBit(byte[] buf, int bitIndex)
+        {
+            if (bitIndex < 0 || (bitIndex >> 3) >= buf.Length) return false;
+            return (buf[bitIndex >> 3] & (1 << (bitIndex & 7))) != 0;
+        }
+
+        var statusBySpecies = new Dictionary<int, string>(MaxSpeciesGen3);
+        for (int sid = 1; sid <= MaxSpeciesGen3; sid++)
+        {
+            int idx = sid - 1;
+            bool caught = GetBit(owned, idx);
+            bool s = GetBit(seen, idx);
+            string status = caught ? "caught" : (s ? "seen" : "unseen");
+            statusBySpecies[sid] = status;
+        }
+
+        foreach (var (evolved, base_) in EvolvesFrom)
+        {
+            if (evolved > MaxSpeciesGen3) continue;
+            if (statusBySpecies[evolved] == "caught")
+                statusBySpecies[base_] = "caught";
+        }
+
+        return statusBySpecies.OrderBy(kv => kv.Key).Select(kv => new PokedexHelper.PokedexEntry(kv.Key, kv.Value)).ToList();
+    }
+}
+
+/// <summary>Estrae stato Pokedex (unseen/seen/caught) dal save usando SOLO l'API tipata PKHeX:
+/// SaveFile.GetSeen e SaveFile.GetCaught. Alcuni giochi/save usano indice dex 0-based (0=Bulbasaur):
+/// se true, passiamo (speciesId - 1) all'API così species_id 1 in output = Bulbasaur. Vedi issue pre-evoluzioni.</summary>
+file static class PokedexHelper
+{
+    /// <summary>Se true, GetSeen/GetCaught vengono chiamati con (sid - 1) così National Dex #1 = indice 0 (Bulbasaur).</summary>
+    private const bool UseDexIndexZeroBased = true;
+
+    /// <summary>Coppie (evoluzione, base) Gen1–4: se l'evoluzione è caught, la base va almeno caught. Usato da HGSS e da pokedex generico.</summary>
+    private static readonly (int Evolved, int Base)[] EvolvesFrom = new[]
+    {
+        // Gen1
+        (2, 1), (3, 2), (5, 4), (6, 5), (8, 7), (9, 8), (11, 10), (12, 11), (14, 13), (15, 14),
+        (17, 16), (18, 17), (20, 19), (21, 20), (22, 21), (24, 23), (25, 24), (26, 25), (28, 27), (29, 28),
+        (30, 29), (31, 30), (33, 32), (34, 33), (36, 35), (38, 37), (40, 39), (42, 41), (44, 43), (45, 44),
+        (47, 46), (49, 48), (51, 50), (53, 52), (55, 54), (57, 56), (59, 58), (61, 60), (62, 61), (64, 63),
+        (65, 64), (67, 66), (68, 67), (70, 69), (71, 70), (73, 72), (75, 74), (76, 75), (78, 77), (80, 79),
+        (82, 81), (85, 84), (87, 86), (89, 88), (91, 90), (94, 93), (97, 96), (99, 98), (101, 100),
+        (103, 102), (105, 104), (107, 106), (110, 109), (112, 111), (115, 114), (117, 116), (119, 118),
+        (121, 120), (124, 123), (126, 125), (128, 127), (131, 130), (134, 133), (136, 135), (139, 138),
+        (141, 140), (143, 142), (146, 145), (149, 148),
+        // Gen2
+        (154, 153), (153, 152), (157, 156), (156, 155), (160, 159), (159, 158), (162, 161), (164, 163),
+        (166, 165), (168, 167), (171, 170), (176, 175), (178, 177), (181, 180), (180, 179), (184, 183),
+        (186, 185), (189, 188), (188, 187), (192, 191), (195, 194), (197, 196), (199, 198), (203, 202),
+        (205, 204), (208, 207), (210, 209), (212, 211), (214, 213), (217, 216), (219, 218), (221, 220),
+        (224, 223), (226, 225), (227, 225), (230, 229), (229, 228), (233, 232), (237, 236), (242, 241),
+        (245, 244), (248, 247), (247, 246), (250, 249), (251, 250),
+        // Gen3
+        (254, 253), (253, 252), (257, 256), (256, 255), (260, 259), (259, 258), (262, 261), (264, 263),
+        (267, 266), (266, 265), (269, 268), (272, 271), (271, 270), (277, 276), (279, 278), (282, 281),
+        (281, 280), (286, 285), (289, 288), (292, 291), (295, 294), (297, 296), (303, 302), (306, 305),
+        (305, 304), (308, 307), (310, 309), (312, 311), (315, 314), (319, 318), (321, 320), (323, 322),
+        (326, 325), (328, 327), (330, 329), (329, 328), (332, 331), (334, 333), (336, 335), (338, 337),
+        (340, 339), (342, 341), (344, 343), (346, 345), (348, 347), (350, 349), (352, 351), (354, 353),
+        (356, 355), (358, 357), (362, 361), (361, 360), (365, 364), (364, 363), (368, 367), (373, 372),
+        (372, 371), (376, 375), (375, 374), (378, 377), (379, 377), (381, 380), (380, 379), (384, 383),
+        (386, 385),
+        // Gen4 (evoluzioni dirette; cross-gen dove base è Gen1-3)
+        (389, 388), (388, 387), (392, 391), (391, 390), (395, 394), (394, 393), (398, 397), (397, 396),
+        (400, 399), (402, 401), (405, 404), (404, 403), (407, 406), (409, 408), (411, 410), (414, 413),
+        (413, 412), (416, 415), (415, 414), (419, 418), (418, 417), (421, 420), (423, 422), (424, 422),
+        (426, 425), (428, 427), (430, 429), (432, 431), (435, 434), (437, 436), (441, 440), (442, 441),
+        (445, 444), (444, 443), (448, 447), (450, 449), (452, 451), (454, 453), (457, 456), (456, 455),
+        (460, 459), (461, 215), (462, 82), (463, 108), (464, 112), (465, 114), (466, 125), (467, 126),
+        (468, 176), (470, 469), (471, 469), (472, 470), (473, 361), (475, 281), (476, 299), (477, 356),
+        (478, 361), (226, 458),
     };
 
     static int? PrevEvolution(int speciesId)
@@ -648,17 +938,64 @@ file static class PokedexHelper
         };
     }
 
-    /// <summary>Restituisce tutte le specie valide per la generazione del save con status (unseen/seen/caught).
-    /// Usa GetSeen/GetCaught; opzione 0-based per dex; propaga caught alle pre-evoluzioni.</summary>
-    public static List<PokedexEntry> GetAllSpeciesStatus(SaveFile sav)
+    /// <summary>Gen4 (HGSS, D/P/Pt): usa SAV4.Pokedex.GetSeen(i) e GetCaught(i) con i da 1 a 493. Accesso via reflection.</summary>
+    public static List<PokedexEntry> GetAllSpeciesStatusSAV4Pokedex(SaveFile sav)
     {
+        object? pokedexObj = null;
+        for (var t = sav.GetType(); t != null; t = t.BaseType)
+        {
+            var prop = t.GetProperty("Pokedex", BindingFlags.Public | BindingFlags.Instance);
+            if (prop != null)
+            {
+                try { pokedexObj = prop.GetValue(sav); break; } catch { }
+            }
+        }
+        if (pokedexObj == null)
+            return new List<PokedexEntry>();
+
+        var pokedexType = pokedexObj.GetType();
+        var getSeen = pokedexType.GetMethods(BindingFlags.Public | BindingFlags.Instance)
+            .FirstOrDefault(m => m.Name == "GetSeen" && m.GetParameters().Length == 1 && (m.GetParameters()[0].ParameterType == typeof(int) || m.GetParameters()[0].ParameterType == typeof(ushort)));
+        var getCaught = pokedexType.GetMethods(BindingFlags.Public | BindingFlags.Instance)
+            .FirstOrDefault(m => m.Name == "GetCaught" && m.GetParameters().Length == 1 && (m.GetParameters()[0].ParameterType == typeof(int) || m.GetParameters()[0].ParameterType == typeof(ushort)));
+        if (getSeen == null || getCaught == null)
+            return new List<PokedexEntry>();
+
+        // HGSS: ciclo da 1 a 493
+        const int HGSS_MaxSpecies = 493;
+        var statusBySpecies = new Dictionary<int, string>(HGSS_MaxSpecies);
+        var paramType = getSeen.GetParameters()[0].ParameterType;
+
+        for (int i = 1; i <= HGSS_MaxSpecies; i++)
+        {
+            object indexArg = paramType == typeof(ushort) ? (ushort)i : i;
+            bool seen = false, caught = false;
+            try
+            {
+                caught = (bool)getCaught.Invoke(pokedexObj, new[] { indexArg })!;
+                seen = (bool)getSeen.Invoke(pokedexObj, new[] { indexArg })!;
+            }
+            catch { }
+            string status = caught ? "caught" : (seen ? "seen" : "unseen");
+            statusBySpecies[i] = status;
+        }
+
+        PropagateCaughtToPrevolutions(statusBySpecies);
+        return statusBySpecies.OrderBy(kv => kv.Key).Select(kv => new PokedexEntry(kv.Key, kv.Value)).ToList();
+    }
+
+    /// <summary>Restituisce tutte le specie valide per la generazione del save con status (unseen/seen/caught).
+    /// Usa GetSeen/GetCaught; useZeroBased: true = indice 0 per Bulbasaur (Gen3), false = indice 1 per Bulbasaur (Gen4 HGSS).</summary>
+    public static List<PokedexEntry> GetAllSpeciesStatus(SaveFile sav, bool? useZeroBasedOverride = null)
+    {
+        bool useZeroBased = useZeroBasedOverride ?? UseDexIndexZeroBased;
         int gen = sav.Generation;
         int maxSpeciesId = GetMaxSpeciesIdForGeneration(gen);
         var statusBySpecies = new Dictionary<int, string>(maxSpeciesId);
 
         for (int sid = 1; sid <= maxSpeciesId; sid++)
         {
-            ushort dexIndex = UseDexIndexZeroBased ? (ushort)(sid - 1) : (ushort)sid;
+            ushort dexIndex = useZeroBased ? (ushort)(sid - 1) : (ushort)sid;
             bool caught;
             bool seen;
             try
@@ -678,9 +1015,6 @@ file static class PokedexHelper
         PropagateCaughtToPrevolutions(statusBySpecies);
 
         var list = statusBySpecies.OrderBy(kv => kv.Key).Select(kv => new PokedexEntry(kv.Key, kv.Value)).ToList();
-        int seenCount = list.Count(e => e.Status == "seen");
-        int caughtCount = list.Count(e => e.Status == "caught");
-        Console.Error.WriteLine($"[parser] Pokedex: Gen{gen}, max={maxSpeciesId}, entries={list.Count}, seen={seenCount}, caught={caughtCount}, dexIndex0Based={UseDexIndexZeroBased}");
         return list;
     }
 
@@ -688,4 +1022,107 @@ file static class PokedexHelper
         [property: System.Text.Json.Serialization.JsonPropertyName("species_id")] int SpeciesId,
         [property: System.Text.Json.Serialization.JsonPropertyName("status")] string Status
     );
+}
+
+static class TrainerHelper
+{
+    public class TrainerData
+    {
+        public uint? money { get; set; }
+        public int? playedHours { get; set; }
+        public int? playedMinutes { get; set; }
+    }
+
+    public static TrainerData ExtractTrainerData(SaveFile sav)
+    {
+        var data = new TrainerData();
+        var savType = sav.GetType();
+        Console.Error.WriteLine($"[parser] trainer: SaveFile type = {savType.FullName}");
+
+        // Money / Currency — cerca in gerarchia classi (proprietà può essere in SaveFile base)
+        try
+        {
+            PropertyInfo? moneyProp = null;
+            // Cerca "Money" risalendo la gerarchia
+            for (var t = savType; t != null && moneyProp == null; t = t.BaseType)
+            {
+                moneyProp = t.GetProperty("Money", BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
+            }
+            // Fallback: cerca senza DeclaredOnly (include ereditati)
+            moneyProp ??= savType.GetProperty("Money", BindingFlags.Public | BindingFlags.Instance);
+
+            if (moneyProp != null)
+            {
+                Console.Error.WriteLine($"[parser] trainer: Found Money prop, type = {moneyProp.PropertyType.Name}");
+                var moneyVal = moneyProp.GetValue(sav);
+                if (moneyVal != null)
+                {
+                    data.money = Convert.ToUInt32(moneyVal);
+                }
+            }
+            else
+            {
+                // Gen9 usa "Currency" invece di "Money"
+                var currencyProp = savType.GetProperty("Currency", BindingFlags.Public | BindingFlags.Instance);
+                if (currencyProp != null)
+                {
+                    Console.Error.WriteLine($"[parser] trainer: Found Currency prop, type = {currencyProp.PropertyType.Name}");
+                    var currencyVal = currencyProp.GetValue(sav);
+                    if (currencyVal != null)
+                    {
+                        data.money = Convert.ToUInt32(currencyVal);
+                    }
+                }
+                else
+                {
+                    Console.Error.WriteLine("[parser] trainer: No Money/Currency property found");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"[parser] trainer: Money extraction failed: {ex.Message}");
+        }
+
+        // PlayedHours / PlayedMinutes — cerca in gerarchia
+        try
+        {
+            PropertyInfo? hoursProp = savType.GetProperty("PlayedHours", BindingFlags.Public | BindingFlags.Instance);
+            PropertyInfo? minutesProp = savType.GetProperty("PlayedMinutes", BindingFlags.Public | BindingFlags.Instance);
+
+            if (hoursProp != null)
+            {
+                Console.Error.WriteLine($"[parser] trainer: Found PlayedHours prop, type = {hoursProp.PropertyType.Name}");
+                var hoursVal = hoursProp.GetValue(sav);
+                if (hoursVal != null)
+                {
+                    data.playedHours = Convert.ToInt32(hoursVal);
+                }
+            }
+            else
+            {
+                Console.Error.WriteLine("[parser] trainer: No PlayedHours property found");
+            }
+
+            if (minutesProp != null)
+            {
+                Console.Error.WriteLine($"[parser] trainer: Found PlayedMinutes prop, type = {minutesProp.PropertyType.Name}");
+                var minutesVal = minutesProp.GetValue(sav);
+                if (minutesVal != null)
+                {
+                    data.playedMinutes = Convert.ToInt32(minutesVal);
+                }
+            }
+            else
+            {
+                Console.Error.WriteLine("[parser] trainer: No PlayedMinutes property found");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"[parser] trainer: PlayedHours/Minutes extraction failed: {ex.Message}");
+        }
+
+        return data;
+    }
 }

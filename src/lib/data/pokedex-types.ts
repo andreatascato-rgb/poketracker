@@ -32,6 +32,34 @@ export function getSpeciesTypes(id: number): [TypeName, TypeName?] {
   return ["Normale"];
 }
 
+/** Abbreviazioni italiane a 3 lettere per i tipi (doppio tipo in UI). Folletto e Astrale per uso futuro. */
+export const TYPE_ABBREV_ITA: Record<string, string> = {
+  Normale: "NOR",
+  Fuoco: "FUO",
+  Acqua: "ACQ",
+  Elettro: "ELE",
+  Erba: "ERB",
+  Ghiaccio: "GHI",
+  Lotta: "LOT",
+  Veleno: "VEL",
+  Terra: "TER",
+  Volante: "VOL",
+  Psico: "PSI",
+  Coleottero: "COL",
+  Roccia: "ROC",
+  Spettro: "SPE",
+  Drago: "DRA",
+  Buio: "BUI",
+  Acciaio: "ACC",
+  Folletto: "FOL",
+  Astrale: "AST",
+};
+
+/** Restituisce l'abbreviazione italiana del tipo (3 lettere); fallback al nome se assente. */
+export function getTypeAbbreviationIta(typeName: string): string {
+  return TYPE_ABBREV_ITA[typeName] ?? typeName.slice(0, 3).toUpperCase();
+}
+
 /** Gen 1 (1–151): specie → [tipo1, tipo2?]. */
 const GEN1_TYPES: Record<number, [TypeName, TypeName?]> = {
   1: ["Erba", "Veleno"],
